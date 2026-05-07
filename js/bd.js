@@ -8,6 +8,7 @@ const KEY_CLIENTES = "clientes";
 const KEY_PROVEEDORES = "proveedores";
 const KEY_CATEGORIAS = "categorias";
 const KEY_MARCAS = "marcas";
+const KEY_PRODUCTOS = "productos";
 
 /**
  * Carga un elemento del Local Storage
@@ -388,7 +389,7 @@ function cargarMarca(id) {
 
 /**
  * Recupera todas las marcas disponibles
- * @returns {Categoria[]}
+ * @returns {Marca[]}
  */
 function cargarMarcas() {
     return Array.from(cargarBD(KEY_MARCAS));
@@ -427,80 +428,83 @@ function eliminarMarca(id) {
     guardarBD(KEY_MARCAS, marcas);
 }
 
-    // Productos
-    // id             SERIAL PRIMARY KEY,
-    // codigo         VARCHAR(50) UNIQUE,
-    // nombre         VARCHAR(150) NOT NULL,
-    // descripcion    TEXT,
-    // precio_compra  DECIMAL(12,2) NOT NULL DEFAULT 0,
-    // precio_venta   DECIMAL(12,2) NOT NULL DEFAULT 0,
-    // stock          INTEGER NOT NULL DEFAULT 0,
-    // stock_minimo   INTEGER NOT NULL DEFAULT 0,
-    // categoria_id   INTEGER REFERENCES categorias(id),
-    // marca_id       INTEGER REFERENCES marcas(id),
-    // activo         BOOLEAN DEFAULT TRUE,
-    // created_at     TIMESTAMP DEFAULT NOW(),
-    // updated_at     TIMESTAMP DEFAULT NOW()
-
 
 /**
  * @typedef {Object} Producto
- * @property {number} id Identificador unico de la marca
- * @property {string} name Nombre de la marca
+ * @property {number} id Identificador unico del producto
+ * @property {string} code Código de barra del producto
+ * @property {string} name Nombre del producto
+ * @property {string} description Descripción del producto
+ * @property {number} purchase_price Precio de compra
+ * @property {number} selling_price Precio de venta
+ * @property {number} stock Existencias del producto
+ * @property {number} min_stock Existencia mínima del producto
+ * @property {number} category_id Identificador de la categoria
+ * @property {number} brand_id Identificador de la marca
+ * @property {boolean} active El producto está activo
  * @property {Date} created_at Fecha de creacion del marca
  * @property {Date?} updated_at Fecha de modificacion del marca
  */
 
 /**
- * Recupera una marca mediante el ID
- * @param {number} id Identificador de la marca
- * @returns {Marca?}
+ * Recupera un producto mediante el ID
+ * @param {number} id Identificador del producto
+ * @returns {Producto?}
  */
-function cargarMarca(id) {
-    for (const marca of cargarMarcas()) {
-        if (marca.id === id) return marca;
+function cargarProducto(id) {
+    for (const producto of cargarProductos()) {
+        if (producto.id === id) return producto;
     }
 }
 
 /**
- * Recupera todas las marcas disponibles
- * @returns {Categoria[]}
+ * Recupera todos los productos disponibles
+ * @returns {Producto[]}
  */
-function cargarMarcas() {
-    return Array.from(cargarBD(KEY_MARCAS));
+function cargarProductos() {
+    return Array.from(cargarBD(KEY_PRODUCTOS));
 }
 
 /**
- * Guarda una marca nueva o existente
- * @param {Marca} marca 
+ * Guarda un producto nueva o existente
+ * @param {Producto} producto 
  */
-function guardarMarca(marca) {
-    const marcas = cargarMarcas();
-    const index = marcas.findIndex(m => m.id === marca.id);
+function guardarProducto(producto) {
+    const productos = cargarProductos();
+    const index = productos.findIndex(p => p.id === producto.id);
     const data = {
-        id: marca.id,
-        name: marca.name,
-        created_at: marca.created_at,
-        updated_at: marca.updated_at
+        id: producto.id,
+        code: producto.code,
+        name: producto.name,
+        description: producto.description,
+        purchase_price: producto.purchase_price,
+        selling_price: producto.selling_price,
+        stock: producto.stock,
+        min_stock: producto.min_stock,
+        category_id: producto.category_id,
+        brand_id: producto.brand_id,
+        active: producto.active,
+        created_at: producto.created_at,
+        updated_at: producto.updated_at
     }
     if (index === -1) {
-        marcas.push(data)
+        productos.push(data)
     } else {
-        marcas[index] = data
+        productos[index] = data
     }
-    guardarBD(KEY_MARCAS, marcas);
+    guardarBD(KEY_PRODUCTOS, productos);
 }
 
 /**
- * Elimina una marca mediante el ID
- * @param {number} id Identificador de la marca
+ * Elimina un producto mediante el ID
+ * @param {number} id Identificador del producto
  */
-function eliminarMarca(id) {
-    const marcas = cargarMarcas();
-    const index = marcas.findIndex(m => m.id === id);
+function eliminarProducto(id) {
+    const productos = cargarProductos();
+    const index = productos.findIndex(p => p.id === id);
     if (index !== -1) return;
-    marcas.splice(index, 1);
-    guardarBD(KEY_MARCAS, marcas);
+    productos.splice(index, 1);
+    guardarBD(KEY_PRODUCTOS, productos);
 }
 
     // Compras
