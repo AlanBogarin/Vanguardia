@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Nombre del Sistema</title>
+    <link rel="icon" type="image/png" href="img/working.png">
+    <!-- ESTILOS DEL MENU -->
+    <link href="menu/styles.css" rel="stylesheet" />
+    <!-- BOOTSTRAP ICONS -->
+    <link rel="stylesheet" href="bt-icons/bootstrap-icons.min.css">
+    <!-- ALERTIFYJS -->
+    <link rel="stylesheet" href="alert/alertify.min.css">
+    <link rel="stylesheet" href="alert/themes/default.min.css">
+</head>
+<body class="sb-nav-fixed">
+    <!-- ======================================================== -->
+    <!-- 1. CONTENEDOR DINÁMICO PARA LA BARRA SUPERIOR (NAVBAR)   -->
+    <!-- Este div vacío será llenado por JavaScript usando fetch()-->
+    <!-- con el contenido del archivo 'navbar.html'.              -->
+    <!-- ======================================================== -->
+    <div id="contenedor-navbar"></div>
+    <div id="layoutSidenav">
+        <!-- ======================================================== -->
+        <!-- 2. CONTENEDOR DINÁMICO PARA EL MENÚ LATERAL (SIDEBAR)    -->
+        <!-- Este div vacío será llenado por JavaScript usando fetch()-->
+        <!-- con el contenido del archivo 'sidebar.html'.             -->
+        <!-- ======================================================== -->
+        <div id="contenedor-sidebar"></div>
+
+        <div id="layoutSidenav_content">
+            <main>
+                <div class="container-fluid px-4">
+                    <h1 class="mt-4">Dashboard</h1>
+                    <ol class="breadcrumb mb-4">
+                        <li class="breadcrumb-item active">Dashboard</li>
+                    </ol>
+                    <!-- AQUÍ VA TODO LO QUE SE VA A VISUALIZAR EN LA PÁGINA -->
+                    <div class="row">
+
+                    </div>
+
+
+                </div>
+            </main>
+            <footer class="py-4 bg-light mt-auto">
+                <div class="container-fluid px-4">
+                    <div class="d-flex align-items-center justify-content-between small">
+                        <div class="text-muted">Copyright &copy; Your Website 2026</div>
+                        <div>
+                            <a href="#">Privacy Policy</a>
+                            &middot;
+                            <a href="#">Terms &amp; Conditions</a>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <script src="js/funcionesSistema.js"></script>
+    <script src="menu/bootstrap.bundle.min.js"></script>
+    <script src="menu/scripts.js"></script>
+    <script src="alert/alertify.min.js"></script>
+
+    <script>
+        var nom = localStorage.getItem("nomUsuario");
+        if (nom == "" || nom == null) {
+            window.location.href = "error.html"; // Redirige al login
+        }
+
+        // Carga los componentes de la interfaz (Navbar y Sidebar) dinámicamente
+        // Esto evita repetir el largo código HTML del menú en todas las pantallas
+        cargarComponentes();
+    </script>
+</body>
+</html>

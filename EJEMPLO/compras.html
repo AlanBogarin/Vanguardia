@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar compras</title>
+
+    <link rel="icon" type="image/png" href="img/working.png">
+          
+    <!-- ESTILOS DEL MENU -->
+    <link href="menu/styles.css" rel="stylesheet" />
+  
+    <!-- BOOTSTRAP ICONS -->
+    <link rel="stylesheet" href="bt-icons/bootstrap-icons.min.css">
+
+    <!-- DATATABLES -->
+    <link rel="stylesheet" href="dt/datatables.min.css">
+    <link rel="stylesheet" href="dt/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="dt/buttons.dataTables.min.css">
+
+    <!-- KEYTABLE PARA NEVEGAR CON EL TECLADO -->
+    <script src="dt/dataTables.keyTable.min.js"></script>
+
+    <!-- KEYTABLE PARA NEVEGAR CON EL TECLADO -->
+    <link rel="stylesheet" href="dt/keyTable.dataTables.min.css">
+    <!-- SELECT PARA SELECCIONAR UNA FILA CON ENTER -->
+    <!-- SELECT PARA SELECCIONAR UNA FILA CON ENTER -->
+    <script src="dt/dataTables.select.min.js"></script>
+    <link rel="stylesheet" href="dt/select.dataTables.min.css">
+
+    <!-- ALERTIFYJS -->
+    <link rel="stylesheet" href="alert/alertify.min.css">
+    <link rel="stylesheet" href="alert/themes/default.min.css">
+    <script src="alert/alertify.min.js"></script>
+
+</head>
+<body class="sb-nav-fixed">
+    <!-- ======================================================== -->
+    <!-- 1. CONTENEDOR DINÁMICO PARA LA BARRA SUPERIOR (NAVBAR)   -->
+    <!-- Este div vacío será llenado por JavaScript usando fetch()-->
+    <!-- con el contenido del archivo 'navbar.html'.              -->
+    <!-- ======================================================== -->
+    <div id="contenedor-navbar"></div>
+    <div id="layoutSidenav">
+    <!-- ======================================================== -->
+    <!-- 2. CONTENEDOR DINÁMICO PARA EL MENÚ LATERAL (SIDEBAR)    -->
+    <!-- Este div vacío será llenado por JavaScript usando fetch()-->
+    <!-- con el contenido del archivo 'sidebar.html'.             -->
+    <!-- ======================================================== -->
+    <div id="contenedor-sidebar"></div>
+         
+        <div id="layoutSidenav_content">
+                <!-- AQUÍ VA TODO LO QUE SE VA A VISUALIZAR EN LA PÁGINA -->
+                <!-- CUERPO DEL DASHBOARD -->
+            <main>
+                <div class="container-fluid px-4">
+                    <h1 class="mt-2">Registrar compras</h1>
+                    <form id="formCompras" class="modal-content">
+                        <div class="row">
+                            <!-- PRIMERA FILA -->
+                            <div class="col-sm-2">
+                                <label class="form-label fw-bold">R.U.C.</label>
+                                <input type="text" id="ruc" class="form-control" required>
+                            </div>
+                            <div class="col-sm-4">
+                                <label class="form-label fw-bold">PROVEEDOR</label>
+                                <input type="text" id="proveedor" class="form-control text-uppercase" required readonly>
+                                <input type="hidden" id="idproveedor">
+                            </div>
+                            <div class="col-sm-2">
+                                <label class="form-label fw-bold">CONDICIÓN</label>
+                                <select id="condicion" class="form-select">
+                                    <option value="CONTADO">CONTADO</option>
+                                    <option value="CRÉDITO">CRÉDITO</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-2">
+                                <label class="form-label fw-bold">FECHA</label>
+                                <input type="date" id="fecha" class="form-control" required>
+                            </div>
+                            <div class="col-sm-2">
+                                <label class="form-label fw-bold">N° FACTURA</label>
+                                <input type="text" id="numfactura" class="form-control" required minlength="7" maxlength="15">
+                            </div>
+                        </div>
+                        
+                        <!-- SEGUNDA FILA -->
+                        <div class="row">
+                            <div class="col-sm-2">
+                                <label class="form-label fw-bold">COD. BARRA</label>
+                                <input type="text" id="codbarra" class="form-control" required maxlength="13">
+                                <input type="hidden" id="idarticulo">
+                            </div>
+                            <div class="col-sm-4">
+                                <label class="form-label fw-bold">DESCRIPCIÓN</label>
+                                <input type="text" id="descripcion" class="form-control text-uppercase" readonly>
+                                <input type="hidden" id="iva">
+                            </div>
+                            <div class="col-sm-1">
+                                <label class="form-label fw-bold">CANT.</label>
+                                <input type="number" id="cantidad" class="form-control" required min="1" max="9999" value="1">
+                            </div>
+                            <div class="col-sm-2">
+                                <label class="form-label fw-bold">PRE. UNI.</label>
+                                <input type="text" id="preuni" class="form-control" required>
+                            </div>
+                            <div class="col-sm-2">
+                                <label class="form-label fw-bold">SUBTOTAL</label>
+                                <input type="text" id="subtotal" class="form-control" readonly>
+                            </div>
+                            <div class="col-sm-1 d-grid align-items-end">
+                                <button type="button" id="btnAgregarArticulo" class="btn btn-success" title="Agregar artículo"><i class="bi bi-plus-circle"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- TERCERA FILA: TABLA -->
+                        <div class="row">
+                            <table id="tablaArticulos" class="display" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Cod. Barra</th>
+                                        <th>Descripción</th>
+                                        <th>I.V.A.</th>
+                                        <th>Cant.</th>
+                                        <th>Pre. Uni.</th>
+                                        <th>Subtotal</th>
+                                        <th>Acción</th>
+                                        <th>Id Articulo</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+
+                        <!-- CUARTA FILA: TOTALES -->
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <label class="form-label fw-bold" style="font-size: 0.8rem;">ST. EXENTA</label>
+                                <input type="text" id="stexenta" class="form-control form-control-sm text-end" style="font-size: 0.8rem; height: 30px;" readonly>
+                            </div>
+                            <div class="col-sm-4">
+                                <label class="form-label fw-bold" style="font-size: 0.8rem;">ST. I.V.A. 5%</label>
+                                <input type="text" id="stiva5" class="form-control form-control-sm text-end" style="font-size: 0.8rem; height: 30px;" readonly>
+                            </div>
+                            <div class="col-sm-4">
+                                <label class="form-label fw-bold" style="font-size: 0.8rem;">ST. I.V.A. 10%</label>
+                                <input type="text" id="stiva10" class="form-control form-control-sm text-end" style="font-size: 0.8rem; height: 30px;" readonly>
+                            </div>
+                        </div>
+
+                        <!-- QUINTA FILA: TOTALES -->
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <label class="form-label fw-bold" style="font-size: 0.8rem;">LIQ. I.V.A. 5%</label>
+                                <input type="text" id="liqiva5" class="form-control form-control-sm text-end" style="font-size: 0.8rem; height: 30px;" readonly>
+                            </div>
+                            <div class="col-sm-3">
+                                <label class="form-label fw-bold" style="font-size: 0.8rem;">LIQ. I.V.A. 10%</label>
+                                <input type="text" id="liqiva10" class="form-control form-control-sm text-end" style="font-size: 0.8rem; height: 30px;" readonly>
+                            </div>
+                            <div class="col-sm-3">
+                                <label class="form-label fw-bold" style="font-size: 0.8rem;">TOT. I.V.A.</label>
+                                <input type="text" id="totiva" class="form-control form-control-sm text-end" style="font-size: 0.8rem; height: 30px;" readonly>
+                            </div>
+                            <div class="col-sm-3">
+                                <label class="form-label fw-bold" style="font-size: 0.8rem;">TOTAL COMPRA</label>
+                                <input type="text" id="total" class="form-control form-control-sm fw-bold text-end bg-warning" style="font-size: 0.8rem; height: 30px;" readonly>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="container-fluid mt-3 bg-dark bg-gradient text-white" style="font-size: 12px;">
+                    F2: Buscar proveedor
+                </div>
+            </main>
+            <footer class="py-4 bg-light mt-auto">
+                <div class="container-fluid px-4">
+                <div class="d-flex align-items-center justify-content-between small">
+                    <div class="text-muted">Copyright &copy; Your Website 2026</div>
+                    <div>
+                            <a href="#">Privacy Policy</a>
+                            &middot;
+                            <a href="#">Terms &amp; Conditions</a>
+                    </div>
+                </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+  
+    <!-- Modal Buscar Proveedores -->
+    <div class="modal fade" id="buscarProveedor" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalCenteredScrollableTitle">Buscar proveedor</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <table id="tabla_proveedores" class="display nowrap" style="width:100%">
+                        <thead>
+                             <tr>
+                                  <th>Id Proveedor</th>
+                                  <th>R.U.C.</th>
+                                  <th>Razón Social</th>
+                                  <th>Dirección</th>
+                                  <th>Teléfono</th>
+                                  <th>Ciudad</th>
+                             </tr>
+                        </thead>
+                        
+                    </table>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="js/funcionesSistema.js"></script>
+    <!-- MENU -->
+    <script src="menu/bootstrap.bundle.min.js"></script>
+    <script src="menu/scripts.js"></script>
+    <!-- DATATABLES -->
+    <script src="dt/jquery-3.7.1.js"></script>
+    <script src="dt/jquery.dataTables.min.js"></script>
+    <script src="dt/datatables.min.js"></script>
+
+
+    <!-- DATATABLES Buttons extension -->
+    <script src="dt/dataTables.buttons.min.js"></script>
+    <script src="dt/buttons.print.min.js"></script>
+    <script src="dt/buttons.html5.min.js"></script>
+    <!-- DATATABLES JSZip y pdfmake para exportar -->
+    <script src="dt/jszip.min.js"></script>
+    <script src="dt/pdfmake.min.js"></script>
+    <script src="dt/vfs_fonts.js"></script>
+    <!-- DATATABLES Idioma Español -->
+    <script src="dt/es-ES.js"></script>
+    
+    <script>
+        //Al cargarse la página==========================================================================
+        //Control de seguridad en la apertura de la página------------------------------------------------
+        var nom = localStorage.getItem("nomUsuario");
+        if (nom == "" || nom == null){
+            window.location.href = "error.html"; // Redirige al login
+        }
+        
+        // Llamada a la función que inyecta el menú (ubicada en js/funcionesSistema.js)
+        // Esto evita tener que copiar y pegar todo el HTML del menú en cada página.
+        cargarComponentes();
+        //Fin del Control de seguridad en la apertura de la página----------------------------------------
+
+        // Obtener la fecha actual en formato YYYY-MM-DD
+        const hoy = new Date().toISOString().split("T")[0];
+        // Establecer el valor máximo para la fecha, no permite fecha futura
+        document.getElementById("fecha").max = hoy;
+        // Establecer la fecha actual como valor por defecto
+        document.getElementById("fecha").value = hoy;
+
+
+        let contadorItem = 1;
+        //Al cargar la página configurar la tabla en donde se van a cargar los artículos
+        $(document).ready(function () {
+            $('#tablaArticulos').DataTable({
+                scrollY: '120px',
+                scrollCollapse: false, // Evita que se colapse cuando no hay datos, mantiene la altura aunque este vacia
+                paging: false,
+                searching: false,
+                info: false,
+                ordering: false,
+                language: spanish,
+                columnDefs: [
+
+                        { targets: 0, width: '5%' },
+                        { targets: 1, width: '15%' },
+                        { targets: 2, width: '40%' },
+                        { targets: 3, width: '10%' },
+                        { targets: 4, width: '5%', className: 'text-end' },
+                        { targets: 5, width: '10%', className: 'text-end' },
+                        { targets: 6, width: '10%', className: 'text-end' },
+                        { targets: 7, width: '5%' },
+                        { targets: 8, visible: false }
+
+                ]
+            });
+        });
+
+        //Al perder el foco el campo RUC, para buscar al proveedor
+        document.getElementById("ruc").addEventListener("blur", function () {
+            var rucIngresado = this.value.trim();
+            if (rucIngresado === "") return; // no hace nada si está vacío
+
+            var proveedores = JSON.parse(localStorage.getItem("proveedores")) || [];
+            var proveedor = proveedores.find(p => p.ruc === rucIngresado);
+
+            if (proveedor) {
+                document.getElementById("proveedor").value = proveedor.razonsocial;
+                document.getElementById("idproveedor").value = proveedor.idproveedor;
+                document.getElementById("condicion").focus();
+            } else {
+                alertify.error("RUC no encontrado en la lista de proveedores");
+                document.getElementById("proveedor").value = "";
+                document.getElementById("idproveedor").value = "";
+                document.getElementById("ruc").focus();
+            }
+        });
+
+        //Funciones para validar RUC y N° FACTURA
+        function soloNumerosYGuiones(event) {
+            // Permitir solo números (0-9) y guiones (-)
+            const char = String.fromCharCode(event.which || event.keyCode);
+            if (!/[\d-]/.test(char)) {
+                event.preventDefault();
+            }
+        }
+
+        function validarPegado(event) {
+            const textoPegado = (event.clipboardData || window.clipboardData).getData("text");
+            if (!/^[\d-]+$/.test(textoPegado)) {
+                event.preventDefault();
+                //alertify.error("Solo se permiten números y guiones");
+            }
+        }
+
+        function limpiarCaracteresInvalidos(event) {
+            const valorOriginal = event.target.value;
+            const valorFiltrado = valorOriginal.replace(/[^\d-]/g, "");
+            if (valorOriginal !== valorFiltrado) {
+                event.target.value = valorFiltrado;
+                //alertify.warning("Se han eliminado caracteres inválidos");
+            }
+        }
+
+        // Aplica a ambos campos
+        ["ruc", "numfactura"].forEach(id => {
+            const campo = document.getElementById(id);
+            campo.addEventListener("keypress", soloNumerosYGuiones);
+            campo.addEventListener("paste", validarPegado);
+            campo.addEventListener("input", limpiarCaracteresInvalidos);
+        });
+
+        // VALIDAR preuni, para que acepte solo numeros positivos desde 1 hasta 99999999
+        // Inclusive que rechace caracteres no permitidos al pegar
+        document.getElementById('preuni').addEventListener('input', function (e) {
+            // Eliminar todo lo que no sea dígito
+            let value = e.target.value.replace(/\D/g, '');
+
+            // Convertir a número y validar el rango
+            let num = parseInt(value, 10);
+
+            if (!isNaN(num) && num >= 1 && num <= 99999999) {
+                e.target.value = num;
+            } else if (value === '') {
+                e.target.value = '';
+            } else {
+                e.target.value = ''; // borrar si el número está fuera del rango
+            }
+        });
+
+
+        //Al perder el foco el campo COD. BARRA, para buscar el articulo
+        document.getElementById("codbarra").addEventListener("blur", function () {
+            var codIngresado = this.value.trim();
+            if (codIngresado === "") return; // no hace nada si está vacío
+
+            var articulos = JSON.parse(localStorage.getItem("articulos")) || [];
+            var articulo = articulos.find(a => a.codbarra === codIngresado);
+
+            if (articulo) {
+                document.getElementById("descripcion").value = articulo.descripcion;
+                //document.getElementById("preuni").value = articulo.preventa.toLocaleString("es-PY");
+                document.getElementById("idarticulo").value = articulo.idarticulo;
+                if (articulo.tiva === 0){
+                    tiva = "EXENTA";
+                }else if (articulo.tiva === 5){
+                    tiva = "I.V.A. 5%";
+                }else if (articulo.tiva === 10){
+                    tiva = "I.V.A. 10%";
+                }
+                document.getElementById("iva").value = tiva;
+                calcularSubtotal();
+                document.getElementById("cantidad").focus();
+            } else {
+                alertify.error("Cód. Barra no encontrado en la lista de artículos");
+                document.getElementById("descripcion").value = "";
+                document.getElementById("codbarra").focus();
+            }
+        });
+
+        //Calcular SUBTOTAL
+        function calcularSubtotal() {
+            const cantidad = parseFloat(document.getElementById("cantidad").value.replace(/\./g, "")) || 0;
+            const preuni = parseFloat(document.getElementById("preuni").value.replace(/\./g, "")) || 0;
+            const subtotal = cantidad * preuni;
+
+            // Formatear con separador de miles
+            const subtotalFormateado = subtotal.toLocaleString("es-PY");
+            document.getElementById("subtotal").value = subtotalFormateado;
+        }
+
+        // Escuchar cambios en cantidad y precio unitario
+        document.getElementById("cantidad").addEventListener("input", calcularSubtotal);
+        document.getElementById("preuni").addEventListener("input", calcularSubtotal);
+
+        //PRE. UNI. Al recibir el foco desaparecen los puntos, al perder el foco se visualizan los puntos
+        // Función para eliminar los puntos (separadores) cuando el campo tiene el foco
+        function quitarSeparadores() {
+            let preuni = document.getElementById("preuni");
+            preuni.value = preuni.value.replace(/\./g, ""); // quita los puntos
+        }
+
+        // Función para agregar los puntos (separadores) cuando el campo pierde el foco
+        function agregarSeparadores() {
+            let preuni = document.getElementById("preuni");
+            let valor = preuni.value.replace(/\D/g, ""); // quita puntos y no números
+            if (valor !== "") {
+                preuni.value = valor.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            }
+        }
+
+        // Event listeners
+        document.getElementById("preuni").addEventListener("focus", quitarSeparadores);
+        document.getElementById("preuni").addEventListener("blur", agregarSeparadores);
+
+
+        // Evento para el botón "+"
+        document.getElementById("btnAgregarArticulo").addEventListener("click", function () {
+            const codbarra = document.getElementById("codbarra").value.trim();
+            const descripcion = document.getElementById("descripcion").value.trim();
+            const cantidad = parseInt(document.getElementById("cantidad").value);
+            const preuni = document.getElementById("preuni").value.trim();
+            const subtotal = document.getElementById("subtotal").value.trim();
+            const idarticulo = document.getElementById("idarticulo").value.trim();
+            const iva = document.getElementById("iva").value.trim();
+            
+
+            if (!codbarra || !descripcion || !cantidad || !preuni || !subtotal) {
+                alertify.error("Complete todos los campos del artículo antes de agregar.");
+                return;
+            }
+
+            const tabla = $('#tablaArticulos').DataTable();
+            const botonQuitar = `<button class="btn btn-danger btn-sm quitar-fila" title="Quitar fila"><i class="bi bi-x-circle"></i></button>`;
+
+            tabla.row.add([
+                contadorItem++,
+                codbarra,
+                descripcion,
+                iva,
+                cantidad,
+                preuni,
+                subtotal,
+                botonQuitar,
+                idarticulo
+            ]).draw(false);
+
+            // Calcular los totales
+            let subtotalExenta = 0;
+            let subtotalIva5 = 0;
+            let subtotalIva10 = 0;
+            let totalCompra = 0;
+
+            tablaArticulos.querySelectorAll('tbody tr').forEach(function(row) {
+                const tipoIva = row.children[3].textContent.trim(); // columna IVA (puede ser 'Exenta', '5%', '10%')
+                const st = row.children[6].textContent.trim();
+                const limpiarText = st.replace(/[^0-9]/g, ''); // Elimina todo excepto números
+                const subtotal = parseInt(limpiarText) || 0;
+
+                totalCompra += subtotal;
+
+                if (tipoIva === 'EXENTA') {
+                    subtotalExenta += subtotal;
+                } else if (tipoIva === 'I.V.A. 5%') {
+                    subtotalIva5 += subtotal;
+                } else if (tipoIva === 'I.V.A. 10%') {
+                    subtotalIva10 += subtotal;
+                }               
+            });
+
+            const liquidacionIva5 = subtotalIva5 / 21;
+            const liquidacionIva10 = subtotalIva10 / 11;
+            const totalIva = liquidacionIva5 + liquidacionIva10;
+
+            // Mostrar los resultados en el HTML
+            document.getElementById('stexenta').value = subtotalExenta.toLocaleString('es-PY');
+            document.getElementById('stiva5').value = subtotalIva5.toLocaleString('es-PY');
+            document.getElementById('stiva10').value = subtotalIva10.toLocaleString('es-PY');
+            document.getElementById('liqiva5').value = Math.round(liquidacionIva5).toLocaleString('es-PY');
+            document.getElementById('liqiva10').value = Math.round(liquidacionIva10).toLocaleString('es-PY');
+            document.getElementById('totiva').value = Math.round(totalIva).toLocaleString('es-PY');
+            document.getElementById('total').value = totalCompra.toLocaleString('es-PY');
+
+
+            // Limpiar los campos del artículo
+            document.getElementById("codbarra").value = "";
+            document.getElementById("descripcion").value = "";
+            document.getElementById("iva").value = "";
+            document.getElementById("cantidad").value = 1;
+            document.getElementById("preuni").value = "";
+            document.getElementById("subtotal").value = "";
+            document.getElementById("idarticulo").value = "";
+            document.getElementById("codbarra").focus();
+        });
+
+        // Evento delegado para quitar filas
+        $('#tablaArticulos tbody').on('click', '.quitar-fila', function () {
+            const tabla = $('#tablaArticulos').DataTable();
+            tabla.row($(this).parents('tr')).remove().draw();
+        });
+
+        // Al presionar la tecla F2
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'F2') {
+                e.preventDefault(); // Evita la acción por defecto
+                const miModal = new bootstrap.Modal(document.getElementById('buscarProveedor'));
+                miModal.show();
+            }
+        });
+
+        // Cargar Buscar Proveedor
+        // Recuperar el array de objetos desde localStorage. PROVEEDORES
+        var proveedores = JSON.parse(localStorage.getItem("proveedores")) || [];
+        // Si ya existe una instancia de DataTable, destruirla
+        if ($.fn.DataTable.isDataTable("#tabla_proveedores")) {
+            $('#tabla_proveedores').DataTable().clear().destroy();
+        }
+        tablaProv = new DataTable("#tabla_proveedores", {
+            data: proveedores,
+            scrollX: true,
+            columns: [
+                { data: 'idproveedor',  title: 'Id Proveedor',  width: '85px' },
+                { data: 'ruc',          title: 'R.U.C.',        width: '90px' },
+                { data: 'razonsocial',  title: 'Razón Social',  width: '250px' },
+                { data: 'direccion',    title: 'Dirección',     width: '300px' },
+                { data: 'telefono',     title: 'Teléfono',      width: '110px' },
+                { data: 'ciudad',       title: 'Ciudad',        width: '250px' }
+            ],
+            language: spanish,
+            pageLength: 5
+        });
+
+
+        // Funcionalidad de navegación con teclas
+        $(document).on("keydown", function (e) {
+            var $rows = $("#tabla_proveedores tbody tr");
+            var $selected = $rows.filter(".selected");
+            var index = $selected.index();
+
+            // Si no hay ninguna fila seleccionada, seleccionar la primera
+            if ($selected.length === 0) {
+                $rows.removeClass("selected");
+                $rows.eq(0).addClass("selected");
+                return;
+            }
+
+            if (e.key === "ArrowDown") {
+                e.preventDefault();
+                if (index < $rows.length - 1) {
+                    $rows.removeClass("selected");
+                    $rows.eq(index + 1).addClass("selected");
+                }
+            } else if (e.key === "ArrowUp") {
+                e.preventDefault();
+                if (index > 0) {
+                    $rows.removeClass("selected");
+                    $rows.eq(index - 1).addClass("selected");
+                }
+            } else if (e.key === "Enter") {
+                e.preventDefault();
+                // Acción al presionar Enter
+                var rowData = tablaProv.row($selected).data();
+                //console.log("Seleccionado:", rowData);
+                // Puedes hacer lo que quieras con el objeto `rowData`
+                //alert("Seleccionaste: " + rowData.razonsocial);
+                document.getElementById("ruc").value = rowData.ruc;
+                document.getElementById("proveedor").value = rowData.razonsocial;
+                document.getElementById("idproveedor").value = rowData.idproveedor;
+                var modalElement = document.getElementById('buscarProveedor');
+                var modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+                modal.hide();
+                document.getElementById("condicion").focus();
+            }
+        });
+
+        // Permitir seleccionar fila con clic (opcional)
+        $("#tabla_proveedores tbody").on("click", "tr", function () {
+            $("#tabla_proveedores tbody tr").removeClass("selected");
+            $(this).addClass("selected");
+        });
+       
+    </script>
+</body>
+</html>

@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="es">
+     <head>
+          <meta charset="utf-8" />
+          <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+          <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+          <title>Nombre del Sistema</title>
+          <link rel="icon" type="image/png" href="img/working.png">
+          
+          <!-- ESTILOS DEL MENU -->
+          <link href="menu/styles.css" rel="stylesheet" />
+        
+          <!-- BOOTSTRAP ICONS -->
+          <link rel="stylesheet" href="bt-icons/bootstrap-icons.min.css">
+
+          <!-- DATATABLES -->
+          <link rel="stylesheet" href="dt/datatables.min.css">
+          <link rel="stylesheet" href="dt/jquery.dataTables.min.css">
+          <link rel="stylesheet" href="dt/buttons.dataTables.min.css">
+
+          <!-- ALERTIFYJS -->
+          <link rel="stylesheet" href="alert/alertify.min.css">
+          <link rel="stylesheet" href="alert/themes/default.min.css">
+          <script src="alert/alertify.min.js"></script>
+          
+     </head>
+     <body class="sb-nav-fixed">
+          <!-- ======================================================== -->
+          <!-- 1. CONTENEDOR DINÁMICO PARA LA BARRA SUPERIOR (NAVBAR)   -->
+          <!-- Este div vacío será llenado por JavaScript usando fetch()-->
+          <!-- con el contenido del archivo 'navbar.html'.              -->
+          <!-- ======================================================== -->
+          <div id="contenedor-navbar"></div>
+          <div id="layoutSidenav">
+               <!-- ======================================================== -->
+               <!-- 2. CONTENEDOR DINÁMICO PARA EL MENÚ LATERAL (SIDEBAR)    -->
+               <!-- Este div vacío será llenado por JavaScript usando fetch()-->
+               <!-- con el contenido del archivo 'sidebar.html'.             -->
+               <!-- ======================================================== -->
+               <div id="contenedor-sidebar"></div>
+               
+               <div id="layoutSidenav_content">
+                         <!-- AQUÍ VA TODO LO QUE SE VA A VISUALIZAR EN LA PÁGINA -->
+                         <!-- CUERPO DEL DASHBOARD -->
+                    <main>
+                         <div class="container-fluid px-4">
+                              <h1 class="mt-2">Usuarios</h1>
+                              <div class="row">
+                                   <table id="tabla_usuarios" class="display compact" style="width:100%">
+                                        <thead>
+                                             <tr>
+                                                  <th>Id Usuario</th>
+                                                  <th>N° Cédula</th>
+                                                  <th>Nombre</th>
+                                                  <th>Celular</th>
+                                                  <th>Usuario</th>
+                                                  <th>Contraseña</th>
+                                                  <th>Acciones</th>
+                                             </tr>
+                                        </thead>
+
+                                   </table>
+
+                              </div>
+                         </div>
+                    </main>
+                    <footer class="py-4 bg-light mt-auto">
+                         <div class="container-fluid px-4">
+                         <div class="d-flex align-items-center justify-content-between small">
+                              <div class="text-muted">Copyright &copy; Your Website 2026</div>
+                              <div>
+                                   <a href="#">Privacy Policy</a>
+                                   &middot;
+                                   <a href="#">Terms &amp; Conditions</a>
+                              </div>
+                         </div>
+                         </div>
+                    </footer>
+               </div>
+          </div>
+        
+     <!-- Modal Nuevo Usuario -->
+     <div class="modal fade" id="modalNuevoUsuario" tabindex="-1" aria-labelledby="modalUsuarioLabel" aria-hidden="true" data-bs-backdrop="static">
+          <div class="modal-dialog">
+               <form id="formNuevoUsuario" class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                         <h5 class="modal-title" id="modalUsuarioLabel"><i class="bi bi-person-plus-fill"></i> Agregar Nuevo Usuario</h5>
+                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                         <div class="mb-2">
+                              <label class="form-label">N° Cédula</label>
+                              <input type="number" id="cedula" class="form-control" required min="1000000" max="9999999">
+                         </div>
+                         <div class="mb-2">
+                              <label class="form-label">Nombre completo</label>
+                              <input type="text" id="nombre" class="form-control text-uppercase" required minlength="6" maxlength="50">
+                         </div>
+                         <div class="mb-2">
+                              <label class="form-label">Celular</label>
+                              <input type="text" id="celular" class="form-control" required minlength="6" maxlength="12">
+                         </div>
+                         <div class="mb-2">
+                              <label class="form-label">Usuario</label>
+                              <input type="text" id="txtusuario" class="form-control" required minlength="5" maxlength="30">
+                         </div>
+                         <div class="mb-2">
+                              <label class="form-label">Contraseña</label>
+                              <input type="text" id="contrasena" class="form-control" required minlength="5" maxlength="30">
+                         </div>
+                    </div>
+                    <div class="modal-footer">
+                         <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                         <button type="submit" class="btn btn-primary"><i class="bi bi-floppy"></i> Guardar Usuario</button>
+                    </div>
+               </form>
+          </div>
+     </div>
+
+     <!-- Modal Editar Usuario -->
+     <div class="modal fade" id="modalEditarUsuario" tabindex="-1" aria-labelledby="modalEditarUsuarioLabel" aria-hidden="true" data-bs-backdrop="static">
+          <div class="modal-dialog">
+               <form id="formEditarUsuario" class="modal-content">
+                    <div class="modal-header bg-warning text-dark">
+                         <h5 class="modal-title" id="modalEditarUsuarioLabel"><i class="bi bi-pencil-square"></i> Editar Usuario</h5>
+                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                         <input type="hidden" id="edit_idusuario">
+                         <div class="mb-2">
+                              <label class="form-label">N° Cédula</label>
+                              <input type="number" id="edit_cedula" class="form-control" required min="1000000" max="9999999">
+                         </div>
+                         <div class="mb-2">
+                              <label class="form-label">Nombre completo</label>
+                              <input type="text" id="edit_nombre" class="form-control text-uppercase" required minlength="6" maxlength="50">
+                         </div>
+                         <div class="mb-2">
+                              <label class="form-label">Celular</label>
+                              <input type="text" id="edit_celular" class="form-control" required minlength="6" maxlength="12">
+                         </div>
+                         <div class="mb-2">
+                              <label class="form-label">Usuario</label>
+                              <input type="text" id="edit_usuario" class="form-control" required minlength="5" maxlength="30">
+                         </div>
+                         <div class="mb-2">
+                              <label class="form-label">Contraseña</label>
+                              <input type="text" id="edit_contrasena" class="form-control" required minlength="5" maxlength="30">
+                         </div>
+                    </div>
+                    <div class="modal-footer">
+                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                         <button type="submit" class="btn btn-warning"><i class="bi bi-floppy"></i> Guardar Cambios</button>
+                    </div>
+               </form>
+          </div>
+     </div>
+     <!-- Modal Eliminar Usuario -->
+     <div class="modal fade" id="modalEliminarUsuario" tabindex="-1" aria-labelledby="modalEliminarUsuarioLabel" aria-hidden="true" data-bs-backdrop="static">
+          <div class="modal-dialog">
+               <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                         <h5 class="modal-title" id="modalEliminarUsuarioLabel"><i class="bi bi-exclamation-triangle-fill"></i> Eliminar Usuario</h5>
+                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                         <p class="text-center fw-bold">¿Deseas proceder con la eliminación?</p>
+                         <input type="hidden" id="del_idusuario">
+                         <ul class="list-group mb-3">
+                              <li class="list-group-item"><strong>Cédula:</strong> <span id="del_cedula"></span></li>
+                              <li class="list-group-item"><strong>Nombre:</strong> <span id="del_nombre"></span></li>
+                              <li class="list-group-item"><strong>Celular:</strong> <span id="del_celular"></span></li>
+                              <li class="list-group-item"><strong>Usuario:</strong> <span id="del_usuario"></span></li>
+                         </ul>
+                    </div>
+                    <div class="modal-footer">
+                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                         <button type="button" class="btn btn-danger" id="btnConfirmarEliminar"><i class="bi bi-trash"></i> Eliminar</button>
+                    </div>
+               </div>
+          </div>
+     </div>
+   
+
+
+          <script src="js/funcionesSistema.js"></script>
+          <!-- MENU -->
+          <script src="menu/bootstrap.bundle.min.js"></script>
+          <script src="menu/scripts.js"></script>
+          <!-- DATATABLES -->
+          <script src="dt/jquery-3.7.1.js"></script>
+          <script src="dt/datatables.min.js"></script>
+          <script src="dt/jquery.dataTables.min.js"></script>
+          <!-- DATATABLES Buttons extension -->
+          <script src="dt/dataTables.buttons.min.js"></script>
+          <script src="dt/buttons.print.min.js"></script>
+          <script src="dt/buttons.html5.min.js"></script>
+          <!-- DATATABLES JSZip y pdfmake para exportar -->
+          <script src="dt/jszip.min.js"></script>
+          <script src="dt/pdfmake.min.js"></script>
+          <script src="dt/vfs_fonts.js"></script>
+          <!-- DATATABLES Idioma Español -->
+          <script src="dt/es-ES.js"></script>
+
+          <script>
+               //Al cargarse la página---------------------------------------------------------------------------
+               //Control de seguridad en la apertura de la página------------------------------------------------
+               var nom = localStorage.getItem("nomUsuario");
+               if (nom == "" || nom == null){
+                    window.location.href = "error.html"; // Redirige al login
+               }
+               //Fin del Control de seguridad en la apertura de la página----------------------------------------
+               
+               //------------------------------------------------------------------------------------------------
+               // 1. SIMULACIÓN DE BASE DE DATOS CON LOCALSTORAGE
+               // Recuperar el array de objetos 'usuarios' desde localStorage. 
+               // Si no existe (es null), usamos un array vacío [] gracias al operador lógico ||
+               var usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+
+               let tabla;
+               // 2. INSTANCIAS DE COMPONENTES BOOTSTRAP
+               // Inicializamos los modales de Bootstrap en variables para poder abrirlos (show) y cerrarlos (hide) desde JavaScript
+               const modalNUsuario = new bootstrap.Modal(document.getElementById('modalNuevoUsuario'));
+
+               document.addEventListener('DOMContentLoaded', function () {
+                    // Llamada a la función que inyecta el menú (ubicada en js/funcionesSistema.js)
+                    // Esto evita tener que copiar y pegar todo el HTML del menú en cada página.
+                    cargarComponentes();
+                    cargarTablaUsuarios();
+
+                    //Evento para Nuevo Usuario----------------------------------------------------------
+                    // 3. CAPTURAR EL ENVÍO DEL FORMULARIO (SUBMIT)
+                    document.getElementById('formNuevoUsuario').addEventListener('submit', function (e) {
+                         // Usamos preventDefault() para evitar que la página se recargue (comportamiento por defecto de los formularios)
+                         e.preventDefault();
+
+                         const nuevoUsuario = {
+                              idusuario: obtenerSiguienteId(usuarios),
+                              cedula: document.getElementById('cedula').value.trim(),
+                              nombre: document.getElementById('nombre').value.trim().toUpperCase(),
+                              celular: document.getElementById('celular').value.trim(),
+                              usuario: document.getElementById('txtusuario').value.trim(),
+                              contrasena: document.getElementById('contrasena').value.trim()
+                         };
+
+                         if (Object.values(nuevoUsuario).some(val => val === '')) {
+                              alert('Todos los campos son obligatorios');
+                              return;
+                         }
+
+                         usuarios.push(nuevoUsuario);
+                         guardarUsuarios(usuarios);
+                         this.reset();
+                         tabla.row.add(nuevoUsuario).draw();
+                         modalNUsuario.hide();
+                         alertify.success("Registro guardado");
+                    });
+
+                 
+                    const modalEUsuario = new bootstrap.Modal(document.getElementById('modalEditarUsuario'));
+                    // Evento para botón editar--------------------------------------------------------------
+                    // 4. DELEGACIÓN DE EVENTOS (EVENT DELEGATION)
+                    // Como los botones de "Editar" y "Eliminar" son creados dinámicamente por el DataTable, no podemos asignarles 
+                    // un EventListener directo al cargar la página. Por eso, escuchamos los clics en TODO el 'document' y 
+                    // verificamos si el elemento clickeado (e.target) corresponde a nuestro botón.
+                    document.addEventListener('click', function (e) {
+                         if (e.target.closest('.btn-editar')) {
+                              const id = parseInt(e.target.closest('.btn-editar').dataset.id);
+                              const usuario = usuarios.find(u => u.idusuario === id);
+                              if (usuario) {
+                                   document.getElementById('edit_idusuario').value = usuario.idusuario;
+                                   document.getElementById('edit_cedula').value = usuario.cedula;
+                                   document.getElementById('edit_nombre').value = usuario.nombre;
+                                   document.getElementById('edit_celular').value = usuario.celular;
+                                   document.getElementById('edit_usuario').value = usuario.usuario;
+                                   document.getElementById('edit_contrasena').value = usuario.contrasena;
+                                   modalEUsuario.show();
+                              }
+                         }
+                    });
+
+                    // Guardar cambios al editar-----------------------------------------------------------
+                    document.getElementById('formEditarUsuario').addEventListener('submit', function (e) {
+                         e.preventDefault();
+                         const id = parseInt(document.getElementById('edit_idusuario').value);
+                         const index = usuarios.findIndex(u => u.idusuario === id);
+                         if (index !== -1) {
+                              usuarios[index] = {
+                                   idusuario: id,
+                                   cedula: document.getElementById('edit_cedula').value.trim(),
+                                   nombre: document.getElementById('edit_nombre').value.trim().toUpperCase(),
+                                   celular: document.getElementById('edit_celular').value.trim(),
+                                   usuario: document.getElementById('edit_usuario').value.trim(),
+                                   contrasena: document.getElementById('edit_contrasena').value.trim()
+                              };
+                              guardarUsuarios(usuarios);
+                              tabla.clear().rows.add(usuarios).draw();
+                              modalEUsuario.hide();
+                              alertify.success("Usuario actualizado");
+                         }
+                    });
+
+                    const modalDelUsuario = new bootstrap.Modal(document.getElementById('modalEliminarUsuario'));
+
+                    // Evento para botón eliminar (Abre el modal)
+                    document.addEventListener('click', function (e) {
+                         if (e.target.closest('.btn-eliminar')) {
+                              const id = parseInt(e.target.closest('.btn-eliminar').dataset.id);
+                              const usuario = usuarios.find(u => u.idusuario === id);
+                              if (usuario) {
+                                   document.getElementById('del_idusuario').value = usuario.idusuario;
+                                   document.getElementById('del_cedula').textContent = usuario.cedula;
+                                   document.getElementById('del_nombre').textContent = usuario.nombre;
+                                   document.getElementById('del_celular').textContent = usuario.celular;
+                                   document.getElementById('del_usuario').textContent = usuario.usuario;
+                                   modalDelUsuario.show();
+                              }
+                         }
+                    });
+
+                    // Evento para el botón eliminar dentro del modal (Ejecuta Alertify)
+                    document.getElementById('btnConfirmarEliminar').addEventListener('click', function() {
+                         const id = parseInt(document.getElementById('del_idusuario').value);
+                         alertify.confirm("Eliminar usuario", "¿Realmente deseas eliminar de forma permanente a este usuario?",
+                              function(){
+                                   usuarios = usuarios.filter(u => u.idusuario !== id);
+                                   guardarUsuarios(usuarios);
+                                   tabla.clear().rows.add(usuarios).draw();
+                                   modalDelUsuario.hide();
+                                   alertify.success("Usuario eliminado correctamente");
+                              },
+                              function(){
+                                   modalDelUsuario.hide();
+                                   alertify.error("Eliminación cancelada");
+                              }
+                         ).set('labels', {ok:'Sí, eliminar', cancel:'No, mantener'});
+                    });
+               });
+               //------------------------------------------------------------------------------
+               function cargarTablaUsuarios(){
+                    // Inicializar el DataTable
+                    tabla = new DataTable("#tabla_usuarios", {
+                         data: usuarios,
+                         columns: [
+                              { data: 'idusuario', title: 'Id Usuario' },
+                              { data: 'cedula', title: 'N° Cédula' },
+                              { data: 'nombre', title: 'Nombre' },
+                              { data: 'celular', title: 'Celular' },
+                              { data: 'usuario', title: 'Usuario' },
+                              { data: 'contrasena', title: 'Contraseña' },
+                              {
+                                   data: null,
+                                   render: function (data, type, row) {
+                                   return `
+                                        <button class="btn btn-sm btn-warning me-1 btn-editar" data-id="${row.idusuario}"><i class="bi bi-pencil-square"></i></button>
+                                        <button class="btn btn-sm btn-danger btn-eliminar" data-id="${row.idusuario}"><i class="bi bi-trash"></i></button>
+                                   `;
+                                   }
+                              }
+                         ],
+                         dom: 'Bfrtip',
+                         buttons: [
+                              {
+                                   extend: 'print',
+                                   text: '<i class="bi bi-printer"></i> Imprimir'
+                              },
+                              {
+                                   extend: 'excelHtml5',
+                                   text: '<i class="bi bi-filetype-xlsx"></i> Exportar a Excel'
+                              },
+                              {
+                                   extend: 'pdfHtml5',
+                                   text: '<i class="bi bi-filetype-pdf"></i> Exportar a PDF',
+                                   exportOptions: {
+                                        columns: [0, 1, 2, 3, 4, 5] // Excluye columna de acciones (índice 6)
+                                   },
+                                   customize: function (doc) {
+                                        // 1. Obtener fecha y hora en formato dd/MM/aaaa HH:mm:ss
+                                        const now = new Date();
+                                        const fecha = now.toLocaleDateString('es-PY', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                                        const hora = now.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+                                        const fechaHora = fecha + ' ' + hora;
+
+                                        // 2. Configurar el pie de página (footer) del documento PDF
+                                        doc.footer = function(currentPage, pageCount) {
+                                             return {
+                                                  columns: [
+                                                       {
+                                                            alignment: 'left',
+                                                            text: fechaHora,
+                                                            margin: [20, 10], // Margen: [Izquierda/Derecha, Arriba/Abajo]
+                                                            fontSize: 8
+                                                       },
+                                                       {
+                                                            alignment: 'right',
+                                                            text: 'Pág. ' + currentPage.toString() + '/' + pageCount.toString(),
+                                                            margin: [20, 10],
+                                                            fontSize: 8
+                                                       }
+                                                  ]
+                                             };
+                                        };
+
+                                        // Verifica si `content` tiene una tabla definida
+                                        for (let i = 0; i < doc.content.length; i++) {
+                                             if (doc.content[i].table !== undefined) {
+                                                  const tableNode = doc.content[i];
+
+                                                  // Si hay body, ajustamos los anchos
+                                                  if (tableNode.table.body && tableNode.table.body.length > 0) {
+                                                       // 'auto' se ajusta al tamaño del contenido (como la cabecera)
+                                                       // '*' toma todo el espacio sobrante (ideal para el Nombre)
+                                                       tableNode.table.widths = ['auto', 'auto', '*', 'auto', 'auto', 'auto'];
+                                                  }
+
+                                                  break; // salimos del loop luego de encontrar la tabla
+                                             }
+                                        }
+                                   }
+                              },
+                              {
+                                   text: '<i class="bi bi-file-earmark-plus"></i> Nuevo usuario',
+                                   className: 'btn btn-sm btn-primary',
+                                   action: function (e, dt, node, config) {
+                                        // Abrir un modal para crear un nuevo usuario
+                                        $('#modalNuevoUsuario').modal('show');
+                                   }
+                              }
+                         ],
+                         responsive: true,
+                         language: spanish,
+                         initComplete: function () {
+                              // Aplicar clases de Bootstrap a los botones
+                              $('.dt-button:contains("Nuevo usuario")')
+                                   .removeClass('dt-button') // elimina estilo por defecto
+                                   .addClass('btn btn-sm btn-primary'); // agrega estilos Bootstrap
+
+                              $('.dt-button:contains("Imprimir")')
+                                   .removeClass('dt-button')
+                                   .addClass('btn btn-sm btn-info');
+
+                              $('.dt-button:contains("Exportar a Excel")')
+                                   .removeClass('dt-button')
+                                   .addClass('btn btn-sm btn-success');
+
+                              $('.dt-button:contains("Exportar a PDF")')
+                                   .removeClass('dt-button')
+                                   .addClass('btn btn-sm btn-danger');
+                         }
+                    });
+                    //tabla.column(5).visible(false); //Ocultar la columna contraseña
+               }
+               //------------------------------------------------------------------------------
+               function guardarUsuarios(data) {
+                    localStorage.setItem('usuarios', JSON.stringify(data));
+               }
+               //------------------------------------------------------------------------------
+               function obtenerSiguienteId(usuarios) {
+                    if (usuarios.length === 0){
+                         return 1;
+                    }else{
+                         const maxId = Math.max(...usuarios.map(u => u.idusuario || 0));
+                         return maxId + 1;
+                    }
+               }
+               //------------------------------------------------------------------------------
+          </script>
+    </body>
+</html>

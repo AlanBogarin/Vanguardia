@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio de sesión</title>
+    <link rel="icon" type="image/png" href="img/user16.png">
+    <!-- BOOTSTRAP -->
+    <link rel="stylesheet" href="bt/bootstrap.min.css">
+    <!-- BOOTSTRAP ICONS -->
+    <link rel="stylesheet" href="bt-icons/bootstrap-icons.min.css">
+    <!-- DATATABLES -->
+    <link rel="stylesheet" href="dt/datatables.min.css">
+    <!-- ALERTIFYJS -->
+    <link rel="stylesheet" href="alert/alertify.min.css">
+    <link rel="stylesheet" href="alert/themes/default.min.css">
+</head>
+<body class="bg-body-secondary">
+    <div class="card col-md-6 border-primary  mx-auto mt-5">
+        <div class="card-header bg-primary text-white text-center">
+            <h5 class="card-title">Inicio de sesión</h5>
+        </div>
+
+        <div class="card-body">
+            <img src="img/user128.png" alt="login" class="mx-auto d-block">
+
+            <form class="row g-3 mt-2" id="login" novalidate>
+                <div class="input-group col-md-6">
+                    <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                    <input type="text" class="form-control" id="usuario" placeholder="Usuario" value="" required>
+                    <div class="invalid-feedback">
+                        Ingrese el usuario!
+                    </div>
+                </div>
+                <div class="input-group col-md-6">
+                    <span class="input-group-text"><i class="bi bi-key-fill"></i></i></span>
+                    <input type="password" class="form-control" id="contrasena" placeholder="Contraseña" value=""
+                        required>
+                    <div class="invalid-feedback">
+                        Ingrese la contraseña!
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="col-6 d-grid mx-auto">
+                        <button class="btn btn-success" type="submit"><i class="bi bi-unlock-fill"></i>
+                            Ingresar</button>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="col-6 d-grid mx-auto">
+                        <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#autor"><i
+                                class="bi bi-exclamation-circle"></i> Acerca del autor</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="card-footer">
+            <label id="mensaje"></label>
+        </div>
+    </div>
+
+    <div class="text-center mt-5">
+        <button class="btn btn-success btn-sm" title="Ver la base de datos" data-bs-toggle="modal"
+            data-bs-target="#verBD" onclick="verBD()"><i class="bi bi-eye"></i></button>
+        <button class="btn btn-primary btn-sm" title="Cargar la base de datos" onclick="cargarBD()"><i
+                class="bi bi-database-add"></i></button>
+        <button class="btn btn-danger btn-sm" title="Vaciar la base de datos" onclick="vaciarBD()"><i
+                class="bi bi-trash"></i></button>
+    </div>
+
+    <!-- ACERCA DEL AUTOR -->
+    <div class="modal fade" id="autor" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-info">
+                    <h1 class="modal-title fs-5" id="exampleModalCenteredScrollableTitle">Acerca del autor</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="h6">Elaborado por:</p>
+                    <p>Prof. Mg. Juan Benito Torres Báez</p>
+
+                    <p class="h6">Framework:</p>
+                    <p>Bootstrap 5.3.8</p>
+
+                    <p class="h6">Descripción del ejemplo:</p>
+                    <p>El archivo bd.js contiene los registros de prueba que serán almacenados en el localStorage, en
+                        forma de texto plano. Estos datos no se borran automáticamente por el navegador al cerrar la
+                        página. Solo las páginas del mismo origen pueden acceder o modificar los datos almacenados hasta
+                        que se los borre.</p>
+                    <p>Al cargar la página de login por primera vez la BD se encuentra vacía. Al final de la página
+                        tiene tres botones: 1) Para visualizar el contenido de la BD. 2) Para cargar la BD en el
+                        localStorage y 3) Para vaciar (borrar) la BD del localStorage</p>
+                    <p>Cuando se hace clic en el botón Ingresar, previa validación de que se hayan ingresado el usuario
+                        y la contraseña, se hace una búsqueda en el array en donde se almacenan los usuarios disponibles
+                        (el array se encuentra en el localStorage). Si existe ingresa al sistema y sino muestra un
+                        mensaje de error y permite ingresar los datos correctos, el mensaje de error se visualiza por 2
+                        segundos, luego se oculta.</p>
+                    <p>Si se ingresan los datos correctos, se guarda en una variable el nombre completo del usuario,
+                        luego se carga otra página (la pantalla principal del sistema), y en esta página se tiene que
+                        mostrar el nombre del usuario.</p>
+                    <p>Si se intenta acceder a una página del sistema sin haber realizado login, se mostrará un error y
+                        luego se va a redirigir al login, el ejemplo cuenta con la protección para el acceso a las
+                        páginas.</p>
+
+                    <p class="h6">Tipo de interfaz:</p>
+                    <p>La presente información se visualiza en una interfaz de tipo modal de Bootstrap.</p>
+
+                    <p class="h6">Actualizado al:</p>
+                    <p>Abril-2026</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i>
+                        Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VER LA BD -->
+    <div class="modal fade" id="verBD" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalCenteredScrollableTitle">Ver la Base de Datos</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="h6">Los datos que se visualizan se encuentran en el localStorage</p>
+                    <!-- USUARIOS -->
+                    <p class="fw-bold text-primary">USUARIOS</p>
+                    <table id="tabla_usuarios" class="display compact" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Id Usuario</th>
+                                <th>N° Cédula</th>
+                                <th>Nombre</th>
+                                <th>Celular</th>
+                                <th>Usuario</th>
+                                <th>Contraseña</th>
+                            </tr>
+                        </thead>
+                    </table>
+
+                    <!-- PROVEEDORES -->
+                    <p class="fw-bold text-primary">PROVEEDORES</p>
+                    <table id="tabla_proveedores" class="display compact" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Id Proveedor</th>
+                                <th>RUC</th>
+                                <th>Razón Social</th>
+                                <th>Dirección</th>
+                                <th>Teléfono</th>
+                                <th>Ciudad</th>
+                            </tr>
+                        </thead>
+                    </table>
+
+                    <!-- MARCAS -->
+                    <p class="fw-bold text-primary">MARCAS</p>
+                    <table id="tabla_marcas" class="display compact" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Id Marca</th>
+                                <th>Marca</th>
+                            </tr>
+                        </thead>
+                    </table>
+
+                    <!-- CLASIFICACIONES -->
+                    <p class="fw-bold text-primary">CLASIFICACIONES</p>
+                    <table id="tabla_clasificaciones" class="display compact" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Id Clasificación</th>
+                                <th>Clasificación</th>
+                            </tr>
+                        </thead>
+                    </table>
+
+                    <!-- ARTICULOS -->
+                    <p class="fw-bold text-primary">ARTÍCULOS</p>
+                    <table id="tabla_articulos" class="display compact" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Id Artículo</th>
+                                <th>Código de Barras</th>
+                                <th>Descripción</th>
+                                <th>Marca</th>
+                                <th>Clasificación</th>
+                                <th>I.V.A.</th>
+                                <th>Stock Actual</th>
+                                <th>Precio Venta</th>
+                            </tr>
+                        </thead>
+                    </table>
+
+                    <!-- COMPRAS -->
+                    <p class="fw-bold text-primary">COMPRAS</p>
+                    <table id="tabla_comprascabecera" class="display compact" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Id Compra</th>
+                                <th>Proveedor</th>
+                                <th>N° Factura</th>
+                                <th>Fec. Compra</th>
+                                <th>Condición</th>
+                                <th>Sub. Exenta</th>
+                                <th>Sub. I.V.A. 5%</th>
+                                <th>Sub. I.V.A. 10%</th>
+                                <th>Total</th>
+                                <th>Liq. I.V.A. 5%</th>
+                                <th>Liq. I.V.A. 10%</th>
+                                <th>Tot. I.V.A.</th>
+                                <th>Saldo</th>
+                                <th>Anulado</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/bd.js"></script>
+    <!-- BOOTSTRAP -->
+    <script src="bt/bootstrap.min.js"></script>
+    <!-- ALERTIFYJS -->
+    <script src="alert/alertify.min.js"></script>
+    <!-- DATATABLES -->
+    <script src="dt/jquery-3.7.1.js"></script>
+    <script src="dt/datatables.min.js"></script>
+    <script src="dt/es-ES.js"></script>
+
+    <script>
+        // VERIFICAR USUARIO Y CONTRASEÑA
+        document.getElementById("login").addEventListener("submit", function (e) {
+            e.preventDefault(); // Evita que la página se recargue
+            e.stopPropagation();
+
+            const form = this;
+            const inputUsuario = document.getElementById("usuario");
+            const inputContrasena = document.getElementById("contrasena");
+            const mensaje = document.getElementById("mensaje");
+
+            // Agregar la clase de Bootstrap para mostrar los textos rojos de invalid-feedback
+            form.classList.add('was-validated');
+
+            // Comprobar si el formulario NO es válido (es decir, si hay campos vacíos)
+            if (!form.checkValidity()) {
+                // Mostrar mensaje en el card-footer
+                mensaje.textContent = "Por favor, complete los campos solicitados.";
+                mensaje.style.color = "red";
+
+                // LÓGICA DE FOCO EXACTA:
+                if (inputUsuario.value.trim() === "") {
+                    // Si usuario está vacío, recibe el foco
+                    inputUsuario.focus();
+                } else if (inputContrasena.value.trim() === "") {
+                    // Si usuario ya tiene texto, pero contraseña está vacía, recibe el foco
+                    inputContrasena.focus();
+                }
+
+                // Ocultar el mensaje después de 2 segundos
+                setTimeout(function () {
+                    mensaje.textContent = "";
+                }, 2000);
+
+                return; // Detenemos la ejecución aquí, no validamos localStorage aún
+            }
+
+            // SI LLEGAMOS AQUÍ, AMBOS CAMPOS TIENEN TEXTO. Procedemos a validar credenciales.
+            const usuarioIngresado = inputUsuario.value.trim();
+            const contrasenaIngresada = inputContrasena.value.trim();
+
+            // Recuperar usuarios del localStorage
+            const datosGuardados = localStorage.getItem("usuarios");
+            const usuarios = JSON.parse(datosGuardados) || [];
+
+            // Buscar si existe el usuario
+            const usuarioEncontrado = usuarios.find(
+                (u) => u.usuario === usuarioIngresado && u.contrasena === contrasenaIngresada
+            );
+
+            if (!usuarioEncontrado) {
+                // Si el usuario o contraseña son incorrectos
+                mensaje.textContent = "Usuario o contraseña incorrectos.";
+                mensaje.style.color = "red";
+                inputUsuario.focus(); // Foco al usuario para que vuelva a intentar
+
+                setTimeout(function () {
+                    mensaje.textContent = "";
+                }, 2000);
+            } else {
+                // Si todo está correcto, ingresa al sistema
+                localStorage.setItem("nomUsuario", usuarioEncontrado.nombre);
+                window.location.href = "menu.html";
+            }
+        });
+        //-------------------------------------------------------------------------------------
+        function cargarBD() {
+            //Carga los datos en el localStorage
+            datos();
+            alertify.success("Base de datos original cargada");
+        }
+        //-------------------------------------------------------------------------------------
+        function vaciarBD() {
+            localStorage.clear();
+            alertify.error("Base de datos eliminada");
+        }
+        //-------------------------------------------------------------------------------------
+        function verBD() {
+            // Recuperar el array de objetos desde localStorage. USUARIOS
+            var usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+
+            // Si ya existe una instancia de DataTable, destruirla
+            if ($.fn.DataTable.isDataTable("#tabla_usuarios")) {
+                $('#tabla_usuarios').DataTable().clear().destroy();
+            }
+
+            // Inicializar el DataTable
+            tabla = new DataTable("#tabla_usuarios", {
+                data: usuarios,
+                columns: [
+                    { data: 'idusuario', title: 'Id Usuario' },
+                    { data: 'cedula', title: 'N° Cédula' },
+                    { data: 'nombre', title: 'Nombre' },
+                    { data: 'celular', title: 'Celular' },
+                    { data: 'usuario', title: 'Usuario' },
+                    { data: 'contrasena', title: 'Contraseña' }
+                ],
+                language: spanish,
+                searching: false,    //Oculta el buscador
+                lengthChange: false, //Oculta el selector de cantidad de registros por página
+                pageLength: 5        //Número de registros por página
+            });
+
+            // Recuperar el array de objetos desde localStorage. PROVEEDORES
+            var proveedores = JSON.parse(localStorage.getItem("proveedores")) || [];
+
+            // Si ya existe una instancia de DataTable, destruirla
+            if ($.fn.DataTable.isDataTable("#tabla_proveedores")) {
+                $('#tabla_proveedores').DataTable().clear().destroy();
+            }
+
+            // Inicializar el DataTable
+            tabla = new DataTable("#tabla_proveedores", {
+                data: proveedores,
+                columns: [
+                    { data: 'idproveedor', title: 'Id Proveedor' },
+                    { data: 'ruc', title: 'RUC' },
+                    { data: 'razonsocial', title: 'Razón Social' },
+                    { data: 'direccion', title: 'Dirección' },
+                    { data: 'telefono', title: 'Teléfono' },
+                    { data: 'ciudad', title: 'Ciudad' }
+                ],
+                language: spanish,
+                searching: false,    //Oculta el buscador
+                lengthChange: false, //Oculta el selector de cantidad de registros por página
+                pageLength: 5        //Número de registros por página
+            });
+
+            // Recuperar el array de objetos desde localStorage. MARCAS
+            var marcas = JSON.parse(localStorage.getItem("marcas")) || [];
+
+            // Si ya existe una instancia de DataTable, destruirla
+            if ($.fn.DataTable.isDataTable("#tabla_marcas")) {
+                $('#tabla_marcas').DataTable().clear().destroy();
+            }
+
+            // Inicializar el DataTable
+            tabla = new DataTable("#tabla_marcas", {
+                data: marcas,
+                columns: [
+                    { data: 'idmarca', title: 'Id Marca' },
+                    { data: 'marca', title: 'Marca' }
+                ],
+                language: spanish,
+                searching: false,    //Oculta el buscador
+                lengthChange: false, //Oculta el selector de cantidad de registros por página
+                pageLength: 5        //Número de registros por página
+            });
+
+            // Recuperar el array de objetos desde localStorage. CLASIFICACIONES
+            var clasificaciones = JSON.parse(localStorage.getItem("clasificaciones")) || [];
+
+            // Si ya existe una instancia de DataTable, destruirla
+            if ($.fn.DataTable.isDataTable("#tabla_clasificaciones")) {
+                $('#tabla_clasificaciones').DataTable().clear().destroy();
+            }
+
+            // Inicializar el DataTable
+            tabla = new DataTable("#tabla_clasificaciones", {
+                data: clasificaciones,
+                columns: [
+                    { data: 'idclasificacion', title: 'Id Clasificacion' },
+                    { data: 'clasificacion', title: 'Clasificacion' }
+                ],
+                language: spanish,
+                searching: false,    //Oculta el buscador
+                lengthChange: false, //Oculta el selector de cantidad de registros por página
+                pageLength: 5        //Número de registros por página
+            });
+
+            // Recuperar el array de objetos desde localStorage. ARTICULOS. MARCAS. CLASIFICACIONES
+            var articulos = JSON.parse(localStorage.getItem("articulos")) || [];
+            var marcas = JSON.parse(localStorage.getItem("marcas")) || [];
+            var clasificaciones = JSON.parse(localStorage.getItem("clasificaciones")) || [];
+
+            // Si ya existe una instancia de DataTable, destruirla
+            if ($.fn.DataTable.isDataTable("#tabla_articulos")) {
+                $('#tabla_articulos').DataTable().clear().destroy();
+            }
+
+            // Crear diccionarios para acceso rápido por ID
+            var dicMarcas = {};
+            marcas.forEach(m => dicMarcas[m.idmarca] = m.marca);
+
+            var dicClasificaciones = {};
+            clasificaciones.forEach(c => dicClasificaciones[c.idclasificacion] = c.clasificacion);
+
+            // Reemplazar los idmarca e idclasificacion por los nombres en artículos
+            var articulosConNombres = articulos.map(a => {
+                return {
+                    ...a,
+                    marca: dicMarcas[a.idmarca] || "Desconocido",
+                    clasificacion: dicClasificaciones[a.idclasificacion] || "Desconocido"
+                };
+            });
+
+            // Inicializar el DataTable
+            tabla = new DataTable("#tabla_articulos", {
+                data: articulosConNombres,
+                columns: [
+                    { data: 'idarticulo', title: 'Id Artículo' },
+                    { data: 'codbarra', title: 'Código de Barras' },
+                    { data: 'descripcion', title: 'Descripción' },
+                    { data: 'marca', title: 'Marca' },
+                    { data: 'clasificacion', title: 'Clasificación' },
+                    {
+                        data: 'tiva',
+                        title: 'I.V.A.',
+                        render: function (data, type, row) {
+                            if (data === 0) return "EXENTA";
+                            if (data === 5) return "5%";
+                            if (data === 10) return "10%";
+                            return data; // en caso de valor inesperado
+                        }
+                    },
+                    {
+                        data: 'stockactual',
+                        title: 'Stock Actual',
+                        render: function (data, type, row) {
+                            let num = parseFloat(data).toFixed(2); // 2 decimales
+                            return num.replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                        }
+                    },
+                    {
+                        data: 'preventa',
+                        title: 'Precio Venta',
+                        render: function (data, type, row) {
+                            return parseInt(data).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                        }
+                    }
+                ],
+                language: spanish,
+                searching: false,
+                lengthChange: false,
+                pageLength: 5
+            });
+
+            // Recuperar el array de objetos desde localStorage. COMPRAS
+            var comprascabecera = JSON.parse(localStorage.getItem("comprascabecera")) || [];
+            var proveedores = JSON.parse(localStorage.getItem("proveedores")) || [];
+
+            // Si ya existe una instancia de DataTable, destruirla
+            if ($.fn.DataTable.isDataTable("#tabla_comprascabecera")) {
+                $('#tabla_comprascabecera').DataTable().clear().destroy();
+            }
+
+            // Crear diccionario para reemplazar idproveedor por razonsocial
+            var dicProveedores = {};
+            proveedores.forEach(p => dicProveedores[p.idproveedor] = p.razonsocial);
+
+            // Reemplazar idproveedor por razonsocial
+            var comprasConProveedor = comprascabecera.map(c => {
+                return {
+                    ...c,
+                    proveedor: dicProveedores[c.idproveedor] || "Desconocido"
+                };
+            });
+
+            // Inicializar el DataTable
+            tabla = new DataTable("#tabla_comprascabecera", {
+                data: comprasConProveedor,
+                scrollX: true,
+                columns: [
+                    { data: 'idcompra', title: 'ID Compra', width: '85px' },
+                    { data: 'proveedor', title: 'Proveedor', width: '250px' },
+                    { data: 'numfactura', title: 'N° Factura', width: '100px' },
+                    {
+                        data: 'feccompra',
+                        title: 'Fec. Compra',
+                        width: '90px',
+                        render: function (data, type, row) {
+                            if (!data) return "";
+                            const partes = data.split('-');
+                            return `${partes[2]}/${partes[1]}/${partes[0]}`;
+                        }
+                    },
+                    { data: 'condicion', title: 'Condición', width: '85px' },
+                    {
+                        data: 'stexenta',
+                        title: 'Sub. Exenta',
+                        width: '90px',
+                        className: 'text-end',
+                        render: function (data, type, row) {
+                            return parseInt(data).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                        }
+                    },
+                    {
+                        data: 'stiva5',
+                        title: 'Sub. I.V.A. 5%',
+                        width: '105px',
+                        className: 'text-end',
+                        render: function (data, type, row) {
+                            return parseInt(data).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                        }
+                    },
+                    {
+                        data: 'stiva10',
+                        title: 'Sub. I.V.A. 10%',
+                        width: '115px',
+                        className: 'text-end',
+                        render: function (data, type, row) {
+                            return parseInt(data).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                        }
+                    },
+                    {
+                        data: 'totcompra',
+                        title: 'Total',
+                        width: '100px',
+                        className: 'text-end',
+                        render: function (data, type, row) {
+                            return parseInt(data).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                        }
+                    },
+                    {
+                        data: 'liqiva5',
+                        title: 'Liq. I.V.A. 5%',
+                        width: '100px',
+                        className: 'text-end',
+                        render: function (data, type, row) {
+                            return parseInt(data).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                        }
+                    },
+                    {
+                        data: 'liqiva10',
+                        title: 'Liq. I.V.A. 10%',
+                        width: '110px',
+                        className: 'text-end',
+                        render: function (data, type, row) {
+                            return parseInt(data).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                        }
+                    },
+                    {
+                        data: 'totiva',
+                        title: 'Tot. I.V.A.',
+                        width: '100px',
+                        className: 'text-end',
+                        render: function (data, type, row) {
+                            return parseInt(data).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                        }
+                    },
+                    {
+                        data: 'saldo',
+                        title: 'Saldo',
+                        width: '100px',
+                        className: 'text-end',
+                        render: function (data, type, row) {
+                            return parseInt(data).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                        }
+                    },
+                    { data: 'anulado', title: 'Anulado', width: '80px', className: 'text-center' }
+                ],
+                language: spanish,
+                searching: false,
+                lengthChange: false,
+                pageLength: 5
+            });
+        }
+        //-------------------------------------------------------------------------------------
+    </script>
+</body>
+</html>
