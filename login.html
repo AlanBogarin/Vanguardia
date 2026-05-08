@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vanguardia - Iniciar Sesión</title>
+    <link rel="stylesheet" href="bt/bootstrap.min.css">
+    <link rel="stylesheet" href="bt-icons/bootstrap-icons.min.css">
+</head>
+<body>
+    <div class="card col-md-6 mx-auto mt-auto">
+        <div class="card-body">
+            <form>
+                <div class="col-md-12">
+                    <label class="form-label" for="usuario">Usuario</label>
+                    <input class="form-control" id="usuario" type="text">
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label" for="contra">Contraseña</label>
+                    <input class="form-control" id="contra" type="password">
+                </div>
+                <button class="btn btn-success" type="submit">Ingresar</button>
+            </form>
+        </div>
+    </div>
+
+    
+    <div class="text-center mt-5">
+        <button class="btn btn-success btn-sm" title="Ver la base de datos" data-bs-toggle="modal"
+                data-bs-target="#BD" onclick="verBD()"><i class="bi bi-eye"></i></button>
+        <button class="btn btn-primary btn-sm" title="Cargar la base de datos" onclick="cargarBD()"><i
+                class="bi bi-database-add"></i></button>
+        <button class="btn btn-danger btn-sm" title="Vaciar la base de datos" onclick="vaciarBD()"><i
+                class="bi bi-trash"></i></button>
+    </div>
+
+    
+    <!-- VER LA BD -->
+    <div class="modal fade" id="BD" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5">Ver la Base de Datos</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="h6">Los datos que se visualizan se encuentran en el localStorage</p>
+
+                    <!-- ROLES -->
+                    <p class="fw-bold text-primary">ROLES</p>
+                    <table id="tabla_roles" class="display compact" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Id Rol</th>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th>Fecha de creación</th>
+                                <th>Fecha de modificación</th>
+                            </tr>
+                        </thead>
+                    </table>
+
+                    <!-- USUARIOS -->
+                    <p class="fw-bold text-primary">USUARIOS</p>
+                    <table id="tabla_usuarios" class="display compact" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Id Usuario</th>
+                                <th>Nombre de Usuario</th>
+                                <th>Hash de contraseña</th>
+                                <th>Nombre</th>
+                                <th>Correo</th>
+                                <th>Id Rol</th>
+                                <th>Activo</th>
+                                <th>Fecha de creación</th>
+                                <th>Fecha de modificación</th>
+                            </tr>
+                        </thead>
+                    </table>
+
+                    <!-- CLIENTES -->
+                    <p class="fw-bold text-primary">CLIENTES</p>
+                    <table id="tabla_clientes" class="display compact" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Id Cliente</th>
+                                <th>Nombre</th>
+                                <th>RUC</th>
+                                <th>Teléfono</th>
+                                <th>Correo</th>
+                                <th>Dirección</th>
+                                <th>Activo</th>
+                                <th>Fecha de creación</th>
+                                <th>Fecha de modificación</th>
+                            </tr>
+                        </thead>
+                    </table>
+
+                    <!-- PROVEEDORES -->
+                    <p class="fw-bold text-primary">PROVEEDORES</p>
+                    <table id="tabla_proveedores" class="display compact" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Id Proveedor</th>
+                                <th>Nombre</th>
+                                <th>RUC</th>
+                                <th>Teléfono</th>
+                                <th>Correo</th>
+                                <th>Dirección</th>
+                                <th>Activo</th>
+                                <th>Fecha de creación</th>
+                                <th>Fecha de modificación</th>
+                            </tr>
+                        </thead>
+                    </table>
+
+                    <!-- CATEGORIAS -->
+                    <p class="fw-bold text-primary">CATEGORIAS</p>
+                    <table id="tabla_categorias" class="display compact" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Id Categoria</th>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th>Fecha de creación</th>
+                                <th>Fecha de modificación</th>
+                            </tr>
+                        </thead>
+                    </table>
+
+                    <!-- MARCAS -->
+                    <p class="fw-bold text-primary">MARCAS</p>
+                    <table id="tabla_marcas" class="display compact" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Id Marca</th>
+                                <th>Nombre</th>
+                                <th>Fecha de creación</th>
+                                <th>Fecha de modificación</th>
+                            </tr>
+                        </thead>
+                    </table>
+
+                    <!-- PRODUCTOS -->
+                    <p class="fw-bold text-primary">PRODUCTOS</p>
+                    <table id="tabla_productos" class="display compact" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Id Producto</th>
+                                <th>Código de Barra</th>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th>Precio de compra</th>
+                                <th>Precio de venta</th>
+                                <th>Stock</th>
+                                <th>Stock Mínimo</th>
+                                <th>Id Categoria</th>
+                                <th>Id Marca</th>
+                                <th>Activo</th>
+                                <th>Fecha de creación</th>
+                                <th>Fecha de modificación</th>
+                            </tr>
+                        </thead>
+                    </table>
+
+                    <!-- COMPRAS -->
+                    <p class="fw-bold text-primary">COMPRAS</p>
+                    <table id="tabla_compras" class="display compact" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Id Compra</th>
+                                <th>Id Proveedor</th>
+                                <th>Id Usuario</th>
+                                <th>Fecha de Compra</th>
+                                <th>Tipo de Pago</th>
+                                <th>Monto</th>
+                                <th>Observaciones</th>
+                                <th>Fecha de Creación</th>
+                                <th>Fecha de Modificación</th>
+                            </tr>
+                        </thead>
+                    </table>
+
+                    <!-- DETALLES DE COMPRA -->
+                    <p class="fw-bold text-primary">DETALLES DE COMPRA</p>
+                    <table id="tabla_detallescompra" class="display compact" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Id Detalle</th>
+                                <th>Id Compra</th>
+                                <th>Id Producto</th>
+                                <th>Cantidad</th>
+                                <th>Precio Unitario</th>
+                                <th>Subtotal</th>
+                                <th>Fecha de Creación</th>
+                            </tr>
+                        </thead>
+                    </table>
+                    <!-- Venta
+                    id Identificador unico de la venta
+                    client_id Identificador del cliente
+                    user_id Identificador del usuario que vendió
+                    date fecha de venta
+                    payment_type Tipo de pago
+                    amount Total de pago
+                    obs Observaciones de la venta
+                    created_at Fecha de creacion de la compra
+                    updated_at Fecha de modificacion de la compra -->
+
+                    <!-- VentaDetalle
+                    id Identificador unico del detalle de venta
+                    sale_id Identificador de la venta
+                    product_id Identificador del producto
+                    amount Cantidad del producto vendido
+                    unit_price Precio unitario
+                    subtotal Subtotal de compra: precio * cantidad
+                    created_at Fecha de creacion de la compra -->
+
+                    <!-- CuentaPorPagar
+                    id Identificador unico de la cuenta a pagar
+                    purchase_id Identificador de la compra
+                    provider_id Identificador del proveedor
+                    amount_total Cantidad total a pagar
+                    amount_paid Cantidad pagada
+                    amount_due Cantidad pendiente a pagar (amount_total - amount_paid)
+                    status Estado de la cuenta
+                    expiration_date Fecha de vencimiento del pago
+                    created_at Fecha de creacion de la compra
+                    updated_at Fecha de modificacion de la compra -->
+
+                    <!-- CuentaPorCobrar
+                    id Identificador unico de la cuenta a cobrar
+                    sale_id Identificador de la venta
+                    client_id Identificador del cliente
+                    amount_total Cantidad total a cobrar
+                    amount_paid Cantidad pagada
+                    amount_due Cantidad pendiente a cobrar (amount_total - amount_paid)
+                    status Estado de la cuenta
+                    expiration_date Fecha de vencimiento del cobro
+                    created_at Fecha de creacion de la compra
+                    updated_at Fecha de modificacion de la compra -->
+
+                    <!-- Pago
+                    id Identificador unico del pago
+                    account_payable_id Identificador de la cuenta por pagar
+                    amount Cantidad pagada
+                    date Fecha del pago
+                    payment_method Método de pago
+                    obs Observaciones del pago
+                    created_at Fecha de creacion del pago -->
+
+                    <!-- Cobro
+                    id Identificador unico del cobro
+                    account_receivable_id Identificador de la cuenta por cobrar
+                    amount Cantidad cobrada
+                    date Fecha del cobro
+                    payment_method Método de pago
+                    obs Observaciones del cobro
+                    created_at Fecha de creacion del cobro -->
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (false) {
+            window.location.href = "menu.html";
+        }
+    </script>
+    <script src="bt/bootstrap.min.js"></script>
+</body>
+</html>

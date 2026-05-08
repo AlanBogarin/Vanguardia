@@ -9,6 +9,14 @@ const KEY_PROVEEDORES = "proveedores";
 const KEY_CATEGORIAS = "categorias";
 const KEY_MARCAS = "marcas";
 const KEY_PRODUCTOS = "productos";
+const KEY_COMPRAS = "compras";
+const KEY_COMPRADETALLES = "compradetalles";
+const KEY_VENTAS = "ventas";
+const KEY_VENTADETALLES = "ventadetalles";
+const KEY_CUENTASPORPAGAR = "cuentasporpagar";
+const KEY_CUENTASPORCOBRAR = "cuentasporcobrar";
+const KEY_PAGOS = "pagos";
+const KEY_COBROS = "cobros";
 
 /**
  * Carga un elemento del Local Storage
@@ -100,7 +108,8 @@ function eliminarRol(id) {
 
 /**
  * @typedef {Object} Usuario
- * @property {string} username Nombre corto identificador
+ * @property {number} id Identificador único del usuario
+ * @property {string} username Nombre corto a mostrar
  * @property {string} password_hash Hash de la contraseña
  * @property {string} name Nombre de usuario
  * @property {string} email Correo electronico
@@ -111,13 +120,13 @@ function eliminarRol(id) {
  */
 
 /**
- * Recupera un usuario mediante el username
- * @param {string} username 
+ * Recupera un usuario mediante el ID
+ * @param {number} id 
  * @returns {Usuario?}
  */
-function cargarUsuario(username) {
+function cargarUsuario(id) {
     for (const usuario of cargarUsuarios()) {
-        if (usuario.username === username) return usuario;
+        if (usuario.id === id) return usuario;
     }
 }
 
@@ -135,8 +144,9 @@ function cargarUsuarios() {
  */
 function guardarUsuario(usuario) {
     const usuarios = cargarUsuarios();
-    const index = usuarios.findIndex(u => u.username === usuario.username);
+    const index = usuarios.findIndex(u => u.id === usuario.id);
     const data = {
+        id: usuario.id,
         username: usuario.username,
         password_hash: usuario.password_hash,
         name: usuario.name,
@@ -155,12 +165,12 @@ function guardarUsuario(usuario) {
 }
 
 /**
- * Elimina un usuario mediante el username
- * @param {string} username
+ * Elimina un usuario mediante el ID
+ * @param {number} id
  */
-function eliminarUsuario(username) {
+function eliminarUsuario(id) {
     const usuarios = cargarUsuarios();
-    const index = usuarios.findIndex(u => u.username === username);
+    const index = usuarios.findIndex(u => u.id === id);
     if (index !== -1) return;
     usuarios.splice(index, 1);
     guardarBD(KEY_USUARIOS, usuarios);
@@ -428,7 +438,6 @@ function eliminarMarca(id) {
     guardarBD(KEY_MARCAS, marcas);
 }
 
-
 /**
  * @typedef {Object} Producto
  * @property {number} id Identificador unico del producto
@@ -507,87 +516,561 @@ function eliminarProducto(id) {
     guardarBD(KEY_PRODUCTOS, productos);
 }
 
-    // Compras
-    // id             SERIAL PRIMARY KEY,
-    // proveedor_id   INTEGER NOT NULL REFERENCES proveedores(id),
-    // usuario_id     INTEGER NOT NULL REFERENCES usuarios(id),
-    // fecha          TIMESTAMP DEFAULT NOW(),
-    // tipo_pago      VARCHAR(20) NOT NULL CHECK (tipo_pago IN ('CONTADO', 'CREDITO')),
-    // total          DECIMAL(12,2) NOT NULL DEFAULT 0,
-    // observaciones  TEXT,
-    // created_at     TIMESTAMP DEFAULT NOW(),
-    // updated_at     TIMESTAMP DEFAULT NOW()
+/**
+ * @typedef {Object} Compra
+ * @property {number} id Identificador unico de la compra
+ * @property {number} provider_id Identificador del proveedor
+ * @property {number} user_id Identificador del usuario que compra
+ * @property {Date} date Fecha de la compra
+ * @property {"CONTADO" | "CREDITO"} payment_type Tipo de pago
+ * @property {number} amount Total de pago
+ * @property {string} obs Observaciones de la compra
+ * @property {Date} created_at Fecha de creacion de la compra
+ * @property {Date?} updated_at Fecha de modificacion de la compra
+ */
 
-    // DetalleCompras
-    // id              SERIAL PRIMARY KEY,
-    // compra_id       INTEGER NOT NULL REFERENCES compras(id) ON DELETE CASCADE,
-    // producto_id     INTEGER NOT NULL REFERENCES productos(id),
-    // cantidad        INTEGER NOT NULL CHECK (cantidad > 0),
-    // precio_unitario DECIMAL(12,2) NOT NULL,
-    // subtotal        DECIMAL(12,2) NOT NULL,
-    // created_at      TIMESTAMP DEFAULT NOW()
+/**
+ * Recupera una compra mediante el ID
+ * @param {number} id Identificador de la compra
+ * @returns {Compra?}
+ */
+function cargarCompra(id) {
+    for (const compra of cargarCompras()) {
+        if (compra.id === id) return compra;
+    }
+}
 
-    // Ventas
-    // id             SERIAL PRIMARY KEY,
-    // cliente_id     INTEGER NOT NULL REFERENCES clientes(id),
-    // usuario_id     INTEGER NOT NULL REFERENCES usuarios(id),
-    // fecha          TIMESTAMP DEFAULT NOW(),
-    // tipo_pago      VARCHAR(20) NOT NULL CHECK (tipo_pago IN ('CONTADO', 'CREDITO')),
-    // total          DECIMAL(12,2) NOT NULL DEFAULT 0,
-    // observaciones  TEXT,
-    // created_at     TIMESTAMP DEFAULT NOW(),
-    // updated_at     TIMESTAMP DEFAULT NOW()
+/**
+ * Recupera todas las compras realizadas
+ * @returns {Compra[]}
+ */
+function cargarCompras() {
+    return Array.from(cargarBD(KEY_COMPRAS));
+}
 
-    // DetalleVentas
-    // id              SERIAL PRIMARY KEY,
-    // venta_id        INTEGER NOT NULL REFERENCES ventas(id) ON DELETE CASCADE,
-    // producto_id     INTEGER NOT NULL REFERENCES productos(id),
-    // cantidad        INTEGER NOT NULL CHECK (cantidad > 0),
-    // precio_unitario DECIMAL(12,2) NOT NULL,
-    // subtotal        DECIMAL(12,2) NOT NULL,
-    // created_at      TIMESTAMP DEFAULT NOW()
+/**
+ * Guarda una compra nueva o existente
+ * @param {Compra} compra 
+ */
+function guardarCompra(compra) {
+    const compras = cargarCompras();
+    const index = compras.findIndex(c => c.id === compra.id);
+    const data = {
+        id: compra.id,
+        provider_id: compra.provider_id,
+        user_id: compra.user_id,
+        date: compra.date,
+        payment_type: compra.payment_type,
+        amount: compra.amount,
+        obs: compra.obs,
+        created_at: compra.created_at,
+        updated_at: compra.updated_at
+    }
+    if (index === -1) {
+        compras.push(data)
+    } else {
+        compras[index] = data
+    }
+    guardarBD(KEY_COMPRAS, compras);
+}
 
-    // CuentasPorPagar
-    // id                SERIAL PRIMARY KEY,
-    // compra_id         INTEGER NOT NULL REFERENCES compras(id),
-    // proveedor_id      INTEGER NOT NULL REFERENCES proveedores(id),
-    // monto_total       DECIMAL(12,2) NOT NULL,
-    // monto_pagado      DECIMAL(12,2) NOT NULL DEFAULT 0,
-    // saldo             DECIMAL(12,2) NOT NULL,
-    // estado            VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE' CHECK (estado IN ('PENDIENTE', 'PARCIAL', 'PAGADA')),
-    // fecha_vencimiento DATE,
-    // created_at        TIMESTAMP DEFAULT NOW(),
-    // updated_at        TIMESTAMP DEFAULT NOW()
+/**
+ * Elimina una compra mediante el ID
+ * @param {number} id Identificador de la compra
+ */
+function eliminarCompra(id) {
+    const compras = cargarCompras();
+    const index = compras.findIndex(c => c.id === id);
+    if (index !== -1) return;
+    compras.splice(index, 1);
+    guardarBD(KEY_COMPRAS, compras);
+}
 
-    // CuentasPorCobrar
-    // id                SERIAL PRIMARY KEY,
-    // venta_id          INTEGER NOT NULL REFERENCES ventas(id),
-    // cliente_id        INTEGER NOT NULL REFERENCES clientes(id),
-    // monto_total       DECIMAL(12,2) NOT NULL,
-    // monto_cobrado     DECIMAL(12,2) NOT NULL DEFAULT 0,
-    // saldo             DECIMAL(12,2) NOT NULL,
-    // estado            VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE' CHECK (estado IN ('PENDIENTE', 'PARCIAL', 'COBRADA')),
-    // fecha_vencimiento DATE,
-    // created_at        TIMESTAMP DEFAULT NOW(),
-    // updated_at        TIMESTAMP DEFAULT NOW()
+/**
+ * @typedef {Object} CompraDetalle
+ * @property {number} id Identificador unico del detalle de compra
+ * @property {number} purchase_id Identificador de la compra
+ * @property {number} product_id Identificador del producto
+ * @property {number} amount Cantidad del producto comprado
+ * @property {number} unit_price Precio unitario
+ * @property {number} subtotal Subtotal de compra: precio * cantidad
+ * @property {Date} created_at Fecha de creacion de la compra
+ */
 
-    // Pagos
-    // id                  SERIAL PRIMARY KEY,
-    // cuenta_por_pagar_id INTEGER NOT NULL REFERENCES cuentas_por_pagar(id),
-    // monto               DECIMAL(12,2) NOT NULL CHECK (monto > 0),
-    // fecha               TIMESTAMP DEFAULT NOW(),
-    // metodo_pago         VARCHAR(50) DEFAULT 'EFECTIVO',
-    // observaciones       TEXT,
-    // created_at          TIMESTAMP DEFAULT NOW()
+/**
+ * Recupera un detalle de compra mediante el ID
+ * @param {number} id Identificador de la compra
+ * @returns {CompraDetalle?}
+ */
+function cargarCompraDetalle(id) {
+    for (const compra of cargarCompraDetalles()) {
+        if (compra.id === id) return compra;
+    }
+}
 
-    // Cobros
-    // id                   SERIAL PRIMARY KEY,
-    // cuenta_por_cobrar_id INTEGER NOT NULL REFERENCES cuentas_por_cobrar(id),
-    // monto                DECIMAL(12,2) NOT NULL CHECK (monto > 0),
-    // fecha                TIMESTAMP DEFAULT NOW(),
-    // metodo_pago          VARCHAR(50) DEFAULT 'EFECTIVO',
-    // observaciones        TEXT,
-    // created_at           TIMESTAMP DEFAULT NOW()
+/**
+ * Recupera todos los detalles de compra realizadas
+ * @param {number?} compra_id Identificador de compra
+ * @returns {CompraDetalle[]}
+ */
+function cargarCompraDetalles(compra_id=null) {
+    /** @type {CompraDetalle[]} */
+    const detalles = Array.from(cargarBD(KEY_COMPRADETALLES));
+    if (!compra_id) return detalles;
+    return detalles.filter(d => d.purchase_id === compra_id);
+}
+
+/**
+ * Guarda un detalle de compra nuevo o existente
+ * @param {CompraDetalle} detalle 
+ */
+function guardarCompraDetalle(detalle) {
+    const detalles = cargarCompraDetalles();
+    const index = detalles.findIndex(d => d.id === detalle.id);
+    const data = {
+        id: detalle.id,
+        purchase_id: detalle.purchase_id,
+        product_id: detalle.product_id,
+        amount: detalle.amount,
+        unit_price: detalle.unit_price,
+        subtotal: detalle.subtotal,
+        created_at: detalle.created_at
+    }
+    if (index === -1) {
+        detalles.push(data)
+    } else {
+        detalles[index] = data
+    }
+    guardarBD(KEY_COMPRADETALLES, detalles);
+}
+
+/**
+ * Elimina un detalle de compra mediante el ID
+ * @param {number} id Identificador del detalle de compra
+ */
+function eliminarCompraDetalle(id) {
+    const detalles = cargarCompraDetalles();
+    const index = detalles.findIndex(d => d.id === id);
+    if (index !== -1) return;
+    detalles.splice(index, 1);
+    guardarBD(KEY_COMPRADETALLES, detalles);
+}
+
+/**
+ * @typedef {Object} Venta
+ * @property {number} id Identificador unico de la venta
+ * @property {number} client_id Identificador del cliente
+ * @property {number} user_id Identificador del usuario que vendió
+ * @property {Date} date fecha de venta
+ * @property {"CONTADO" | "CREDITO"} payment_type Tipo de pago
+ * @property {number} amount Total de pago
+ * @property {string} obs Observaciones de la venta
+ * @property {Date} created_at Fecha de creacion de la compra
+ * @property {Date?} updated_at Fecha de modificacion de la compra
+ */
+
+/**
+ * Recupera una venta mediante el ID
+ * @param {number} id Identificador de la venta
+ * @returns {Venta?}
+ */
+function cargarVenta(id) {
+    for (const venta of cargarVentas()) {
+        if (venta.id === id) return venta;
+    }
+}
+
+/**
+ * Recupera todas las ventas realizadas
+ * @returns {Venta[]}
+ */
+function cargarVentas() {
+    return Array.from(cargarBD(KEY_VENTAS));
+}
+
+/**
+ * Guarda una venta nueva o existente
+ * @param {Venta} venta 
+ */
+function guardarVenta(venta) {
+    const ventas = cargarVentas();
+    const index = ventas.findIndex(v => v.id === venta.id);
+    const data = {
+        id: venta.id,
+        client_id: venta.client_id,
+        user_id: venta.user_id,
+        date: venta.date,
+        payment_type: venta.payment_type,
+        amount: venta.amount,
+        obs: venta.obs,
+        created_at: venta.created_at,
+        updated_at: venta.updated_at
+    }
+    if (index === -1) {
+        ventas.push(data)
+    } else {
+        ventas[index] = data
+    }
+    guardarBD(KEY_VENTAS, ventas);
+}
+
+/**
+ * Elimina una venta mediante el ID
+ * @param {number} id Identificador de la venta
+ */
+function eliminarCompra(id) {
+    const ventas = cargarVentas();
+    const index = ventas.findIndex(v => v.id === id);
+    if (index !== -1) return;
+    ventas.splice(index, 1);
+    guardarBD(KEY_VENTAS, ventas);
+}
+
+/**
+ * @typedef {Object} VentaDetalle
+ * @property {number} id Identificador unico del detalle de venta
+ * @property {number} sale_id Identificador de la venta
+ * @property {number} product_id Identificador del producto
+ * @property {number} amount Cantidad del producto vendido
+ * @property {number} unit_price Precio unitario
+ * @property {number} subtotal Subtotal de compra: precio * cantidad
+ * @property {Date} created_at Fecha de creacion de la compra
+ */
+
+/**
+ * Recupera un detalle de venta mediante el ID
+ * @param {number} id Identificador de la venta
+ * @returns {VentaDetalle?}
+ */
+function cargarVentaDetalle(id) {
+    for (const venta of cargarVentaDetalles()) {
+        if (venta.id === id) return venta;
+    }
+}
+
+/**
+ * Recupera todos los detalles de venta realizadas
+ * @param {number?} venta_id Identificador de venta
+ * @returns {VentaDetalle[]}
+ */
+function cargarVentaDetalles(venta_id=null) {
+    /** @type {VentaDetalle[]} */
+    const detalles = Array.from(cargarBD(KEY_VENTADETALLES));
+    if (!compra_id) return detalles;
+    return detalles.filter(d => d.sale_id === venta_id);
+}
+
+/**
+ * Guarda un detalle de venta nuevo o existente
+ * @param {VentaDetalle} detalle 
+ */
+function guardarVentaDetalle(detalle) {
+    const detalles = cargarVentaDetalles();
+    const index = detalles.findIndex(d => d.id === detalle.id);
+    const data = {
+        id: detalle.id,
+        sale_id: detalle.sale_id,
+        product_id: detalle.product_id,
+        amount: detalle.amount,
+        unit_price: detalle.unit_price,
+        subtotal: detalle.subtotal,
+        created_at: detalle.created_at
+    }
+    if (index === -1) {
+        detalles.push(data)
+    } else {
+        detalles[index] = data
+    }
+    guardarBD(KEY_VENTADETALLES, detalles);
+}
+
+/**
+ * Elimina un detalle de venta mediante el ID
+ * @param {number} id Identificador del detalle de venta
+ */
+function eliminarVentaDetalle(id) {
+    const detalles = cargarVentaDetalles();
+    const index = detalles.findIndex(d => d.id === id);
+    if (index !== -1) return;
+    detalles.splice(index, 1);
+    guardarBD(KEY_VENTADETALLES, detalles);
+}
+
+/**
+ * @typedef {Object} CuentaPorPagar
+ * @property {number} id Identificador unico de la cuenta a pagar
+ * @property {number} purchase_id Identificador de la compra
+ * @property {number} provider_id Identificador del proveedor
+ * @property {number} amount_total Cantidad total a pagar
+ * @property {number} amount_paid Cantidad pagada
+ * @property {number} amount_due Cantidad pendiente a pagar (amount_total - amount_paid)
+ * @property {"PENDIENTE" | "PARCIAL" | "PAGADA"} status Estado de la cuenta
+ * @property {Date} expiration_date Fecha de vencimiento del pago
+ * @property {Date} created_at Fecha de creacion de la compra
+ * @property {Date?} updated_at Fecha de modificacion de la compra
+ */
+
+/**
+ * Recupera una cuenta a pagar mediante el ID
+ * @param {number} id Identificador de la cuenta
+ * @returns {CuentaPorPagar?}
+ */
+function cargarCuentaPorPagar(id) {
+    for (const cuenta of cargarCuentasPorPagar()) {
+        if (cuenta.id === id) return cuenta;
+    }
+}
+
+/**
+ * Recupera todas las cuentas por pagar
+ * @returns {CuentaPorPagar[]}
+ */
+function cargarCuentasPorPagar() {
+    return Array.from(cargarBD(KEY_CUENTASPORPAGAR));
+}
+
+/**
+ * Guarda una cuenta por pagar nueva o existente
+ * @param {CuentaPorPagar} cuenta 
+ */
+function guardarCuentaPorPagar(cuenta) {
+    const cuentas = cargarCuentasPorPagar();
+    const index = cuentas.findIndex(c => c.id === cuenta.id);
+    const data = {
+        id: cuenta.id,
+        purchase_id: cuenta.purchase_id,
+        provider_id: cuenta.provider_id,
+        amount_total: cuenta.amount_total,
+        amount_paid: cuenta.amount_paid,
+        amount_due: cuenta.amount_due,
+        status: cuenta.status,
+        expiration_date: cuenta.expiration_date,
+        created_at: cuenta.created_at,
+        updated_at: cuenta.updated_at
+    }
+    if (index === -1) {
+        cuentas.push(data)
+    } else {
+        cuentas[index] = data
+    }
+    guardarBD(KEY_CUENTASPORPAGAR, cuentas);
+}
+
+/**
+ * Elimina una cuenta a pagar mediante el ID
+ * @param {number} id Identificador de la cuenta
+ */
+function eliminarCuentaPorPagar(id) {
+    const cuentas = cargarCuentasPorPagar();
+    const index = cuentas.findIndex(c => c.id === id);
+    if (index !== -1) return;
+    cuentas.splice(index, 1);
+    guardarBD(KEY_CUENTASPORPAGAR, cuentas);
+}
+
+/**
+ * @typedef {Object} CuentaPorCobrar
+ * @property {number} id Identificador unico de la cuenta a cobrar
+ * @property {number} sale_id Identificador de la venta
+ * @property {number} client_id Identificador del cliente
+ * @property {number} amount_total Cantidad total a cobrar
+ * @property {number} amount_paid Cantidad pagada
+ * @property {number} amount_due Cantidad pendiente a cobrar (amount_total - amount_paid)
+ * @property {"PENDIENTE" | "PARCIAL" | "COBRADA"} status Estado de la cuenta
+ * @property {Date} expiration_date Fecha de vencimiento del cobro
+ * @property {Date} created_at Fecha de creacion de la compra
+ * @property {Date?} updated_at Fecha de modificacion de la compra
+ */
+
+/**
+ * Recupera una cuenta a cobrar mediante el ID
+ * @param {number} id Identificador de la cuenta
+ * @returns {CuentaPorCobrar?}
+ */
+function cargarCuentaPorCobrar(id) {
+    for (const cuenta of cargarCuentasPorCobrar()) {
+        if (cuenta.id === id) return cuenta;
+    }
+}
+
+/**
+ * Recupera todas las cuentas por cobrar
+ * @returns {CuentaPorCobrar[]}
+ */
+function cargarCuentasPorCobrar() {
+    return Array.from(cargarBD(KEY_CUENTASPORCOBRAR));
+}
+
+/**
+ * Guarda una cuenta por cobrar nueva o existente
+ * @param {CuentaPorCobrar} cuenta 
+ */
+function guardarCuentaPorCobrar(cuenta) {
+    const cuentas = cargarCuentasPorCobrar();
+    const index = cuentas.findIndex(c => c.id === cuenta.id);
+    const data = {
+        id: cuenta.id,
+        sale_id: cuenta.sale_id,
+        client_id: cuenta.client_id,
+        amount_total: cuenta.amount_total,
+        amount_paid: cuenta.amount_paid,
+        amount_due: cuenta.amount_due,
+        status: cuenta.status,
+        expiration_date: cuenta.expiration_date,
+        created_at: cuenta.created_at,
+        updated_at: cuenta.updated_at
+    }
+    if (index === -1) {
+        cuentas.push(data)
+    } else {
+        cuentas[index] = data
+    }
+    guardarBD(KEY_CUENTASPORCOBRAR, cuentas);
+}
+
+/**
+ * Elimina una cuenta a cobrar mediante el ID
+ * @param {number} id Identificador de la cuenta
+ */
+function eliminarCuentaPorCobrar(id) {
+    const cuentas = cargarCuentasPorCobrar();
+    const index = cuentas.findIndex(c => c.id === id);
+    if (index !== -1) return;
+    cuentas.splice(index, 1);
+    guardarBD(KEY_CUENTASPORCOBRAR, cuentas);
+}
+
+/**
+ * @typedef {Object} Pago
+ * @property {number} id Identificador unico del pago
+ * @property {number} account_payable_id Identificador de la cuenta por pagar
+ * @property {number} amount Cantidad pagada
+ * @property {Date} date Fecha del pago
+ * @property {"EFECTIVO"} payment_method Método de pago
+ * @property {string} obs Observaciones del pago
+ * @property {Date} created_at Fecha de creacion del pago
+ */
+
+/**
+ * Recupera un pago mediante el ID
+ * @param {number} id Identificador del pago
+ * @returns {Pago?}
+ */
+function cargarPago(id) {
+    for (const pago of cargarPagos()) {
+        if (pago.id === id) return pago;
+    }
+}
+
+/**
+ * Recupera todos los pagos realizadas
+ * @returns {Pago[]}
+ */
+function cargarPagos() {
+    return Array.from(cargarBD(KEY_PAGOS));
+}
+
+/**
+ * Guarda un pago nueva o existente
+ * @param {Pago} pago 
+ */
+function guardarPago(pago) {
+    const pagos = cargarPagos();
+    const index = pagos.findIndex(p => p.id === pago.id);
+    const data = {
+        id: pago.id,
+        account_payable_id: pago.account_payable_id,
+        amount: pago.amount,
+        date: pago.date,
+        payment_method: pago.payment_method,
+        obs: pago.obs,
+        created_at: pago.created_at
+    }
+    if (index === -1) {
+        pagos.push(data)
+    } else {
+        pagos[index] = data
+    }
+    guardarBD(KEY_PAGOS, pagos);
+}
+
+/**
+ * Elimina un pago mediante el ID
+ * @param {number} id Identificador del pago
+ */
+function eliminarPago(id) {
+    const pagos = cargarPagos();
+    const index = pagos.findIndex(p => p.id === id);
+    if (index !== -1) return;
+    pagos.splice(index, 1);
+    guardarBD(KEY_PAGOS, pagos);
+}
+
+/**
+ * @typedef {Object} Cobro
+ * @property {number} id Identificador unico del cobro
+ * @property {number} account_receivable_id Identificador de la cuenta por cobrar
+ * @property {number} amount Cantidad cobrada
+ * @property {Date} date Fecha del cobro
+ * @property {"EFECTIVO"} payment_method Método de pago
+ * @property {string} obs Observaciones del cobro
+ * @property {Date} created_at Fecha de creacion del cobro
+ */
+
+/**
+ * Recupera un cobro mediante el ID
+ * @param {number} id Identificador del cobro
+ * @returns {Cobro?}
+ */
+function cargarCobro(id) {
+    for (const cobro of cargarCobros()) {
+        if (cobro.id === id) return cobro;
+    }
+}
+
+/**
+ * Recupera todos los cobros realizadas
+ * @returns {Cobro[]}
+ */
+function cargarCobros() {
+    return Array.from(cargarBD(KEY_COBROS));
+}
+
+/**
+ * Guarda un cobro nueva o existente
+ * @param {Cobro} cobro 
+ */
+function guardarCobro(cobro) {
+    const cobros = cargarCobros();
+    const index = cobros.findIndex(c => c.id === cobro.id);
+    const data = {
+        id: cobro.id,
+        account_receivable_id: cobro.account_receivable_id,
+        amount: cobro.amount,
+        date: cobro.date,
+        payment_method: cobro.payment_method,
+        obs: cobro.obs,
+        created_at: cobro.created_at
+    }
+    if (index === -1) {
+        cobros.push(data)
+    } else {
+        cobros[index] = data
+    }
+    guardarBD(KEY_COBROS, cobros);
+}
+
+/**
+ * Elimina un cobro mediante el ID
+ * @param {number} id Identificador del cobro
+ */
+function eliminarCobro(id) {
+    const cobros = cargarCobros();
+    const index = cobros.findIndex(c => c.id === id);
+    if (index !== -1) return;
+    cobros.splice(index, 1);
+    guardarBD(KEY_COBROS, cobros);
+}
 
 function initDB() {
     guardarRol({
@@ -624,4 +1107,5 @@ function initDB() {
     // });
 }
 
-function cargarDatosPrueba() {}
+function cargarDatosPrueba() {
+}
