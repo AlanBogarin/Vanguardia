@@ -1,5 +1,3 @@
-import { hashPassword } from "./util";
-// Compra: pago pendiente
 // @type {}
 
 const KEY_ROLES = "roles";
@@ -58,7 +56,7 @@ function eliminarBD(key) {
  * @param {number} id 
  * @returns {Rol?}
  */
-function cargarRol(id) {
+export function cargarRol(id) {
     for (const rol of cargarRoles()) {
         if (rol.id === id) return rol;
     }
@@ -68,7 +66,7 @@ function cargarRol(id) {
  * Recupera todos los roles disponibles
  * @returns {Rol[]}
  */
-function cargarRoles() {
+export function cargarRoles() {
     return Array.from(cargarBD(KEY_ROLES));
 }
 
@@ -76,7 +74,7 @@ function cargarRoles() {
  * Guarda un nuevo o existente rol
  * @param {Rol} rol 
  */
-function guardarRol(rol) {
+export function guardarRol(rol) {
     const roles = cargarRoles();
     const index = roles.findIndex(item => item.id === rol.id);
     const data = {
@@ -98,7 +96,7 @@ function guardarRol(rol) {
  * Elimina un rol mediante el ID
  * @param {number} id 
  */
-function eliminarRol(id) {
+export function eliminarRol(id) {
     const roles = cargarRoles();
     index = roles.findIndex(rol => rol.id === id);
     if (index === -1) return;
@@ -124,7 +122,7 @@ function eliminarRol(id) {
  * @param {number} id 
  * @returns {Usuario?}
  */
-function cargarUsuario(id) {
+export function cargarUsuario(id) {
     for (const usuario of cargarUsuarios()) {
         if (usuario.id === id) return usuario;
     }
@@ -134,7 +132,7 @@ function cargarUsuario(id) {
  * Recupera todos los usuarios disponibles
  * @returns {Usuario[]}
  */
-function cargarUsuarios() {
+export function cargarUsuarios() {
     return Array.from(cargarBD(KEY_USUARIOS));
 }
 
@@ -142,7 +140,7 @@ function cargarUsuarios() {
  * Guarda un nuevo o existente usuario
  * @param {Usuario} usuario 
  */
-function guardarUsuario(usuario) {
+export function guardarUsuario(usuario) {
     const usuarios = cargarUsuarios();
     const index = usuarios.findIndex(u => u.id === usuario.id);
     const data = {
@@ -168,7 +166,7 @@ function guardarUsuario(usuario) {
  * Elimina un usuario mediante el ID
  * @param {number} id
  */
-function eliminarUsuario(id) {
+export function eliminarUsuario(id) {
     const usuarios = cargarUsuarios();
     const index = usuarios.findIndex(u => u.id === id);
     if (index !== -1) return;
@@ -194,7 +192,7 @@ function eliminarUsuario(id) {
  * @param {number} id Identificador del cliente
  * @returns {Cliente?}
  */
-function cargarCliente(id) {
+export function cargarCliente(id) {
     for (const cliente of cargarClientes()) {
         if (cliente.id === id) return cliente;
     }
@@ -204,7 +202,7 @@ function cargarCliente(id) {
  * Recupera todos los clientes disponibles
  * @returns {Cliente[]}
  */
-function cargarClientes() {
+export function cargarClientes() {
     return Array.from(cargarBD(KEY_CLIENTES));
 }
 
@@ -212,7 +210,7 @@ function cargarClientes() {
  * Guarda un cliente nuevo o existente
  * @param {Cliente} cliente 
  */
-function guardarCliente(cliente) {
+export function guardarCliente(cliente) {
     const clientes = cargarClientes();
     const index = clientes.findIndex(c => c.id === cliente.id);
     const data = {
@@ -238,7 +236,7 @@ function guardarCliente(cliente) {
  * Elimina un cliente mediante el ID
  * @param {number} id Identificador del cliente
  */
-function eliminarCliente(id) {
+export function eliminarCliente(id) {
     const clientes = cargarClientes();
     const index = clientes.findIndex(c => c.id === id);
     if (index !== -1) return;
@@ -264,7 +262,7 @@ function eliminarCliente(id) {
  * @param {number} id Identificador del proveedor
  * @returns {Proveedor?}
  */
-function cargarProveedor(id) {
+export function cargarProveedor(id) {
     for (const proveedor of cargarProveedores()) {
         if (proveedor.id === id) return proveedor;
     }
@@ -274,7 +272,7 @@ function cargarProveedor(id) {
  * Recupera todos los proveedores disponibles
  * @returns {Proveedor[]}
  */
-function cargarProveedores() {
+export function cargarProveedores() {
     return Array.from(cargarBD(KEY_PROVEEDORES));
 }
 
@@ -282,7 +280,7 @@ function cargarProveedores() {
  * Guarda un proveedor nuevo o existente
  * @param {Proveedor} proveedor 
  */
-function guardarProveedor(proveedor) {
+export function guardarProveedor(proveedor) {
     const proveedores = cargarProveedores();
     const index = proveedores.findIndex(p => p.id === proveedor.id);
     const data = {
@@ -308,7 +306,7 @@ function guardarProveedor(proveedor) {
  * Elimina un proveedor mediante el ID
  * @param {number} id Identificador del proveedor
  */
-function eliminarProveedor(id) {
+export function eliminarProveedor(id) {
     const proveedores = cargarProveedores();
     const index = proveedores.findIndex(p => p.id === id);
     if (index !== -1) return;
@@ -330,7 +328,7 @@ function eliminarProveedor(id) {
  * @param {number} id Identificador de la categoria
  * @returns {Categoria?}
  */
-function cargarCategoria(id) {
+export function cargarCategoria(id) {
     for (const categoria of cargarCategorias()) {
         if (categoria.id === id) return categoria;
     }
@@ -340,7 +338,7 @@ function cargarCategoria(id) {
  * Recupera todas las categorias disponibles
  * @returns {Categoria[]}
  */
-function cargarCategorias() {
+export function cargarCategorias() {
     return Array.from(cargarBD(KEY_CATEGORIAS));
 }
 
@@ -348,7 +346,7 @@ function cargarCategorias() {
  * Guarda una categoria nueva o existente
  * @param {Categoria} categoria 
  */
-function guardarCategoria(categoria) {
+export function guardarCategoria(categoria) {
     const categorias = cargarCategorias();
     const index = categorias.findIndex(c => c.id === categoria.id);
     const data = {
@@ -370,7 +368,7 @@ function guardarCategoria(categoria) {
  * Elimina una categoria mediante el ID
  * @param {number} id Identificador de la categoria
  */
-function eliminarCategoria(id) {
+export function eliminarCategoria(id) {
     const categorias = cargarCategorias();
     const index = categorias.findIndex(c => c.id === id);
     if (index !== -1) return;
@@ -391,7 +389,7 @@ function eliminarCategoria(id) {
  * @param {number} id Identificador de la marca
  * @returns {Marca?}
  */
-function cargarMarca(id) {
+export function cargarMarca(id) {
     for (const marca of cargarMarcas()) {
         if (marca.id === id) return marca;
     }
@@ -401,7 +399,7 @@ function cargarMarca(id) {
  * Recupera todas las marcas disponibles
  * @returns {Marca[]}
  */
-function cargarMarcas() {
+export function cargarMarcas() {
     return Array.from(cargarBD(KEY_MARCAS));
 }
 
@@ -409,7 +407,7 @@ function cargarMarcas() {
  * Guarda una marca nueva o existente
  * @param {Marca} marca 
  */
-function guardarMarca(marca) {
+export function guardarMarca(marca) {
     const marcas = cargarMarcas();
     const index = marcas.findIndex(m => m.id === marca.id);
     const data = {
@@ -430,7 +428,7 @@ function guardarMarca(marca) {
  * Elimina una marca mediante el ID
  * @param {number} id Identificador de la marca
  */
-function eliminarMarca(id) {
+export function eliminarMarca(id) {
     const marcas = cargarMarcas();
     const index = marcas.findIndex(m => m.id === id);
     if (index !== -1) return;
@@ -450,6 +448,7 @@ function eliminarMarca(id) {
  * @property {number} min_stock Existencia mínima del producto
  * @property {number} category_id Identificador de la categoria
  * @property {number} brand_id Identificador de la marca
+ * @property {0 | 5 | 10} iva Tipo de IVA
  * @property {boolean} active El producto está activo
  * @property {Date} created_at Fecha de creacion del marca
  * @property {Date?} updated_at Fecha de modificacion del marca
@@ -460,7 +459,7 @@ function eliminarMarca(id) {
  * @param {number} id Identificador del producto
  * @returns {Producto?}
  */
-function cargarProducto(id) {
+export function cargarProducto(id) {
     for (const producto of cargarProductos()) {
         if (producto.id === id) return producto;
     }
@@ -470,7 +469,7 @@ function cargarProducto(id) {
  * Recupera todos los productos disponibles
  * @returns {Producto[]}
  */
-function cargarProductos() {
+export function cargarProductos() {
     return Array.from(cargarBD(KEY_PRODUCTOS));
 }
 
@@ -478,7 +477,7 @@ function cargarProductos() {
  * Guarda un producto nueva o existente
  * @param {Producto} producto 
  */
-function guardarProducto(producto) {
+export function guardarProducto(producto) {
     const productos = cargarProductos();
     const index = productos.findIndex(p => p.id === producto.id);
     const data = {
@@ -492,6 +491,7 @@ function guardarProducto(producto) {
         min_stock: producto.min_stock,
         category_id: producto.category_id,
         brand_id: producto.brand_id,
+        iva: producto.iva,
         active: producto.active,
         created_at: producto.created_at,
         updated_at: producto.updated_at
@@ -508,7 +508,7 @@ function guardarProducto(producto) {
  * Elimina un producto mediante el ID
  * @param {number} id Identificador del producto
  */
-function eliminarProducto(id) {
+export function eliminarProducto(id) {
     const productos = cargarProductos();
     const index = productos.findIndex(p => p.id === id);
     if (index !== -1) return;
@@ -534,7 +534,7 @@ function eliminarProducto(id) {
  * @param {number} id Identificador de la compra
  * @returns {Compra?}
  */
-function cargarCompra(id) {
+export function cargarCompra(id) {
     for (const compra of cargarCompras()) {
         if (compra.id === id) return compra;
     }
@@ -544,7 +544,7 @@ function cargarCompra(id) {
  * Recupera todas las compras realizadas
  * @returns {Compra[]}
  */
-function cargarCompras() {
+export function cargarCompras() {
     return Array.from(cargarBD(KEY_COMPRAS));
 }
 
@@ -552,7 +552,7 @@ function cargarCompras() {
  * Guarda una compra nueva o existente
  * @param {Compra} compra 
  */
-function guardarCompra(compra) {
+export function guardarCompra(compra) {
     const compras = cargarCompras();
     const index = compras.findIndex(c => c.id === compra.id);
     const data = {
@@ -578,7 +578,7 @@ function guardarCompra(compra) {
  * Elimina una compra mediante el ID
  * @param {number} id Identificador de la compra
  */
-function eliminarCompra(id) {
+export function eliminarCompra(id) {
     const compras = cargarCompras();
     const index = compras.findIndex(c => c.id === id);
     if (index !== -1) return;
@@ -602,7 +602,7 @@ function eliminarCompra(id) {
  * @param {number} id Identificador de la compra
  * @returns {CompraDetalle?}
  */
-function cargarCompraDetalle(id) {
+export function cargarCompraDetalle(id) {
     for (const compra of cargarCompraDetalles()) {
         if (compra.id === id) return compra;
     }
@@ -613,7 +613,7 @@ function cargarCompraDetalle(id) {
  * @param {number?} compra_id Identificador de compra
  * @returns {CompraDetalle[]}
  */
-function cargarCompraDetalles(compra_id=null) {
+export function cargarCompraDetalles(compra_id=null) {
     /** @type {CompraDetalle[]} */
     const detalles = Array.from(cargarBD(KEY_COMPRADETALLES));
     if (!compra_id) return detalles;
@@ -624,7 +624,7 @@ function cargarCompraDetalles(compra_id=null) {
  * Guarda un detalle de compra nuevo o existente
  * @param {CompraDetalle} detalle 
  */
-function guardarCompraDetalle(detalle) {
+export function guardarCompraDetalle(detalle) {
     const detalles = cargarCompraDetalles();
     const index = detalles.findIndex(d => d.id === detalle.id);
     const data = {
@@ -648,7 +648,7 @@ function guardarCompraDetalle(detalle) {
  * Elimina un detalle de compra mediante el ID
  * @param {number} id Identificador del detalle de compra
  */
-function eliminarCompraDetalle(id) {
+export function eliminarCompraDetalle(id) {
     const detalles = cargarCompraDetalles();
     const index = detalles.findIndex(d => d.id === id);
     if (index !== -1) return;
@@ -674,7 +674,7 @@ function eliminarCompraDetalle(id) {
  * @param {number} id Identificador de la venta
  * @returns {Venta?}
  */
-function cargarVenta(id) {
+export function cargarVenta(id) {
     for (const venta of cargarVentas()) {
         if (venta.id === id) return venta;
     }
@@ -684,7 +684,7 @@ function cargarVenta(id) {
  * Recupera todas las ventas realizadas
  * @returns {Venta[]}
  */
-function cargarVentas() {
+export function cargarVentas() {
     return Array.from(cargarBD(KEY_VENTAS));
 }
 
@@ -692,7 +692,7 @@ function cargarVentas() {
  * Guarda una venta nueva o existente
  * @param {Venta} venta 
  */
-function guardarVenta(venta) {
+export function guardarVenta(venta) {
     const ventas = cargarVentas();
     const index = ventas.findIndex(v => v.id === venta.id);
     const data = {
@@ -718,7 +718,7 @@ function guardarVenta(venta) {
  * Elimina una venta mediante el ID
  * @param {number} id Identificador de la venta
  */
-function eliminarCompra(id) {
+export function eliminarCompra(id) {
     const ventas = cargarVentas();
     const index = ventas.findIndex(v => v.id === id);
     if (index !== -1) return;
@@ -742,7 +742,7 @@ function eliminarCompra(id) {
  * @param {number} id Identificador de la venta
  * @returns {VentaDetalle?}
  */
-function cargarVentaDetalle(id) {
+export function cargarVentaDetalle(id) {
     for (const venta of cargarVentaDetalles()) {
         if (venta.id === id) return venta;
     }
@@ -753,7 +753,7 @@ function cargarVentaDetalle(id) {
  * @param {number?} venta_id Identificador de venta
  * @returns {VentaDetalle[]}
  */
-function cargarVentaDetalles(venta_id=null) {
+export function cargarVentaDetalles(venta_id=null) {
     /** @type {VentaDetalle[]} */
     const detalles = Array.from(cargarBD(KEY_VENTADETALLES));
     if (!compra_id) return detalles;
@@ -764,7 +764,7 @@ function cargarVentaDetalles(venta_id=null) {
  * Guarda un detalle de venta nuevo o existente
  * @param {VentaDetalle} detalle 
  */
-function guardarVentaDetalle(detalle) {
+export function guardarVentaDetalle(detalle) {
     const detalles = cargarVentaDetalles();
     const index = detalles.findIndex(d => d.id === detalle.id);
     const data = {
@@ -788,7 +788,7 @@ function guardarVentaDetalle(detalle) {
  * Elimina un detalle de venta mediante el ID
  * @param {number} id Identificador del detalle de venta
  */
-function eliminarVentaDetalle(id) {
+export function eliminarVentaDetalle(id) {
     const detalles = cargarVentaDetalles();
     const index = detalles.findIndex(d => d.id === id);
     if (index !== -1) return;
@@ -815,7 +815,7 @@ function eliminarVentaDetalle(id) {
  * @param {number} id Identificador de la cuenta
  * @returns {CuentaPorPagar?}
  */
-function cargarCuentaPorPagar(id) {
+export function cargarCuentaPorPagar(id) {
     for (const cuenta of cargarCuentasPorPagar()) {
         if (cuenta.id === id) return cuenta;
     }
@@ -825,7 +825,7 @@ function cargarCuentaPorPagar(id) {
  * Recupera todas las cuentas por pagar
  * @returns {CuentaPorPagar[]}
  */
-function cargarCuentasPorPagar() {
+export function cargarCuentasPorPagar() {
     return Array.from(cargarBD(KEY_CUENTASPORPAGAR));
 }
 
@@ -833,7 +833,7 @@ function cargarCuentasPorPagar() {
  * Guarda una cuenta por pagar nueva o existente
  * @param {CuentaPorPagar} cuenta 
  */
-function guardarCuentaPorPagar(cuenta) {
+export function guardarCuentaPorPagar(cuenta) {
     const cuentas = cargarCuentasPorPagar();
     const index = cuentas.findIndex(c => c.id === cuenta.id);
     const data = {
@@ -860,7 +860,7 @@ function guardarCuentaPorPagar(cuenta) {
  * Elimina una cuenta a pagar mediante el ID
  * @param {number} id Identificador de la cuenta
  */
-function eliminarCuentaPorPagar(id) {
+export function eliminarCuentaPorPagar(id) {
     const cuentas = cargarCuentasPorPagar();
     const index = cuentas.findIndex(c => c.id === id);
     if (index !== -1) return;
@@ -887,7 +887,7 @@ function eliminarCuentaPorPagar(id) {
  * @param {number} id Identificador de la cuenta
  * @returns {CuentaPorCobrar?}
  */
-function cargarCuentaPorCobrar(id) {
+export function cargarCuentaPorCobrar(id) {
     for (const cuenta of cargarCuentasPorCobrar()) {
         if (cuenta.id === id) return cuenta;
     }
@@ -897,7 +897,7 @@ function cargarCuentaPorCobrar(id) {
  * Recupera todas las cuentas por cobrar
  * @returns {CuentaPorCobrar[]}
  */
-function cargarCuentasPorCobrar() {
+export function cargarCuentasPorCobrar() {
     return Array.from(cargarBD(KEY_CUENTASPORCOBRAR));
 }
 
@@ -905,7 +905,7 @@ function cargarCuentasPorCobrar() {
  * Guarda una cuenta por cobrar nueva o existente
  * @param {CuentaPorCobrar} cuenta 
  */
-function guardarCuentaPorCobrar(cuenta) {
+export function guardarCuentaPorCobrar(cuenta) {
     const cuentas = cargarCuentasPorCobrar();
     const index = cuentas.findIndex(c => c.id === cuenta.id);
     const data = {
@@ -932,7 +932,7 @@ function guardarCuentaPorCobrar(cuenta) {
  * Elimina una cuenta a cobrar mediante el ID
  * @param {number} id Identificador de la cuenta
  */
-function eliminarCuentaPorCobrar(id) {
+export function eliminarCuentaPorCobrar(id) {
     const cuentas = cargarCuentasPorCobrar();
     const index = cuentas.findIndex(c => c.id === id);
     if (index !== -1) return;
@@ -956,7 +956,7 @@ function eliminarCuentaPorCobrar(id) {
  * @param {number} id Identificador del pago
  * @returns {Pago?}
  */
-function cargarPago(id) {
+export function cargarPago(id) {
     for (const pago of cargarPagos()) {
         if (pago.id === id) return pago;
     }
@@ -966,7 +966,7 @@ function cargarPago(id) {
  * Recupera todos los pagos realizadas
  * @returns {Pago[]}
  */
-function cargarPagos() {
+export function cargarPagos() {
     return Array.from(cargarBD(KEY_PAGOS));
 }
 
@@ -974,7 +974,7 @@ function cargarPagos() {
  * Guarda un pago nueva o existente
  * @param {Pago} pago 
  */
-function guardarPago(pago) {
+export function guardarPago(pago) {
     const pagos = cargarPagos();
     const index = pagos.findIndex(p => p.id === pago.id);
     const data = {
@@ -998,7 +998,7 @@ function guardarPago(pago) {
  * Elimina un pago mediante el ID
  * @param {number} id Identificador del pago
  */
-function eliminarPago(id) {
+export function eliminarPago(id) {
     const pagos = cargarPagos();
     const index = pagos.findIndex(p => p.id === id);
     if (index !== -1) return;
@@ -1022,7 +1022,7 @@ function eliminarPago(id) {
  * @param {number} id Identificador del cobro
  * @returns {Cobro?}
  */
-function cargarCobro(id) {
+export function cargarCobro(id) {
     for (const cobro of cargarCobros()) {
         if (cobro.id === id) return cobro;
     }
@@ -1032,7 +1032,7 @@ function cargarCobro(id) {
  * Recupera todos los cobros realizadas
  * @returns {Cobro[]}
  */
-function cargarCobros() {
+export function cargarCobros() {
     return Array.from(cargarBD(KEY_COBROS));
 }
 
@@ -1040,7 +1040,7 @@ function cargarCobros() {
  * Guarda un cobro nueva o existente
  * @param {Cobro} cobro 
  */
-function guardarCobro(cobro) {
+export function guardarCobro(cobro) {
     const cobros = cargarCobros();
     const index = cobros.findIndex(c => c.id === cobro.id);
     const data = {
@@ -1064,7 +1064,7 @@ function guardarCobro(cobro) {
  * Elimina un cobro mediante el ID
  * @param {number} id Identificador del cobro
  */
-function eliminarCobro(id) {
+export function eliminarCobro(id) {
     const cobros = cargarCobros();
     const index = cobros.findIndex(c => c.id === id);
     if (index !== -1) return;
@@ -1072,7 +1072,12 @@ function eliminarCobro(id) {
     guardarBD(KEY_COBROS, cobros);
 }
 
-function initDB() {
+export function initDB() {
+    for (const key of [KEY_ROLES, KEY_USUARIOS, KEY_CLIENTES, KEY_PROVEEDORES, KEY_CATEGORIAS,
+            KEY_MARCAS, KEY_PRODUCTOS, KEY_COMPRAS, KEY_COMPRADETALLES, KEY_VENTAS,
+            KEY_VENTADETALLES, KEY_CUENTASPORPAGAR, KEY_CUENTASPORCOBRAR, KEY_PAGOS, KEY_COBROS]) {
+        guardarBD(key, []);
+    }
     guardarRol({
         id: 1,
         name: "ADMIN",
@@ -1096,16 +1101,22 @@ function initDB() {
         rolId: 1,
         active: true,
         created_at: new Date(),
-        updated_at: new Date()
+        updated_at: null
     })
-    // guardarCategoria({
-    //     name: "General",
-    //     description: "Categoría general de productos"
-    // });
-    // guardarMarca({
-    //     name: "Sin marca"
-    // });
+    guardarCategoria({
+        id: 1,
+        name: "General",
+        description: "Categoría general de productos",
+        created_at: new Date(),
+        updated_at: null
+    });
+    guardarMarca({
+        id: 1,
+        name: "Sin marca",
+        created_at: new Date(),
+        updated_at: null
+    });
 }
 
-function cargarDatosPrueba() {
+export function cargarDatosPrueba() {
 }
