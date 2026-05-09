@@ -1,5 +1,6 @@
 // @type {}
 
+// BD
 const KEY_ROLES = "roles";
 const KEY_USUARIOS = "usuarios";
 const KEY_CLIENTES = "clientes";
@@ -15,6 +16,8 @@ const KEY_CUENTASPORPAGAR = "cuentasporpagar";
 const KEY_CUENTASPORCOBRAR = "cuentasporcobrar";
 const KEY_PAGOS = "pagos";
 const KEY_COBROS = "cobros";
+// SESSION
+const KEY_SESION = "sesion";
 
 /**
  * Carga un elemento del Local Storage
@@ -119,13 +122,17 @@ export function eliminarRol(id) {
 
 /**
  * Recupera un usuario mediante el ID
- * @param {number} id 
+ * @param {number?} id Identificador del usuario
+ * @param {string?} username Nombre de usuario a mostrar
  * @returns {Usuario?}
  */
-export function cargarUsuario(id) {
-    for (const usuario of cargarUsuarios()) {
-        if (usuario.id === id) return usuario;
-    }
+export function cargarUsuario(id=null, username=null) {
+    if (id === null && username === null) return null;
+    const usuarios = cargarUsuarios();
+    const usuario = id !== null
+        ? usuarios.find((u) => u.id === id)
+        : usuarios.find((u) => u.username === username);
+    return usuario || null;
 }
 
 /**
@@ -521,7 +528,6 @@ export function eliminarProducto(id) {
  * @property {number} id Identificador unico de la compra
  * @property {number} provider_id Identificador del proveedor
  * @property {number} user_id Identificador del usuario que compra
- * @property {Date} date Fecha de la compra
  * @property {"CONTADO" | "CREDITO"} payment_type Tipo de pago
  * @property {number} amount Total de pago
  * @property {string} obs Observaciones de la compra
@@ -559,7 +565,6 @@ export function guardarCompra(compra) {
         id: compra.id,
         provider_id: compra.provider_id,
         user_id: compra.user_id,
-        date: compra.date,
         payment_type: compra.payment_type,
         amount: compra.amount,
         obs: compra.obs,
@@ -661,7 +666,6 @@ export function eliminarCompraDetalle(id) {
  * @property {number} id Identificador unico de la venta
  * @property {number} client_id Identificador del cliente
  * @property {number} user_id Identificador del usuario que vendió
- * @property {Date} date fecha de venta
  * @property {"CONTADO" | "CREDITO"} payment_type Tipo de pago
  * @property {number} amount Total de pago
  * @property {string} obs Observaciones de la venta
@@ -699,7 +703,6 @@ export function guardarVenta(venta) {
         id: venta.id,
         client_id: venta.client_id,
         user_id: venta.user_id,
-        date: venta.date,
         payment_type: venta.payment_type,
         amount: venta.amount,
         obs: venta.obs,
@@ -805,7 +808,7 @@ export function eliminarVentaDetalle(id) {
  * @property {number} amount_paid Cantidad pagada
  * @property {number} amount_due Cantidad pendiente a pagar (amount_total - amount_paid)
  * @property {"PENDIENTE" | "PARCIAL" | "PAGADA"} status Estado de la cuenta
- * @property {Date} expiration_date Fecha de vencimiento del pago
+ * @property {Date} expire_at Fecha de vencimiento del pago
  * @property {Date} created_at Fecha de creacion de la compra
  * @property {Date?} updated_at Fecha de modificacion de la compra
  */
@@ -844,7 +847,7 @@ export function guardarCuentaPorPagar(cuenta) {
         amount_paid: cuenta.amount_paid,
         amount_due: cuenta.amount_due,
         status: cuenta.status,
-        expiration_date: cuenta.expiration_date,
+        expire_at: cuenta.expire_at,
         created_at: cuenta.created_at,
         updated_at: cuenta.updated_at
     }
@@ -877,7 +880,7 @@ export function eliminarCuentaPorPagar(id) {
  * @property {number} amount_paid Cantidad pagada
  * @property {number} amount_due Cantidad pendiente a cobrar (amount_total - amount_paid)
  * @property {"PENDIENTE" | "PARCIAL" | "COBRADA"} status Estado de la cuenta
- * @property {Date} expiration_date Fecha de vencimiento del cobro
+ * @property {Date} expire_at Fecha de vencimiento del cobro
  * @property {Date} created_at Fecha de creacion de la compra
  * @property {Date?} updated_at Fecha de modificacion de la compra
  */
@@ -916,7 +919,7 @@ export function guardarCuentaPorCobrar(cuenta) {
         amount_paid: cuenta.amount_paid,
         amount_due: cuenta.amount_due,
         status: cuenta.status,
-        expiration_date: cuenta.expiration_date,
+        expire_at: cuenta.expire_at,
         created_at: cuenta.created_at,
         updated_at: cuenta.updated_at
     }
@@ -945,7 +948,6 @@ export function eliminarCuentaPorCobrar(id) {
  * @property {number} id Identificador unico del pago
  * @property {number} account_payable_id Identificador de la cuenta por pagar
  * @property {number} amount Cantidad pagada
- * @property {Date} date Fecha del pago
  * @property {"EFECTIVO"} payment_method Método de pago
  * @property {string} obs Observaciones del pago
  * @property {Date} created_at Fecha de creacion del pago
@@ -981,7 +983,6 @@ export function guardarPago(pago) {
         id: pago.id,
         account_payable_id: pago.account_payable_id,
         amount: pago.amount,
-        date: pago.date,
         payment_method: pago.payment_method,
         obs: pago.obs,
         created_at: pago.created_at
@@ -1011,7 +1012,6 @@ export function eliminarPago(id) {
  * @property {number} id Identificador unico del cobro
  * @property {number} account_receivable_id Identificador de la cuenta por cobrar
  * @property {number} amount Cantidad cobrada
- * @property {Date} date Fecha del cobro
  * @property {"EFECTIVO"} payment_method Método de pago
  * @property {string} obs Observaciones del cobro
  * @property {Date} created_at Fecha de creacion del cobro
@@ -1047,7 +1047,6 @@ export function guardarCobro(cobro) {
         id: cobro.id,
         account_receivable_id: cobro.account_receivable_id,
         amount: cobro.amount,
-        date: cobro.date,
         payment_method: cobro.payment_method,
         obs: cobro.obs,
         created_at: cobro.created_at
@@ -1072,12 +1071,48 @@ export function eliminarCobro(id) {
     guardarBD(KEY_COBROS, cobros);
 }
 
+/**
+ * @typedef {Object} Sesion
+ * @property {number} user_id Identificador del usuario
+ * @property {Date} expire_at Fecha de expiración de la sesión
+ * @property {Date} created_at Fecha de creacion de la sesión
+ */
+
+/**
+ * Recuperar la sesion actual
+ * @returns {Sesion?} Sesion actual 
+ */
+export function cargarSesion() {
+    return cargarBD(KEY_SESION);
+}
+
+/**
+ * Guarda una sesion
+ * @param {Sesion} sesion 
+ */
+export function guardarSesion(sesion) {
+    const data = {
+        user_id: sesion.user_id,
+        expire_at: sesion.expire_at,
+        created_at: cobro.created_at
+    }
+    guardarBD(KEY_SESION, data);
+}
+
+/**
+ * Elimina la sesion actual
+ */
+export function eliminarSesion() {
+    guardarBD(KEY_SESION, null);
+}
+
 export function initDB() {
     for (const key of [KEY_ROLES, KEY_USUARIOS, KEY_CLIENTES, KEY_PROVEEDORES, KEY_CATEGORIAS,
             KEY_MARCAS, KEY_PRODUCTOS, KEY_COMPRAS, KEY_COMPRADETALLES, KEY_VENTAS,
             KEY_VENTADETALLES, KEY_CUENTASPORPAGAR, KEY_CUENTASPORCOBRAR, KEY_PAGOS, KEY_COBROS]) {
         guardarBD(key, []);
     }
+    guardarBD(KEY_SESION, null);
     guardarRol({
         id: 1,
         name: "ADMIN",
@@ -1119,4 +1154,20 @@ export function initDB() {
 }
 
 export function cargarDatosPrueba() {
+}
+
+/**
+ * Aplicar una funcion hash sobre una contraseña
+ * 
+ * Uso: `const hash = await hashPassword(password);`
+ * @param {string} password Contraseña en texto plano
+ * @returns {Promise<string>} Hash de la contraseña
+ */
+export async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hexArray = hashArray.map(b => b.toString(16).padStart(2, '0'));
+    return hexArray.join('')
 }
