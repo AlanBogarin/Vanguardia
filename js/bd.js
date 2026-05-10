@@ -156,7 +156,7 @@ function guardarUsuario(usuario) {
         password_hash: usuario.password_hash,
         name: usuario.name,
         email: usuario.email,
-        rolId: usuario.rolId,
+        rol_id: usuario.rol_id,
         active: usuario.active,
         created_at: usuario.created_at,
         updated_at: usuario.updated_at
@@ -189,7 +189,7 @@ function eliminarUsuario(id) {
  * @property {string?} tel Telefono del cliente
  * @property {string?} email Correo electronico del cliente
  * @property {string?} address Direccion fisica del cliente
- * @property {string?} active El cliente está activo
+ * @property {boolean} active El cliente está activo
  * @property {Date} created_at Fecha de creacion del cliente
  * @property {Date?} updated_at Fecha de modificacion del cliente
  */
@@ -259,7 +259,7 @@ function eliminarCliente(id) {
  * @property {string?} tel Telefono del proveedor
  * @property {string?} email Correo electronico del proveedor
  * @property {string?} address Direccion fisica del proveedor
- * @property {string?} active El proveedor está activo
+ * @property {boolean} active El proveedor está activo
  * @property {Date} created_at Fecha de creacion del cliente
  * @property {Date?} updated_at Fecha de modificacion del cliente
  */
@@ -1094,7 +1094,7 @@ function guardarSesion(sesion) {
     const data = {
         user_id: sesion.user_id,
         expire_at: sesion.expire_at,
-        created_at: cobro.created_at
+        created_at: sesion.created_at
     }
     guardarBD(KEY_SESION, data);
 }
@@ -1118,22 +1118,23 @@ function initDB() {
         name: "ADMIN",
         description: "Administrador con acceso total",
         created_at: new Date(),
-        updated_at: new Date()
+        updated_at: null
     })
     guardarRol({
         id: 2,
         name: "VENDEDOR",
         description: "Vendedor con acceso limitado",
         created_at: new Date(),
-        updated_at: new Date()
+        updated_at: null
     })
     guardarUsuario({
+        id: 1,
         username: "admin",
         // hash para "admin123" 
         password_hash: "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9", 
         name: "Administrador",
         email: "admin@vanguardia.com",
-        rolId: 1,
+        rol_id: 1,
         active: true,
         created_at: new Date(),
         updated_at: null

@@ -42,22 +42,20 @@
     <!-- VER|CARGAR|BORRAR BD -->
     <div class="text-center mt-5">
         <button class="btn btn-success btn-sm" title="Ver la base de datos" data-bs-toggle="modal"
-                data-bs-target="#BD" onclick="verBD()"><i class="bi bi-eye"></i></button>
+                data-bs-target="#BD" type="button" onclick="verBD()"><i class="bi bi-eye"></i></button>
         <button class="btn btn-primary btn-sm" title="Cargar la base de datos" onclick="nuevoBD()"><i
                 class="bi bi-database-add"></i></button>
         <button class="btn btn-danger btn-sm" title="Vaciar la base de datos" onclick="borrarBD()"><i
                 class="bi bi-trash"></i></button>
     </div>
 
-    
     <!-- VER LA BD -->
-    <!--  -->
-    <div class="modal fade" id="BD" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
+    <div class="modal fade" id="BD" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="BDLabel">
+        <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5">Ver la Base de Datos</h1>
-                    <!-- <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> -->
+                    <h1 class="modal-title fs-5" id="BDLabel">Ver la Base de Datos</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <p class="h6">Los datos que se visualizan se encuentran en el localStorage</p>
@@ -83,7 +81,7 @@
                             <tr>
                                 <th>Id Usuario</th>
                                 <th>Nombre de Usuario</th>
-                                <th>Hash de contraseña</th>
+                                <!-- <th>Hash de contraseña</th> -->
                                 <th>Nombre del Personal</th>
                                 <th>Correo Electrónico</th>
                                 <th>Rol</th>
@@ -321,6 +319,13 @@
         </div>
     </div>
 
+    <script>
+        document.querySelectorAll('.modal').forEach((modal) => {
+            modal.addEventListener('hide.bs.modal', () => {
+                document.activeElement.blur();
+            });
+        });
+    </script>
     <!-- LIB EXTERNAS -->
     <script src="bt/bootstrap.min.js"></script>
     <script src="alert/alertify.min.js"></script>

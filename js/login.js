@@ -1,7 +1,5 @@
 /** @typedef {import('jquery')} */
-
-// Comentar esta linea para ejecutar en el navegador
-// import './bd';
+/** @typedef {import('./bd')} */
 
 async function login() {
     const form = document.getElementById("login-form");
@@ -66,11 +64,12 @@ function verBD() {
                     "#tabla_detallesventa", "#tabla_cuentasporpagar", "#tabla_cuentasporcobrar", "#tabla_pagos",
                     "#tabla_cobros"];
     // Si ya existe una instancia de DataTable, destruirla
-    for (const tabla of tablas) {
-        if ($.fn.DataTable.isDataTable(tabla)) {
-            $(tabla).DataTable().clear().destroy();
-        }
-    }
+    // for (const tabla of tablas) {
+    //     if ($.fn.DataTable.isDataTable(tabla)) {
+    //         $(tabla).DataTable().clear().destroy();
+    //     }
+    // }
+
     const roles = cargarRoles();
     const rolMap = {};
     roles.forEach(r => { rolMap[r.id] = r.name });
@@ -101,6 +100,12 @@ function verBD() {
     const pagos = cargarPagos();
     const cobros = cargarCobros();
 
+    console.log(roles.map(r => {
+            return {
+                ...r,
+                updated_at: r.updated_at || ""
+            };
+        }));
     new DataTable("#tabla_roles", {
         data: roles.map(r => {
             return {
@@ -131,7 +136,7 @@ function verBD() {
         columns: [
             { data: "id", title: "Id Usuario"},
             { data: "username", title: "Nombre de Usuario"},
-            { data: "password_hash", title: "Hash de Contraseña"},
+            // { data: "password_hash", title: "Hash de Contraseña"},
             { data: "name", title: "Nombre del Personal"},
             { data: "email", title: "Correo Electrónico"},
             { data: "rol", title: "Rol"},
@@ -145,7 +150,16 @@ function verBD() {
         pageLength: 5
     });
     new DataTable("#tabla_clientes", {
-        data: clientes,
+        data: clientes.map(c => {
+            return {
+                ...c,
+                ruc: c.ruc || "",
+                tel: c.tel || "",
+                email: c.email || "",
+                address: c.address || "",
+                updated_at: c.updated_at || ""
+            };
+        }),
         columns: [
             { data: "id", title: "Id Cliente"},
             { data: "name", title: "Nombre"},
@@ -163,7 +177,16 @@ function verBD() {
         pageLength: 5
     });
     new DataTable("#tabla_proveedores", {
-        data: proveedores,
+        data: proveedores.map(p => {
+            return {
+                ...p,
+                ruc: p.ruc || "",
+                tel: p.tel || "",
+                email: p.email || "",
+                address: p.address || "",
+                updated_at: p.updated_at || ""
+            };
+        }),
         columns: [
             { data: "id", title: "Id Proveedor"},
             { data: "name", title: "Nombre"},
@@ -172,7 +195,6 @@ function verBD() {
             { data: "email", title: "Correo Electrónico"},
             { data: "address", title: "Dirección"},
             { data: "active", title: "Activo"},
-            { data: "created_at", title: "Fecha de Creación"},
             { data: "updated_at", title: "Fecha de Modificación"},
         ],
         language: spanish,
@@ -181,7 +203,12 @@ function verBD() {
         pageLength: 5
     });
     new DataTable("#tabla_categorias", {
-        data: categorias,
+        data: categorias.map(c => {
+            return {
+                ...c,
+                updated_at: c.updated_at || ""
+            };
+        }),
         columns: [
             { data: "id", title: "Id Categoria"},
             { data: "name", title: "Nombre"},
@@ -195,7 +222,12 @@ function verBD() {
         pageLength: 5
     });
     new DataTable("#tabla_marcas", {
-        data: marcas,
+        data: marcas.map(m => {
+            return {
+                ...m,
+                updated_at: m.updated_at || ""
+            };
+        }),
         columns: [
             { data: "id", title: "Id Marca"},
             { data: "name", title: "Nombre"},
@@ -213,6 +245,7 @@ function verBD() {
                 ...p,
                 category: categoriaMap[p.category_id],
                 brand: marcaMap[p.brand_id],
+                updated_at: p.updated_at || ""
             }
         }),
         columns: [
@@ -260,7 +293,8 @@ function verBD() {
             return {
                 ...c,
                 provider: proveedorMap[c.provider_id],
-                user: usuarioMap[c.user_id]
+                user: usuarioMap[c.user_id],
+                updated_at: c.updated_at || ""
             };
         }),
         columns: [
@@ -282,7 +316,7 @@ function verBD() {
         data: compraDetalles.map((d) => {
             return {
                 ...d,
-                product: productoMap[d.product_id],
+                product: productoMap[d.product_id]
             };
         }),
         columns: [
@@ -304,7 +338,8 @@ function verBD() {
             return {
                 ...v,
                 client: clienteMap[v.client_id],
-                user: usuarioMap[v.user_id]
+                user: usuarioMap[v.user_id],
+                updated_at: v.updated_at || ""
             };
         }),
         columns: [
@@ -347,7 +382,8 @@ function verBD() {
         data: cuentasPorPagar.map((c) => {
             return {
                 ...c,
-                provider: proveedorMap[c.provider_id]
+                provider: proveedorMap[c.provider_id],
+                updated_at: c.updated_at || ""
             };
         }),
         columns: [
@@ -371,7 +407,8 @@ function verBD() {
         data: cuentasPorCobrar.map((c) => {
             return {
                 ...c,
-                client: clienteMap[c.client_id]
+                client: clienteMap[c.client_id],
+                updated_at: c.updated_at
             };
         }),
         columns: [
