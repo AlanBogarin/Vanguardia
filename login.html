@@ -8,10 +8,11 @@
     <link rel="stylesheet" href="bt-icons/bootstrap-icons.min.css">
     <link rel="stylesheet" href="alert/alertify.min.css">
     <link rel="stylesheet" href="alert/themes/default.min.css">
+    <link rel="stylesheet" href="dt/datatables.min.css">
 </head>
 <body>
     <!-- FORM LOGIN -->
-    <div class="card col-md-6 mx-auto mt-auto">
+    <div class="card col-md-5 mx-auto mt-5">
         <div class="card-header bg-primary text-white text-center">
             <h5 class="card-title">Inicio de sesión</h5>
         </div>
@@ -25,7 +26,11 @@
                     <label class="form-label" for="contra">Contraseña</label>
                     <input class="form-control" id="contra" type="password">
                 </div>
-                <button class="btn btn-success" type="button" onclick="login();">Ingresar</button>
+                <div class="col-md-12">
+                    <div class="col-md-6 d-grid mx-auto mt-md-3">
+                        <button class="btn btn-success" type="button" onclick="login();">Ingresar</button>
+                    </div>
+                </div>
             </form>
         </div>
         <div class="card-footer">
@@ -46,12 +51,13 @@
 
     
     <!-- VER LA BD -->
-    <div class="modal fade" id="BD" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <!--  -->
+    <div class="modal fade" id="BD" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5">Ver la Base de Datos</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <!-- <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> -->
                 </div>
                 <div class="modal-body">
                     <p class="h6">Los datos que se visualizan se encuentran en el localStorage</p>
@@ -286,7 +292,6 @@
                                 <th>Id Pago</th>
                                 <th>Id Cuenta</th>
                                 <th>Monto</th>
-                                <th>Fecha del Pago</th>
                                 <th>Método de Pago</th>
                                 <th>Observaciones</th>
                                 <th>Fecha de Creación</th>
@@ -302,7 +307,6 @@
                                 <th>Id Cobro</th>
                                 <th>Id Cuenta</th>
                                 <th>Monto</th>
-                                <th>Fecha del Cobro</th>
                                 <th>Método de Pago</th>
                                 <th>Observaciones</th>
                                 <th>Fecha de Creación</th>
@@ -317,12 +321,15 @@
         </div>
     </div>
 
-    <script src="js/login.js"></script>
     <!-- LIB EXTERNAS -->
     <script src="bt/bootstrap.min.js"></script>
     <script src="alert/alertify.min.js"></script>
     <script src="dt/jquery-3.7.1.js"></script>
     <script src="dt/datatables.min.js"></script>
     <script src="dt/es-ES.js"></script>
+    <!-- SCRIPTS -->
+    <script src="js/bd.js"></script>
+    <script src="js/login.js"></script>
+
 </body>
 </html>

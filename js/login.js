@@ -1,7 +1,7 @@
 /** @typedef {import('jquery')} */
-/** @typedef {import('datatables.net-bs5')} */
 
-import * as bd from "./bd.js";
+// Comentar esta linea para ejecutar en el navegador
+// import './bd';
 
 async function login() {
     const form = document.getElementById("login-form");
@@ -29,8 +29,8 @@ async function login() {
         return;
     }
     // CUANDO AMBOS CAMPOS TIENEN TEXTO SE VALIDAN LOS CREDENCIALES.
-    const usuario = bd.cargarUsuario(null, usuarioIngresado);
-    const hash = await bd.hashPassword(contraIngresada);
+    const usuario = cargarUsuario(null, usuarioIngresado);
+    const hash = await hashPassword(contraIngresada);
     if (!usuario) {
         // Si el usuario es incorrecto
         mensaje.textContent = "Usuario no encontrado.";
@@ -51,7 +51,7 @@ async function login() {
         const created_at = new Date();
         const expire_at = new Date(created_at);
         expire_at.setDate(created_at.getDate() + 1)
-        bd.guardarSesion({
+        guardarSesion({
             user_id: usuario.id,
             expire_at: expire_at,
             created_at: created_at
@@ -71,38 +71,43 @@ function verBD() {
             $(tabla).DataTable().clear().destroy();
         }
     }
-    const roles = bd.cargarRoles();
+    const roles = cargarRoles();
     const rolMap = {};
     roles.forEach(r => { rolMap[r.id] = r.name });
-    const usuarios = bd.cargarUsuarios();
+    const usuarios = cargarUsuarios();
     const usuarioMap = {};
     usuarios.forEach(u => { usuarioMap[u.id] = u.username });
-    const clientes = bd.cargarClientes();
+    const clientes = cargarClientes();
     const clienteMap = {};
     clientes.forEach(c => { clienteMap[c.id] = c.name });
-    const proveedores = bd.cargarProveedores();
+    const proveedores = cargarProveedores();
     const proveedorMap = {};
     proveedores.forEach(p => { proveedorMap[p.id] = p.name })
-    const categorias = bd.cargarCategorias();
+    const categorias = cargarCategorias();
     const categoriaMap = {};
     categorias.forEach(c => { categoriaMap[c.id] = c.name });
-    const marcas = bd.cargarMarcas();
+    const marcas = cargarMarcas();
     const marcaMap = {};
     marcas.forEach(m => {marcaMap[m.id] = m.name });
-    const productos = bd.cargarProductos();
+    const productos = cargarProductos();
     const productoMap = {};
     productos.forEach(p => { productoMap[p.id] = p.name });
-    const compras = bd.cargarCompras();
-    const compraDetalles = bd.cargarCompraDetalles();
-    const ventas = bd.cargarVentas();
-    const ventaDetalles = bd.cargarVentaDetalles();
-    const cuentasPorPagar = bd.cargarCuentasPorPagar();
-    const cuentasPorCobrar = bd.cargarCuentasPorCobrar();
-    const pagos = bd.cargarPagos();
-    const cobros = bd.cargarCobros();
+    const compras = cargarCompras();
+    const compraDetalles = cargarCompraDetalles();
+    const ventas = cargarVentas();
+    const ventaDetalles = cargarVentaDetalles();
+    const cuentasPorPagar = cargarCuentasPorPagar();
+    const cuentasPorCobrar = cargarCuentasPorCobrar();
+    const pagos = cargarPagos();
+    const cobros = cargarCobros();
 
     new DataTable("#tabla_roles", {
-        data: roles,
+        data: roles.map(r => {
+            return {
+                ...r,
+                updated_at: r.updated_at || ""
+            };
+        }),
         columns: [
             { data: "id", title: "Id Rol"},
             { data: "name", title: "Nombre"},
@@ -119,7 +124,8 @@ function verBD() {
         data: usuarios.map(u => {
             return {
                 ...u,
-                rol: rolMap[u.rol_id]
+                rol: rolMap[u.rol_id],
+                updated_at: u.updated_at || ""
             };
         }),
         columns: [
@@ -393,7 +399,7 @@ function verBD() {
             { data: "amount", title: "Monto"},
             { data: "payment_method", title: "Método de Pago"},
             { data: "obs", title: "Observaciones"},
-            { data: "created_at", title: "Fecha de Creación"},
+            { data: "created_at", title: "Fecha de Creación"}
         ],
         language: spanish,
         searching: false,    // Oculta el buscador
