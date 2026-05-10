@@ -64,11 +64,11 @@ function verBD() {
                     "#tabla_detallesventa", "#tabla_cuentasporpagar", "#tabla_cuentasporcobrar", "#tabla_pagos",
                     "#tabla_cobros"];
     // Si ya existe una instancia de DataTable, destruirla
-    // for (const tabla of tablas) {
-    //     if ($.fn.DataTable.isDataTable(tabla)) {
-    //         $(tabla).DataTable().clear().destroy();
-    //     }
-    // }
+    for (const tabla of tablas) {
+        if ($.fn.DataTable.isDataTable(tabla)) {
+            $(tabla).DataTable().destroy(); // .clear()
+        }
+    }
 
     const roles = cargarRoles();
     const rolMap = {};
@@ -101,11 +101,11 @@ function verBD() {
     const cobros = cargarCobros();
 
     console.log(roles.map(r => {
-            return {
-                ...r,
-                updated_at: r.updated_at || ""
-            };
-        }));
+        return {
+            ...r,
+            updated_at: r.updated_at || ""
+        };
+    }));
     new DataTable("#tabla_roles", {
         data: roles.map(r => {
             return {

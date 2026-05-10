@@ -4,8 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vanguardia - Menu</title>
+    <link rel="stylesheet" href="bt/bootstrap.min.css">
+    <link rel="stylesheet" href="bt-icons/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="alert/alertify.min.css">
+    <link rel="stylesheet" href="alert/themes/default.min.css">
 </head>
 <body>
-    
+    <script>
+        window.onload = () => {
+            const sesion = cargarSesion();
+            if (!sesion || new Date(sesion.expire_at) <= new Date()) {
+                window.location.href = "login.html";
+            }
+        }
+
+    </script>
+    <!-- LIB EXTERNAS -->
+    <script src="bt/bootstrap.min.js"></script>
+    <script src="alert/alertify.min.js"></script>
+    <!-- SCRIPTS -->
+    <script src="js/bd.js"></script>
 </body>
 </html>
