@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vanguardia - Roles</title>
+    <link rel="stylesheet" href="bt/bootstrap.min.css">
+    <link rel="stylesheet" href="bt-icons/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="alert/alertify.min.css">
+    <link rel="stylesheet" href="alert/themes/default.min.css">
+    <link rel="stylesheet" href="dt/datatables.min.css">
+</head>
+<body class="bg-light">
+
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" href="#">
+                <i class="bi bi-pc-display"></i> Vanguardia
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="clientes.html"><i class="bi bi-people"></i> Clientes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="proveedores.html"><i class="bi bi-truck"></i> Proveedores</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="articulos.html"><i class="bi bi-box-seam"></i> Artículos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="usuarios.html"><i class="bi bi-person-badge"></i> Usuarios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="roles.html"><i class="bi bi-shield-lock"></i> Roles</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="cerrarSesion()">
+                            <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="container-fluid mt-4 px-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-shield-lock"></i> Mantenimiento de Roles</h5>
+                <button class="btn btn-light btn-sm" onclick="abrirModalNuevo()">
+                    <i class="bi bi-plus-circle"></i> Nuevo Rol
+                </button>
+            </div>
+            <div class="card-body">
+                <table id="tabla_roles" class="display table table-striped table-bordered table-hover" style="width:100%">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Fecha de Creación</th>
+                            <th>Fecha de Modificación</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL NUEVO / EDITAR ROL -->
+    <div class="modal fade" id="modalRol" tabindex="-1" aria-hidden="true"
+         data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="modalRolLabel">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalRolLabel">Nuevo Rol</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="rol_id">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="rol_nombre">
+                            Nombre <span class="text-danger">*</span>
+                        </label>
+                        <input class="form-control text-uppercase" id="rol_nombre" type="text"
+                               maxlength="30" placeholder="Ej: ADMINISTRADOR">
+                        <div class="invalid-feedback" id="error_nombre"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="rol_descripcion">Descripción</label>
+                        <textarea class="form-control" id="rol_descripcion" rows="3"
+                                  maxlength="100" placeholder="Descripción del rol..."></textarea>
+                        <div class="invalid-feedback" id="error_descripcion"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="guardarRolForm()">
+                        <i class="bi bi-check-circle"></i> Guardar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRMAR ELIMINAR -->
+    <div class="modal fade" id="modalEliminar" tabindex="-1" aria-hidden="true"
+         data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="modalEliminarLabel">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="modalEliminarLabel">
+                        <i class="bi bi-exclamation-triangle"></i> Eliminar Rol
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Está seguro que desea eliminar el rol <strong id="nombre_a_eliminar"></strong>?</p>
+                    <p class="text-danger small mb-0">
+                        <i class="bi bi-exclamation-circle"></i>
+                        Esta acción no se puede deshacer. Si el rol tiene usuarios asignados, no podrá eliminarse.
+                    </p>
+                    <input type="hidden" id="id_a_eliminar">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="confirmarEliminar()">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll('.modal').forEach((modal) => {
+            modal.addEventListener('hide.bs.modal', () => {
+                document.activeElement.blur();
+            });
+        });
+    </script>
+
+    <!-- LIB EXTERNAS (igual que el profe) -->
+    <script src="bt/bootstrap.min.js"></script>
+    <script src="alert/alertify.min.js"></script>
+    <script src="dt/jquery-3.7.1.js"></script>
+    <script src="dt/datatables.min.js"></script>
+    <script src="dt/es-ES.js"></script>
+    <!-- SCRIPTS -->
+    <script src="js/bd.js"></script>
+    <script src="js/roles.js"></script>
+
+</body>
+</html>
