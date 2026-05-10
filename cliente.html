@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="es">
+     <head>
+          <meta charset="utf-8" />
+          <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+          <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+          <title>Vanguardia - Clientes</title>
+          <link rel="icon" type="image/png" href="img/working.png">
+          
+          <!-- ESTILOS DEL MENU -->
+          <link href="menu/styles.css" rel="stylesheet" />
+        
+          <!-- BOOTSTRAP ICONS -->
+          <link rel="stylesheet" href="bt-icons/bootstrap-icons.min.css">
+
+          <!-- DATATABLES -->
+          <link rel="stylesheet" href="dt/datatables.min.css">
+          <link rel="stylesheet" href="dt/jquery.dataTables.min.css">
+          <link rel="stylesheet" href="dt/buttons.dataTables.min.css">
+
+          <!-- ALERTIFYJS -->
+          <link rel="stylesheet" href="alert/alertify.min.css">
+          <link rel="stylesheet" href="alert/themes/default.min.css">
+          <script src="alert/alertify.min.js"></script>
+
+          <!-- TEMA VANGUARDIA -->
+          <link rel="stylesheet" href="css/vanguardia.css">
+
+          <!-- ESTILOS AZUL MARINO TRANSPARENTE -->
+          
+     </head>
+     <body class="sb-nav-fixed">
+          <div id="contenedor-navbar"></div>
+          <div id="layoutSidenav">
+               <div id="contenedor-sidebar"></div>
+               
+               <div id="layoutSidenav_content">
+                    <main>
+                         <div class="container-fluid px-4">
+                              <h1 class="mt-2">Clientes</h1>
+                              <div class="row">
+                                   <table id="tabla_clientes" class="display compact" style="width:100%">
+                                        <thead>
+                                             <tr>
+                                                  <th>Id Cliente</th>
+                                                  <th>N° Cédula</th>
+                                                  <th>Nombre</th>
+                                                  <th>Dirección</th>
+                                                  <th>Teléfono</th>
+                                                  <th>Acciones</th>
+                                             </tr>
+                                        </thead>
+                                   </table>
+                              </div>
+                         </div>
+                    </main>
+                    <footer class="py-4 bg-light mt-auto">
+                         <div class="container-fluid px-4">
+                              <div class="d-flex align-items-center justify-content-between small">
+                                   <div class="text-muted">Copyright &copy; Vanguardia 2026</div>
+                                   <div>
+                                        <a href="#">Privacy Policy</a>
+                                        &middot;
+                                        <a href="#">Terms &amp; Conditions</a>
+                                   </div>
+                              </div>
+                         </div>
+                    </footer>
+               </div>
+          </div>
+
+     <!-- Modal Nuevo Cliente -->
+     <div class="modal fade" id="modalNuevoCliente" tabindex="-1" aria-labelledby="modalNuevoClienteLabel" aria-hidden="true" data-bs-backdrop="static">
+          <div class="modal-dialog">
+               <form id="formNuevoCliente" class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                         <h5 class="modal-title" id="modalNuevoClienteLabel"><i class="bi bi-person-plus-fill"></i> Agregar Nuevo Cliente</h5>
+                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                         <div class="mb-2">
+                              <label class="form-label">N° Cédula</label>
+                              <input type="number" id="cedula" class="form-control" required min="100000" max="99999999">
+                         </div>
+                         <div class="mb-2">
+                              <label class="form-label">Nombre completo</label>
+                              <input type="text" id="nombre" class="form-control text-uppercase" required minlength="5" maxlength="50">
+                         </div>
+                         <div class="mb-2">
+                              <label class="form-label">Dirección</label>
+                              <input type="text" id="direccion" class="form-control text-uppercase" required minlength="5" maxlength="50">
+                         </div>
+                         <div class="mb-2">
+                              <label class="form-label">Teléfono</label>
+                              <input type="text" id="telefono" class="form-control" required minlength="6" maxlength="15">
+                         </div>
+                    </div>
+                    <div class="modal-footer">
+                         <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                         <button type="submit" class="btn btn-primary"><i class="bi bi-floppy"></i> Guardar Cliente</button>
+                    </div>
+               </form>
+          </div>
+     </div>
+
+     <!-- Modal Editar Cliente -->
+     <div class="modal fade" id="modalEditarCliente" tabindex="-1" aria-labelledby="modalEditarClienteLabel" aria-hidden="true" data-bs-backdrop="static">
+          <div class="modal-dialog">
+               <form id="formEditarCliente" class="modal-content">
+                    <div class="modal-header bg-warning text-dark">
+                         <h5 class="modal-title" id="modalEditarClienteLabel"><i class="bi bi-pencil-square"></i> Editar Cliente</h5>
+                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                         <input type="hidden" id="edit_idcliente">
+                         <div class="mb-2">
+                              <label class="form-label">N° Cédula</label>
+                              <input type="number" id="edit_cedula" class="form-control" required min="100000" max="99999999">
+                         </div>
+                         <div class="mb-2">
+                              <label class="form-label">Nombre completo</label>
+                              <input type="text" id="edit_nombre" class="form-control text-uppercase" required minlength="5" maxlength="50">
+                         </div>
+                         <div class="mb-2">
+                              <label class="form-label">Dirección</label>
+                              <input type="text" id="edit_direccion" class="form-control text-uppercase" required minlength="5" maxlength="50">
+                         </div>
+                         <div class="mb-2">
+                              <label class="form-label">Teléfono</label>
+                              <input type="text" id="edit_telefono" class="form-control" required minlength="6" maxlength="15">
+                         </div>
+                    </div>
+                    <div class="modal-footer">
+                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                         <button type="submit" class="btn btn-warning"><i class="bi bi-floppy"></i> Guardar Cambios</button>
+                    </div>
+               </form>
+          </div>
+     </div>
+
+     <!-- Modal Eliminar Cliente -->
+     <div class="modal fade" id="modalEliminarCliente" tabindex="-1" aria-labelledby="modalEliminarClienteLabel" aria-hidden="true" data-bs-backdrop="static">
+          <div class="modal-dialog">
+               <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                         <h5 class="modal-title" id="modalEliminarClienteLabel"><i class="bi bi-exclamation-triangle-fill"></i> Eliminar Cliente</h5>
+                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                         <p class="text-center fw-bold">¿Deseas proceder con la eliminación?</p>
+                         <input type="hidden" id="del_idcliente">
+                         <ul class="list-group mb-3">
+                              <li class="list-group-item"><strong>Cédula:</strong> <span id="del_cedula"></span></li>
+                              <li class="list-group-item"><strong>Nombre:</strong> <span id="del_nombre"></span></li>
+                              <li class="list-group-item"><strong>Dirección:</strong> <span id="del_direccion"></span></li>
+                              <li class="list-group-item"><strong>Teléfono:</strong> <span id="del_telefono"></span></li>
+                         </ul>
+                    </div>
+                    <div class="modal-footer">
+                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                         <button type="button" class="btn btn-danger" id="btnConfirmarEliminar"><i class="bi bi-trash"></i> Eliminar</button>
+                    </div>
+               </div>
+          </div>
+     </div>
+
+          <script src="js/funcionesSistema.js"></script>
+          <!-- MENU -->
+          <script src="menu/bootstrap.bundle.min.js"></script>
+          <script src="menu/scripts.js"></script>
+          <!-- DATATABLES -->
+          <script src="dt/jquery-3.7.1.js"></script>
+          <script src="dt/datatables.min.js"></script>
+          <script src="dt/jquery.dataTables.min.js"></script>
+          <!-- DATATABLES Buttons extension -->
+          <script src="dt/dataTables.buttons.min.js"></script>
+          <script src="dt/buttons.print.min.js"></script>
+          <script src="dt/buttons.html5.min.js"></script>
+          <!-- DATATABLES JSZip y pdfmake para exportar -->
+          <script src="dt/jszip.min.js"></script>
+          <script src="dt/pdfmake.min.js"></script>
+          <script src="dt/vfs_fonts.js"></script>
+          <!-- DATATABLES Idioma Español -->
+          <script src="dt/es-ES.js"></script>
+
+          <script>
+               // Control de seguridad
+               var nom = localStorage.getItem("nomUsuario");
+               if (nom == "" || nom == null) {
+                    window.location.href = "error.html";
+               }
+
+               // Datos de prueba: se cargan solo si el localStorage no tiene clientes aún
+               var clientesPrueba = [
+                    { idcliente: 1,  cedula: "1234567", nombre: "JUAN CARLOS LOPEZ",      direccion: "AV. BRASIL 123",              telefono: "0985-111-222" },
+                    { idcliente: 2,  cedula: "2345678", nombre: "MARIA ELENA GOMEZ",       direccion: "CALLE SAN PEDRO 45",          telefono: "0971-333-444" },
+                    { idcliente: 3,  cedula: "3456789", nombre: "PEDRO ANTONIO MARTINEZ",  direccion: "BARRIO SAN JORGE SN",         telefono: "0961-555-666" },
+                    { idcliente: 4,  cedula: "4567890", nombre: "ANA BEATRIZ BENITEZ",     direccion: "AV. MCAL. LOPEZ 800",         telefono: "0981-777-888" },
+                    { idcliente: 5,  cedula: "5678901", nombre: "CARLOS DANIEL GIMENEZ",   direccion: "CALLE INDEPENDENCIA 320",     telefono: "0991-999-000" },
+                    { idcliente: 6,  cedula: "6789012", nombre: "ROSA MERCEDES PAREDES",   direccion: "BO. REPUBLICANO MZ 5 CS 2",   telefono: "0982-121-313" },
+                    { idcliente: 7,  cedula: "7890123", nombre: "LUIS FERNANDO ROJAS",     direccion: "AV. EUSEBIO AYALA 1100",      telefono: "0972-414-515" },
+                    { idcliente: 8,  cedula: "8901234", nombre: "PATRICIA NOEMI ACOSTA",   direccion: "CALLE PIRIBEBUY 210",         telefono: "0962-616-717" },
+                    { idcliente: 9,  cedula: "9012345", nombre: "MIGUEL ANGEL SANCHEZ",    direccion: "AV. FERNANDO DE LA MORA 560", telefono: "0992-818-919" },
+                    { idcliente: 10, cedula: "1357924", nombre: "LAURA VIRGINIA ESQUIVEL", direccion: "CALLE CERRO CORA 78",         telefono: "0983-020-121" }
+               ];
+
+               // Si no hay clientes en localStorage, carga los de prueba
+               if (!localStorage.getItem("clientes")) {
+                    localStorage.setItem("clientes", JSON.stringify(clientesPrueba));
+               }
+
+               var clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+
+               let tabla;
+               const modalNCliente = new bootstrap.Modal(document.getElementById('modalNuevoCliente'));
+
+               document.addEventListener('DOMContentLoaded', function () {
+                    cargarComponentes();
+                    cargarTablaClientes();
+
+                    // Evento Nuevo Cliente
+                    document.getElementById('formNuevoCliente').addEventListener('submit', function (e) {
+                         e.preventDefault();
+
+                         const nuevoCliente = {
+                              idcliente:  obtenerSiguienteId(clientes),
+                              cedula:     document.getElementById('cedula').value.trim(),
+                              nombre:     document.getElementById('nombre').value.trim().toUpperCase(),
+                              direccion:  document.getElementById('direccion').value.trim().toUpperCase(),
+                              telefono:   document.getElementById('telefono').value.trim()
+                         };
+
+                         if (Object.values(nuevoCliente).some(val => val === '')) {
+                              alert('Todos los campos son obligatorios');
+                              return;
+                         }
+
+                         clientes.push(nuevoCliente);
+                         guardarClientes(clientes);
+                         this.reset();
+                         tabla.row.add(nuevoCliente).draw();
+                         modalNCliente.hide();
+                         alertify.success("Registro guardado");
+                    });
+
+                    // Evento Editar Cliente
+                    const modalECliente = new bootstrap.Modal(document.getElementById('modalEditarCliente'));
+
+                    document.addEventListener('click', function (e) {
+                         if (e.target.closest('.btn-editar')) {
+                              const id = parseInt(e.target.closest('.btn-editar').dataset.id);
+                              const cliente = clientes.find(c => c.idcliente === id);
+                              if (cliente) {
+                                   document.getElementById('edit_idcliente').value  = cliente.idcliente;
+                                   document.getElementById('edit_cedula').value     = cliente.cedula;
+                                   document.getElementById('edit_nombre').value     = cliente.nombre;
+                                   document.getElementById('edit_direccion').value  = cliente.direccion;
+                                   document.getElementById('edit_telefono').value   = cliente.telefono;
+                                   modalECliente.show();
+                              }
+                         }
+                    });
+
+                    document.getElementById('formEditarCliente').addEventListener('submit', function (e) {
+                         e.preventDefault();
+                         const id = parseInt(document.getElementById('edit_idcliente').value);
+                         const index = clientes.findIndex(c => c.idcliente === id);
+                         if (index !== -1) {
+                              clientes[index] = {
+                                   idcliente: id,
+                                   cedula:    document.getElementById('edit_cedula').value.trim(),
+                                   nombre:    document.getElementById('edit_nombre').value.trim().toUpperCase(),
+                                   direccion: document.getElementById('edit_direccion').value.trim().toUpperCase(),
+                                   telefono:  document.getElementById('edit_telefono').value.trim()
+                              };
+                              guardarClientes(clientes);
+                              tabla.clear().rows.add(clientes).draw();
+                              modalECliente.hide();
+                              alertify.success("Cliente actualizado");
+                         }
+                    });
+
+                    // Evento Eliminar Cliente
+                    const modalDelCliente = new bootstrap.Modal(document.getElementById('modalEliminarCliente'));
+
+                    document.addEventListener('click', function (e) {
+                         if (e.target.closest('.btn-eliminar')) {
+                              const id = parseInt(e.target.closest('.btn-eliminar').dataset.id);
+                              const cliente = clientes.find(c => c.idcliente === id);
+                              if (cliente) {
+                                   document.getElementById('del_idcliente').value        = cliente.idcliente;
+                                   document.getElementById('del_cedula').textContent     = cliente.cedula;
+                                   document.getElementById('del_nombre').textContent     = cliente.nombre;
+                                   document.getElementById('del_direccion').textContent  = cliente.direccion;
+                                   document.getElementById('del_telefono').textContent   = cliente.telefono;
+                                   modalDelCliente.show();
+                              }
+                         }
+                    });
+
+                    document.getElementById('btnConfirmarEliminar').addEventListener('click', function () {
+                         const id = parseInt(document.getElementById('del_idcliente').value);
+                         alertify.confirm("Eliminar cliente", "¿Realmente deseas eliminar de forma permanente a este cliente?",
+                              function () {
+                                   clientes = clientes.filter(c => c.idcliente !== id);
+                                   guardarClientes(clientes);
+                                   tabla.clear().rows.add(clientes).draw();
+                                   modalDelCliente.hide();
+                                   alertify.success("Cliente eliminado correctamente");
+                              },
+                              function () {
+                                   modalDelCliente.hide();
+                                   alertify.error("Eliminación cancelada");
+                              }
+                         ).set('labels', { ok: 'Sí, eliminar', cancel: 'No, mantener' });
+                    });
+               });
+
+               // Inicializar DataTable
+               function cargarTablaClientes() {
+                    tabla = new DataTable("#tabla_clientes", {
+                         data: clientes,
+                         columns: [
+                              { data: 'idcliente',  title: 'Id Cliente' },
+                              { data: 'cedula',     title: 'N° Cédula' },
+                              { data: 'nombre',     title: 'Nombre' },
+                              { data: 'direccion',  title: 'Dirección' },
+                              { data: 'telefono',   title: 'Teléfono' },
+                              {
+                                   data: null,
+                                   render: function (data, type, row) {
+                                        return `
+                                             <button class="btn btn-sm btn-warning me-1 btn-editar" data-id="${row.idcliente}"><i class="bi bi-pencil-square"></i></button>
+                                             <button class="btn btn-sm btn-danger btn-eliminar" data-id="${row.idcliente}"><i class="bi bi-trash"></i></button>
+                                        `;
+                                   }
+                              }
+                         ],
+                         dom: '<"d-flex justify-content-between align-items-center mb-2"B<"ms-auto"f>>rtip',
+                         buttons: [
+                              {
+                                   extend: 'print',
+                                   text: '<i class="bi bi-printer"></i> Imprimir',
+                                   exportOptions: { columns: [0, 1, 2, 3, 4] },
+                                   customize: function (win) {
+                                        // Membrete para impresión
+                                        var membrete = `
+                                             <div style="text-align:center; margin-bottom:16px; font-family:Arial, sans-serif; border-bottom:2px solid #000; padding-bottom:10px;">
+                                                  <div style="font-size:22px; font-weight:bold; letter-spacing:2px;">VANGUARDIA</div>
+                                                  <div style="font-size:12px;">Comercialización de Productos Informáticos y Tecnológicos</div>
+                                                  <div style="font-size:11px;">Dir.: Previstero Juan Carlos García / Madrinas de Guerra – Bo. Villa Armando – Concepción</div>
+                                                  <div style="font-size:11px;">Tel.: 0985-495-253</div>
+                                                  <div style="font-size:13px; font-weight:bold; margin-top:8px;">LISTADO DE CLIENTES</div>
+                                             </div>
+                                        `;
+                                        $(win.document.body).find('h1').remove();
+                                        $(win.document.body).prepend(membrete);
+                                   }
+                              },
+                              {
+                                   extend: 'excelHtml5',
+                                   text: '<i class="bi bi-filetype-xlsx"></i> Exportar a Excel',
+                                   exportOptions: { columns: [0, 1, 2, 3, 4] },
+                                   title: 'VANGUARDIA - Listado de Clientes',
+                                   messageTop: 'Dir.: Previstero Juan Carlos García / Madrinas de Guerra – Bo. Villa Armando – Concepción | Tel.: 0985-495-253'
+                              },
+                              {
+                                   extend: 'pdfHtml5',
+                                   text: '<i class="bi bi-filetype-pdf"></i> Exportar a PDF',
+                                   exportOptions: {
+                                        columns: [0, 1, 2, 3, 4]
+                                   },
+                                   customize: function (doc) {
+                                        const now = new Date();
+                                        const fecha = now.toLocaleDateString('es-PY', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                                        const hora  = now.toLocaleTimeString('es-PY', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+                                        const fechaHora = fecha + ' ' + hora;
+
+                                        // Membrete al inicio del PDF
+                                        doc.content.unshift(
+                                             {
+                                                  text: 'VANGUARDIA',
+                                                  style: { fontSize: 18, bold: true, alignment: 'center' },
+                                                  margin: [0, 0, 0, 4]
+                                             },
+                                             {
+                                                  text: 'Comercialización de Productos Informáticos y Tecnológicos',
+                                                  style: { fontSize: 10, alignment: 'center' },
+                                                  margin: [0, 0, 0, 2]
+                                             },
+                                             {
+                                                  text: 'Dir.: Previstero Juan Carlos García / Madrinas de Guerra – Bo. Villa Armando – Concepción',
+                                                  style: { fontSize: 9, alignment: 'center' },
+                                                  margin: [0, 0, 0, 2]
+                                             },
+                                             {
+                                                  text: 'Tel.: 0985-495-253',
+                                                  style: { fontSize: 9, alignment: 'center' },
+                                                  margin: [0, 0, 0, 4]
+                                             },
+                                             {
+                                                  canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 1 }],
+                                                  margin: [0, 0, 0, 4]
+                                             },
+                                             {
+                                                  text: 'LISTADO DE CLIENTES',
+                                                  style: { fontSize: 13, bold: true, alignment: 'center' },
+                                                  margin: [0, 0, 0, 8]
+                                             }
+                                        );
+
+                                        // Pie de página con fecha y número de página
+                                        doc.footer = function (currentPage, pageCount) {
+                                             return {
+                                                  columns: [
+                                                       { alignment: 'left',  text: fechaHora, margin: [20, 10], fontSize: 8 },
+                                                       { alignment: 'right', text: 'Pág. ' + currentPage + '/' + pageCount, margin: [20, 10], fontSize: 8 }
+                                                  ]
+                                             };
+                                        };
+
+                                        for (let i = 0; i < doc.content.length; i++) {
+                                             if (doc.content[i].table !== undefined) {
+                                                  doc.content[i].table.widths = ['auto', 'auto', '*', '*', 'auto'];
+                                                  break;
+                                             }
+                                        }
+                                   }
+                              }
+                         ],
+                         responsive: true,
+                         language: spanish,
+                         initComplete: function () {
+                              // Botón Nuevo arriba del buscador
+                              var btnNuevo = '<button class="btn btn-sm btn-primary me-2" id="btnNuevoCliente" onclick="$(\'#modalNuevoCliente\').modal(\'show\')"><i class="bi bi-person-plus-fill"></i> Nuevo cliente</button>';
+                              $('.dataTables_filter').before(btnNuevo);
+                              $('.dt-button:contains("Imprimir")')
+                                   .removeClass('dt-button')
+                                   .addClass('btn btn-sm btn-info');
+
+                              $('.dt-button:contains("Exportar a Excel")')
+                                   .removeClass('dt-button')
+                                   .addClass('btn btn-sm btn-success');
+
+                              $('.dt-button:contains("Exportar a PDF")')
+                                   .removeClass('dt-button')
+                                   .addClass('btn btn-sm btn-danger');
+                         }
+                    });
+               }
+
+               function guardarClientes(data) {
+                    localStorage.setItem('clientes', JSON.stringify(data));
+               }
+
+               function obtenerSiguienteId(arr) {
+                    if (arr.length === 0) return 1;
+                    return Math.max(...arr.map(c => c.idcliente || 0)) + 1;
+               }
+          </script>
+    </body>
+</html>
