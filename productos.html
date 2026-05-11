@@ -15,11 +15,24 @@
     <link rel="stylesheet" href="css/vanguardia.css">
 </head>
 <body class="sb-nav-fixed">
-    <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+    <!-- <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
         <a class="navbar-brand ps-3" href="menu.html">Vanguardia</a>
-    </nav>
-
+    </nav> -->
+    <div id="contenedor-navbar">
+        <!-- ========================================================= -->
+        <!-- 1. CONTENEDOR DINÁMICO PARA LA BARRA SUPERIOR (NAVBAR)    -->
+        <!-- Este div vacío será llenado por JavaScript usando fetch() -->
+        <!-- con el contenido del archivo 'navbar.html'.               -->
+        <!-- ========================================================= -->
+    </div>
     <div id="layoutSidenav">
+        <div id="contenedor-sidebar">
+            <!-- ========================================================= -->
+            <!-- 2. CONTENEDOR DINÁMICO PARA EL MENÚ LATERAL (SIDEBAR)     -->
+            <!-- Este div vacío será llenado por JavaScript usando fetch() -->
+            <!-- con el contenido del archivo 'sidebar.html'.              -->
+            <!-- ========================================================= -->
+        </div>
         <div id="layoutSidenav_content">
             <main>
                 <div class="container-fluid px-4">
@@ -74,6 +87,13 @@
                     </div>
                 </div>
             </main>
+            <footer class="py-4 bg-light mt-auto" id="contenedor-footer">
+                <!-- ========================================================= -->
+                <!-- 3. CONTENEDOR DINÁMICO PARA EL PIE DE PAGINA (FOOTER)     -->
+                <!-- Este div vacío será llenado por JavaScript usando fetch() -->
+                <!-- con el contenido del archivo 'footer.html'.               -->
+                <!-- ========================================================= -->
+            </footer>
         </div>
     </div>
 
@@ -95,21 +115,25 @@
                                 <label class="form-label">Nombre del Producto</label>
                                 <input type="text" id="new_name" class="form-control" required>
                             </div>
+                            <div class="col-md-8">
+                                <label class="form-label">Descripcion del Producto</label>
+                                <input type="text" id="new_description" class="form-control" required>
+                            </div>
                             <div class="col-md-4">
                                 <label class="form-label">Precio Compra</label>
-                                <input type="number" id="new_purchase_price" class="form-control" required>
+                                <input type="number" id="new_purchase_price" class="form-control" min="0" required>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Precio Venta</label>
-                                <input type="number" id="new_selling_price" class="form-control" required>
+                                <input type="number" id="new_selling_price" class="form-control" min="0" required>
                             </div>
                             <div class="col-md-2">
                                 <label class="form-label">Stock</label>
-                                <input type="number" id="new_stock" class="form-control" required>
+                                <input type="number" id="new_stock" class="form-control" min="0" required>
                             </div>
                             <div class="col-md-2">
                                 <label class="form-label">Min. Stock</label>
-                                <input type="number" id="new_min_stock" class="form-control" required>
+                                <input type="number" id="new_min_stock" class="form-control" min="0" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Categoría</label>
@@ -151,19 +175,27 @@
                         <div class="row g-3">
                             <div class="col-md-4">
                                 <label class="form-label">Código</label>
-                                <input type="text" id="edit_code" class="form-control">
+                                <input type="text" id="edit_code" class="form-control" required>
                             </div>
                             <div class="col-md-8">
                                 <label class="form-label">Nombre</label>
-                                <input type="text" id="edit_name" class="form-control">
+                                <input type="text" id="edit_name" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Precio Compra</label>
+                                <input type="number" id="edit_purchase_price" class="form-control" min="0" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Precio Venta</label>
-                                <input type="number" id="edit_selling_price" class="form-control">
+                                <input type="number" id="edit_selling_price" class="form-control" min="0" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Stock Actual</label>
-                                <input type="number" id="edit_stock" class="form-control">
+                                <input type="number" id="edit_stock" class="form-control" min="0" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Stock Mínimo</label>
+                                <input type="number" id="edit_min_stock" class="form-control" min="0" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Categoría</label>
@@ -172,6 +204,14 @@
                             <div class="col-md-6">
                                 <label class="form-label">Marca</label>
                                 <select id="edit_brand_id" class="form-select"></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">IVA</label>
+                                <select id="edit_iva" class="form-select">
+                                    <option value="10">10%</option>
+                                    <option value="5">5%</option>
+                                    <option value="0">Exenta</option>
+                                </select>
                             </div>
                         </div>
                     </form>
@@ -202,11 +242,19 @@
         </div>
     </div>
 
+    <script src="menu/scripts.js"></script>
+    <!-- BOOTSTRAP -->
+    <script src="bt/bootstrap.bundle.min.js"></script>
+    <!-- ALERTIFY -->
     <script src="alert/alertify.min.js"></script>
-    <script src="js/bd.js"></script>
+    <!-- DATATABLES -->
     <script src="dt/jquery-3.7.1.js"></script>
-    <script src="menu/bootstrap.bundle.min.js"></script>
     <script src="dt/datatables.min.js"></script>
+    <!-- DATATABLES Idioma Español -->
+    <script src="dt/es-ES.js"></script>
+    <!-- SCRIPTS -->
+    <script src="js/bd.js"></script>
+    <script src="js/alertas.js"></script>
     <script src="js/productos.js"></script>
 </body>
 </html>

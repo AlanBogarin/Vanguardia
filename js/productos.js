@@ -40,7 +40,12 @@ function cargarSelects() {
 
 function inicializarTabla() {
     dataTable = $("#tabla_productos").DataTable({
-        data: cargarProductos(),
+        data: cargarProductos().map(p => {
+            return {
+                ...p,
+                updated_at: p.updated_at || ""
+            };
+        }),
         columns: [
             { data: "id" },
             { data: "code" },
@@ -56,14 +61,16 @@ function inicializarTabla() {
             {
                 data: null,
                 orderable: false,
-                render: data => `
+                render: (data, type, row) => {
+                    return `
                     <div class="text-center">
                         <button class="btn btn-sm btn-primary" onclick="abrirEditar(${data.id})"><i class="bi bi-pencil"></i></button>
                         <button class="btn btn-sm btn-danger" onclick="abrirEliminar(${data.id})"><i class="bi bi-trash"></i></button>
-                    </div>`
+                    </div>`;
+                }
             }
         ],
-        language: { url: "dt/es-ES.js" }
+        language: spanish
     });
 }
 
@@ -97,8 +104,9 @@ function abrirEliminar(id) {
 document.getElementById("btnGuardarNuevo").addEventListener("click", () => {
     const nuevo = {
         id: Date.now(), // ID temporal basado en tiempo
-        code: document.getElementById("new_code").value,
-        name: document.getElementById("new_name").value,
+        code: document.getElementById("new_code").value.trim(),
+        name: document.getElementById("new_name").value.trim(),
+        description: document.getElementById("new_description").value.trim(),
         purchase_price: Number(document.getElementById("new_purchase_price").value),
         selling_price: Number(document.getElementById("new_selling_price").value),
         stock: Number(document.getElementById("new_stock").value),
@@ -107,7 +115,8 @@ document.getElementById("btnGuardarNuevo").addEventListener("click", () => {
         brand_id: Number(document.getElementById("new_brand_id").value),
         iva: Number(document.getElementById("new_iva").value),
         active: true,
-        created_at: new Date()
+        created_at: new Date(),
+        updated_at: null
     };
 
     guardarProducto(nuevo);
@@ -116,8 +125,12 @@ document.getElementById("btnGuardarNuevo").addEventListener("click", () => {
 });
 
 // Evento Confirmar Eliminación
-document.getElementById("btnConfirmarEliminar").addEventListener("click", () => {
-    eliminarProducto(idProductoSeleccionado);
+document.getElementById("btnConfirmarEliminar").addEventListener("click", (e) => {
+    const producto = cargarProducto(idProductoSeleccionado);
+    if (!producto) return;
+    producto.active = !producto.active;
+    guardarProducto(producto);
+    // eliminarProducto(idProductoSeleccionado);
     refrescarTodo(modalEliminar);
     alertify.error("Producto eliminado");
 });

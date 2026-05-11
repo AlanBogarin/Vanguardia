@@ -175,7 +175,7 @@ function guardarUsuario(usuario) {
 function eliminarUsuario(id) {
     const usuarios = cargarUsuarios();
     const index = usuarios.findIndex(u => u.id === id);
-    if (index !== -1) return;
+    if (index === -1) return;
     usuarios.splice(index, 1);
     guardarBD(KEY_USUARIOS, usuarios);
 }
@@ -245,7 +245,7 @@ function guardarCliente(cliente) {
 function eliminarCliente(id) {
     const clientes = cargarClientes();
     const index = clientes.findIndex(c => c.id === id);
-    if (index !== -1) return;
+    if (index === -1) return;
     clientes.splice(index, 1);
     guardarBD(KEY_CLIENTES, clientes);
 }
@@ -315,7 +315,7 @@ function guardarProveedor(proveedor) {
 function eliminarProveedor(id) {
     const proveedores = cargarProveedores();
     const index = proveedores.findIndex(p => p.id === id);
-    if (index !== -1) return;
+    if (index === -1) return;
     proveedores.splice(index, 1);
     guardarBD(KEY_PROVEEDORES, proveedores);
 }
@@ -377,7 +377,7 @@ function guardarCategoria(categoria) {
 function eliminarCategoria(id) {
     const categorias = cargarCategorias();
     const index = categorias.findIndex(c => c.id === id);
-    if (index !== -1) return;
+    if (index === -1) return;
     categorias.splice(index, 1);
     guardarBD(KEY_CATEGORIAS, categorias);
 }
@@ -437,7 +437,7 @@ function guardarMarca(marca) {
 function eliminarMarca(id) {
     const marcas = cargarMarcas();
     const index = marcas.findIndex(m => m.id === id);
-    if (index !== -1) return;
+    if (index === -1) return;
     marcas.splice(index, 1);
     guardarBD(KEY_MARCAS, marcas);
 }
@@ -517,7 +517,7 @@ function guardarProducto(producto) {
 function eliminarProducto(id) {
     const productos = cargarProductos();
     const index = productos.findIndex(p => p.id === id);
-    if (index !== -1) return;
+    if (index === -1) return;
     productos.splice(index, 1);
     guardarBD(KEY_PRODUCTOS, productos);
 }
@@ -585,7 +585,7 @@ function guardarCompra(compra) {
 function eliminarCompra(id) {
     const compras = cargarCompras();
     const index = compras.findIndex(c => c.id === id);
-    if (index !== -1) return;
+    if (index === -1) return;
     compras.splice(index, 1);
     guardarBD(KEY_COMPRAS, compras);
 }
@@ -655,7 +655,7 @@ function guardarCompraDetalle(detalle) {
 function eliminarCompraDetalle(id) {
     const detalles = cargarCompraDetalles();
     const index = detalles.findIndex(d => d.id === id);
-    if (index !== -1) return;
+    if (index === -1) return;
     detalles.splice(index, 1);
     guardarBD(KEY_COMPRADETALLES, detalles);
 }
@@ -723,7 +723,7 @@ function guardarVenta(venta) {
 function eliminarCompra(id) {
     const ventas = cargarVentas();
     const index = ventas.findIndex(v => v.id === id);
-    if (index !== -1) return;
+    if (index === -1) return;
     ventas.splice(index, 1);
     guardarBD(KEY_VENTAS, ventas);
 }
@@ -793,7 +793,7 @@ function guardarVentaDetalle(detalle) {
 function eliminarVentaDetalle(id) {
     const detalles = cargarVentaDetalles();
     const index = detalles.findIndex(d => d.id === id);
-    if (index !== -1) return;
+    if (index === -1) return;
     detalles.splice(index, 1);
     guardarBD(KEY_VENTADETALLES, detalles);
 }
@@ -865,7 +865,7 @@ function guardarCuentaPorPagar(cuenta) {
 function eliminarCuentaPorPagar(id) {
     const cuentas = cargarCuentasPorPagar();
     const index = cuentas.findIndex(c => c.id === id);
-    if (index !== -1) return;
+    if (index === -1) return;
     cuentas.splice(index, 1);
     guardarBD(KEY_CUENTASPORPAGAR, cuentas);
 }
@@ -937,7 +937,7 @@ function guardarCuentaPorCobrar(cuenta) {
 function eliminarCuentaPorCobrar(id) {
     const cuentas = cargarCuentasPorCobrar();
     const index = cuentas.findIndex(c => c.id === id);
-    if (index !== -1) return;
+    if (index === -1) return;
     cuentas.splice(index, 1);
     guardarBD(KEY_CUENTASPORCOBRAR, cuentas);
 }
@@ -1001,7 +1001,7 @@ function guardarPago(pago) {
 function eliminarPago(id) {
     const pagos = cargarPagos();
     const index = pagos.findIndex(p => p.id === id);
-    if (index !== -1) return;
+    if (index === -1) return;
     pagos.splice(index, 1);
     guardarBD(KEY_PAGOS, pagos);
 }
@@ -1065,7 +1065,7 @@ function guardarCobro(cobro) {
 function eliminarCobro(id) {
     const cobros = cargarCobros();
     const index = cobros.findIndex(c => c.id === id);
-    if (index !== -1) return;
+    if (index === -1) return;
     cobros.splice(index, 1);
     guardarBD(KEY_COBROS, cobros);
 }
