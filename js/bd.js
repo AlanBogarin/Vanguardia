@@ -16,7 +16,6 @@ const KEY_CUENTASPORPAGAR = "cuentasporpagar";
 const KEY_CUENTASPORCOBRAR = "cuentasporcobrar";
 const KEY_PAGOS = "pagos";
 const KEY_COBROS = "cobros";
-// SESSION
 const KEY_SESION = "sesion";
 
 /**
