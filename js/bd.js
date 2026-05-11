@@ -1154,6 +1154,16 @@ function initDB() {
 }
 
 function cargarDatosPrueba() {
+    guardarCliente({ id: 1, name: "JUAN CARLOS LOPEZ", ruc: "1234567", tel: "0985111222", email: null, address: "AV. BRASIL 123", active: true, created_at: new Date(), updated_at: null });
+    guardarCliente({ id: 2, name: "MARIA ELENA GOMEZ", ruc: "2345678", tel: "0971333444", email: null, address: "CALLE SAN PEDRO 45", active: true, created_at: new Date(), updated_at: null });
+    guardarCliente({ id: 3, name: "PEDRO ANTONIO MARTINEZ", ruc: "3456789", tel: "0961555666", email: null, address: "BARRIO SAN JORGE SN", active: true, created_at: new Date(), updated_at: null });
+    guardarCliente({ id: 4, name: "ANA BEATRIZ BENITEZ", ruc: "4567890", tel: "0981777888", email: null, address: "AV. MCAL. LOPEZ 800", active: true, created_at: new Date(), updated_at: null });
+    guardarCliente({ id: 5, name: "CARLOS DANIEL GIMENEZ", ruc: "5678901", tel: "0991999000", email: null, address: "CALLE INDEPENDENCIA 320", active: true, created_at: new Date(), updated_at: null });
+    guardarCliente({ id: 6, name: "ROSA MERCEDES PAREDES", ruc: "6789012", tel: "0982121313", email: null, address: "BO. REPUBLICANO MZ 5 CS 2", active: true, created_at: new Date(), updated_at: null });
+    guardarCliente({ id: 7, name: "LUIS FERNANDO ROJAS", ruc: "7890123", tel: "0972414515", email: null, address: "AV. EUSEBIO AYALA 1100", active: true, created_at: new Date(), updated_at: null });
+    guardarCliente({ id: 8, name: "PATRICIA NOEMI ACOSTA", ruc: "8901234", tel: "0962616717", email: null, address: "CALLE PIRIBEBUY 21O", active: true, created_at: new Date(), updated_at: null });
+    guardarCliente({ id: 9, name: "MIGUEL ANGEL SANCHEZ", ruc: "9012345", tel: "0992818919", email: null, address: "AV. FERNANDO DE LA MORA 560", active: true, created_at: new Date(), updated_at: null });
+    guardarCliente({ id: 10, name: "LAURA VIRGINIA ESQUIVEL", ruc: "1357924", tel: "0983020121", email: null, address: "CALLE CERRO CORA 78", active: true, created_at: new Date(), updated_at: null });
 }
 
 /**
