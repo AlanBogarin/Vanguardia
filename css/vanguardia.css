@@ -37,7 +37,7 @@ body {
 }
 
 /* ── Título de página ── */
-h1.mt-2 {
+h1{
      color: #c8dcff;
      font-weight: 700;
      letter-spacing: 1px;

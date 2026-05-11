@@ -4,6 +4,7 @@
           <meta charset="utf-8" />
           <meta http-equiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
           <title>Vanguardia - Clientes</title>
           <link rel="icon" type="image/png" href="img/working.png">
           
@@ -37,7 +38,13 @@
                <div id="layoutSidenav_content">
                     <main>
                          <div class="container-fluid px-4">
-                              <h1 class="mt-2">Clientes</h1>
+                              <!-- Fila título + botón Nuevo cliente -->
+                              <div class="d-flex justify-content-between align-items-center mt-2 mb-2">
+                                   <h1 class="mb-0">Clientes</h1>
+                                   <button class="btn btn-sm btn-primary" onclick="$('#modalNuevoCliente').modal('show')">
+                                        <i class="bi bi-person-plus-fill me-1"></i> Nuevo cliente
+                                   </button>
+                              </div>
                               <div class="row">
                                    <table id="tabla_clientes" class="display compact" style="width:100%">
                                         <thead>
@@ -204,12 +211,12 @@
                     { idcliente: 10, cedula: "1357924", nombre: "LAURA VIRGINIA ESQUIVEL", direccion: "CALLE CERRO CORA 78",         telefono: "0983-020-121" }
                ];
 
-               // Si no hay clientes en localStorage, carga los de prueba
-               if (!localStorage.getItem("clientes")) {
-                    localStorage.setItem("clientes", JSON.stringify(clientesPrueba));
+               // Cargar datos de prueba si no hay clientes propios aun
+               if (!localStorage.getItem("mis_clientes")) {
+                    localStorage.setItem("mis_clientes", JSON.stringify(clientesPrueba));
                }
 
-               var clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+               var clientes = JSON.parse(localStorage.getItem("mis_clientes")) || [];
 
                let tabla;
                const modalNCliente = new bootstrap.Modal(document.getElementById('modalNuevoCliente'));
@@ -336,7 +343,7 @@
                                    }
                               }
                          ],
-                         dom: '<"d-flex justify-content-between align-items-center mb-2"B<"ms-auto"f>>rtip',
+                         dom: '<"d-flex justify-content-between align-items-center mb-2"Bf>rtip',
                          buttons: [
                               {
                                    extend: 'print',
@@ -431,9 +438,7 @@
                          responsive: true,
                          language: spanish,
                          initComplete: function () {
-                              // Botón Nuevo arriba del buscador
-                              var btnNuevo = '<button class="btn btn-sm btn-primary me-2" id="btnNuevoCliente" onclick="$(\'#modalNuevoCliente\').modal(\'show\')"><i class="bi bi-person-plus-fill"></i> Nuevo cliente</button>';
-                              $('.dataTables_filter').before(btnNuevo);
+
                               $('.dt-button:contains("Imprimir")')
                                    .removeClass('dt-button')
                                    .addClass('btn btn-sm btn-info');
@@ -450,7 +455,7 @@
                }
 
                function guardarClientes(data) {
-                    localStorage.setItem('clientes', JSON.stringify(data));
+                    localStorage.setItem('mis_clientes', JSON.stringify(data));
                }
 
                function obtenerSiguienteId(arr) {

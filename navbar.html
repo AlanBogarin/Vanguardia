@@ -1,0 +1,287 @@
+<nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+
+    <!-- Brand -->
+    <a class="navbar-brand ps-3" href="menu.html">Vanguardia</a>
+
+    <!-- Sidebar Toggle -->
+    <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Espaciador -->
+    <div class="ms-auto"></div>
+
+    <!-- ══ DERECHA: Círculo de perfil ══ -->
+    <ul class="navbar-nav me-3 me-lg-4">
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 text-decoration-none"
+               id="navbarDropdown" href="#" role="button"
+               data-bs-toggle="dropdown" aria-expanded="false">
+
+                <!-- Círculo avatar -->
+                <div id="navAvatar" style="
+                    width:38px; height:38px; border-radius:50%;
+                    background: linear-gradient(135deg, #1a56db, #00c2ff);
+                    display:flex; align-items:center; justify-content:center;
+                    font-weight:700; font-size:1rem; color:#fff;
+                    border:2px solid rgba(255,255,255,0.35);
+                    cursor:pointer; flex-shrink:0;">?
+                </div>
+            </a>
+
+            <!-- Dropdown -->
+            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0"
+                style="min-width:230px; border-radius:12px; overflow:hidden;">
+
+                <!-- Encabezado con nombre -->
+                <li>
+                    <div class="d-flex align-items-center gap-3 px-3 py-3"
+                         style="background:linear-gradient(135deg,#1a56db,#00c2ff);">
+                        <div id="ddAvatar" style="
+                            width:46px; height:46px; border-radius:50%;
+                            background:rgba(255,255,255,0.25);
+                            display:flex; align-items:center; justify-content:center;
+                            font-weight:700; font-size:1.3rem; color:#fff;
+                            border:2px solid rgba(255,255,255,0.5); flex-shrink:0;">?
+                        </div>
+                        <div>
+                            <div id="ddNombre" class="fw-bold text-white" style="font-size:.92rem;"></div>
+                            <div id="ddUsuario" class="text-white-50" style="font-size:.78rem;"></div>
+                            <div class="text-white-50" style="font-size:.72rem;">Sesión activa</div>
+                        </div>
+                    </div>
+                </li>
+
+                <li><hr class="dropdown-divider my-0"/></li>
+
+                <!-- Configuración -->
+                <li>
+                    <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#"
+                       data-bs-toggle="modal" data-bs-target="#modalConfiguracion">
+                        <i class="bi bi-gear text-primary"></i> Configuración
+                    </a>
+                </li>
+
+                <!-- Cambiar contraseña -->
+                <li>
+                    <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#"
+                       data-bs-toggle="modal" data-bs-target="#modalCambiarContrasena">
+                        <i class="bi bi-shield-lock text-warning"></i> Cambiar contraseña
+                    </a>
+                </li>
+
+                <li><hr class="dropdown-divider my-0"/></li>
+
+                <!-- Cerrar sesión -->
+                <li>
+                    <a class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger fw-semibold"
+                       href="#" onclick="cerrarSesion()">
+                        <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                    </a>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</nav>
+
+<!-- ══ Modal Configuración ══ -->
+<div class="modal fade" id="modalConfiguracion" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-gear-fill me-2"></i>Configuración</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Nombre completo</label>
+                    <input type="text" id="cfgNombre" class="form-control text-uppercase" maxlength="50">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Nombre de usuario</label>
+                    <input type="text" id="cfgUsuario" class="form-control" maxlength="20">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Celular</label>
+                    <input type="text" id="cfgCelular" class="form-control" maxlength="15">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" onclick="guardarConfiguracion()">
+                    <i class="bi bi-floppy"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ Modal Cambiar Contraseña ══ -->
+<div class="modal fade" id="modalCambiarContrasena" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title"><i class="bi bi-shield-lock-fill me-2"></i>Cambiar contraseña</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Contraseña actual</label>
+                    <input type="password" id="passActual" class="form-control" placeholder="Ingrese su contraseña actual">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Nueva contraseña</label>
+                    <input type="password" id="passNueva" class="form-control" placeholder="Mín. 6 caracteres">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Confirmar nueva contraseña</label>
+                    <input type="password" id="passConfirmar" class="form-control" placeholder="Repetí la nueva contraseña">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-warning" onclick="cambiarContrasena()">
+                    <i class="bi bi-floppy"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ── Cargar datos del usuario ─────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+    cargarDatosNavbar();
+});
+
+function cargarDatosNavbar() {
+    let nombre  = localStorage.getItem('nomUsuario')    || '';
+    let usuario = localStorage.getItem('usuarioActivo') || '';
+
+    // Leer sesion del login del compañero si no hay nomUsuario
+    if (!nombre) {
+        try {
+            const sesion   = JSON.parse(localStorage.getItem('sesion'));
+            const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+            if (sesion && sesion.user_id) {
+                const u = usuarios.find(x => x.id === sesion.user_id);
+                if (u) {
+                    nombre  = u.name     || '';
+                    usuario = u.username || '';
+                }
+            }
+        } catch(e) {}
+    }
+
+    const inicial = nombre.charAt(0).toUpperCase() || '?';
+
+    const a1 = document.getElementById('navAvatar');
+    const a2 = document.getElementById('ddAvatar');
+    if (a1) a1.textContent = inicial;
+    if (a2) a2.textContent = inicial;
+
+    const ddNombre  = document.getElementById('ddNombre');
+    const ddUsuario = document.getElementById('ddUsuario');
+    if (ddNombre)  ddNombre.textContent  = nombre;
+    if (ddUsuario) ddUsuario.textContent = usuario ? '@' + usuario : '';
+}
+
+// ── Abrir Configuración: pre-llenar datos ────────────────────────────────────
+document.addEventListener('show.bs.modal', function (e) {
+    if (e.target.id === 'modalConfiguracion') {
+        const usuario  = localStorage.getItem('usuarioActivo') || '';
+        const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+        const u = usuarios.find(x => x.usuario === usuario);
+        if (u) {
+            document.getElementById('cfgNombre').value  = u.nombre  || '';
+            document.getElementById('cfgUsuario').value = u.usuario || '';
+            document.getElementById('cfgCelular').value = u.celular || '';
+        }
+    }
+    if (e.target.id === 'modalCambiarContrasena') {
+        ['passActual','passNueva','passConfirmar'].forEach(id => {
+            document.getElementById(id).value = '';
+        });
+    }
+});
+
+// ── Guardar Configuración ────────────────────────────────────────────────────
+function guardarConfiguracion() {
+    const usuarioActivo = localStorage.getItem('usuarioActivo') || '';
+    const nuevoNombre   = document.getElementById('cfgNombre').value.trim().toUpperCase();
+    const nuevoUsuario  = document.getElementById('cfgUsuario').value.trim();
+    const nuevoCelular  = document.getElementById('cfgCelular').value.trim();
+
+    if (!nuevoNombre || !nuevoUsuario) {
+        alertify.error('El nombre y usuario son obligatorios.');
+        return;
+    }
+
+    let usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+    const idx = usuarios.findIndex(x => x.usuario === usuarioActivo);
+    if (idx !== -1) {
+        usuarios[idx].nombre  = nuevoNombre;
+        usuarios[idx].usuario = nuevoUsuario;
+        usuarios[idx].celular = nuevoCelular;
+        localStorage.setItem('usuarios', JSON.stringify(usuarios));
+        localStorage.setItem('nomUsuario',    nuevoNombre);
+        localStorage.setItem('usuarioActivo', nuevoUsuario);
+        cargarDatosNavbar();
+        bootstrap.Modal.getInstance(document.getElementById('modalConfiguracion')).hide();
+        alertify.success('Configuración guardada correctamente.');
+    } else {
+        alertify.error('No se encontró el usuario activo.');
+    }
+}
+
+// ── Cambiar Contraseña ───────────────────────────────────────────────────────
+function cambiarContrasena() {
+    const usuarioActivo = localStorage.getItem('usuarioActivo') || '';
+    const actual    = document.getElementById('passActual').value;
+    const nueva     = document.getElementById('passNueva').value;
+    const confirmar = document.getElementById('passConfirmar').value;
+
+    if (!actual || !nueva || !confirmar) {
+        alertify.error('Completá todos los campos.');
+        return;
+    }
+    if (nueva.length < 6) {
+        alertify.error('La nueva contraseña debe tener mínimo 6 caracteres.');
+        return;
+    }
+    if (nueva !== confirmar) {
+        alertify.error('Las contraseñas no coinciden.');
+        return;
+    }
+
+    let usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
+    const idx = usuarios.findIndex(x => x.usuario === usuarioActivo);
+    if (idx === -1) { alertify.error('Usuario no encontrado.'); return; }
+
+    if (usuarios[idx].contrasena !== actual) {
+        alertify.error('La contraseña actual es incorrecta.');
+        return;
+    }
+
+    usuarios[idx].contrasena = nueva;
+    localStorage.setItem('usuarios', JSON.stringify(usuarios));
+    bootstrap.Modal.getInstance(document.getElementById('modalCambiarContrasena')).hide();
+    alertify.success('Contraseña cambiada correctamente.');
+}
+
+// ── Cerrar Sesión ────────────────────────────────────────────────────────────
+function cerrarSesion() {
+    alertify.confirm('Vanguardia', '¿Deseas cerrar la sesión?',
+        function () {
+            localStorage.removeItem('nomUsuario');
+            localStorage.removeItem('usuarioActivo');
+            window.location.href = 'login.html';
+        },
+        function () {}
+    ).set('labels', { ok: 'Sí, salir', cancel: 'No' }).set('transition', 'slide');
+}
+</script>
