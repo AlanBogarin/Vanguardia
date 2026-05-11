@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Vanguardia - Menu</title>
+    <link rel="icon" href="img/working.png">
+    <!-- ESTILOS DEL MENU -->
+    <link href="menu/styles.css" rel="stylesheet"/>
+    <!-- BOOTSTRAP -->
+    <link rel="stylesheet" href="bt/bootstrap.min.css">
+    <!-- BOOTSTRAP ICONS -->
+    <link rel="stylesheet" href="bt-icons/bootstrap-icons.min.css">
+    <!-- ALERTIFY -->
+    <link rel="stylesheet" href="alert/alertify.min.css">
+    <link rel="stylesheet" href="alert/themes/default.min.css">
+    <!-- DATATABLES -->
+    <link rel="stylesheet" href="dt/datatables.min.css">
+    <link rel="stylesheet" href="dt/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="dt/buttons.dataTables.min.css">
+    <!-- TEMA VANGUARDIA -->
+    <link rel="stylesheet" href="css/vanguardia.css">
+</head>
+<body class="sb-nav-fixed">
+    <div id="contenedor-navbar">
+        <!-- ========================================================= -->
+        <!-- 1. CONTENEDOR DINÁMICO PARA LA BARRA SUPERIOR (NAVBAR)    -->
+        <!-- Este div vacío será llenado por JavaScript usando fetch() -->
+        <!-- con el contenido del archivo 'navbar.html'.               -->
+        <!-- ========================================================= -->
+    </div>
+    <div id="layoutSidenav">
+        <div id="contenedor-sidebar">
+            <!-- ========================================================= -->
+            <!-- 2. CONTENEDOR DINÁMICO PARA EL MENÚ LATERAL (SIDEBAR)     -->
+            <!-- Este div vacío será llenado por JavaScript usando fetch() -->
+            <!-- con el contenido del archivo 'sidebar.html'.              -->
+            <!-- ========================================================= -->
+        </div>
+        <div id="layoutSidenav_content">
+            <main>
+                <div class="container-fluid px-4">
+                    <!-- Fila título + botón Nuevo cliente -->
+                    <div class="d-flex justify-content-between align-items-center mt-2 mb-2">
+                        <h1 class="mb-0">Clientes</h1>
+                        <button class="btn btn-sm btn-primary" onclick="$('#modalNuevoCliente').modal('show')">
+                            <i class="bi bi-person-plus-fill me-1"></i> Nuevo cliente
+                        </button>
+                    </div>
+                    <div class="row">
+                        <table id="tabla_clientes" class="display compact" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>Id Cliente</th>
+                                    <th>Nombre</th>
+                                    <th>RUC</th>
+                                    <th>Teléfono</th>
+                                    <th>Correo</th>
+                                    <th>Dirección</th>
+                                    <th>Activo</th>
+                                    <th>Fecha de Creación</th>
+                                    <th>Fecha de Modificación</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </main>
+            <footer class="py-4 bg-light mt-auto" id="contenedor-footer">
+                <!-- ========================================================= -->
+                <!-- 3. CONTENEDOR DINÁMICO PARA EL PIE DE PAGINA (FOOTER)     -->
+                <!-- Este div vacío será llenado por JavaScript usando fetch() -->
+                <!-- con el contenido del archivo 'footer.html'.               -->
+                <!-- ========================================================= -->
+            </footer>
+        </div>
+    </div>
+
+    <!-- Modal Nuevo Cliente -->
+    <div class="modal fade" id="modalNuevoCliente" tabindex="-1" aria-labelledby="modalNuevoClienteLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <form id="formNuevoCliente" class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalNuevoClienteLabel"><i class="bi bi-person-plus-fill"></i> Agregar Nuevo Cliente</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label class="form-label">Nombre completo</label>
+                        <input type="text" id="nombre" class="form-control text-uppercase" required minlength="5" maxlength="50">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">RUC</label>
+                        <input type="number" id="ruc" class="form-control" pattern="\d+(-\d)?">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Teléfono</label>
+                        <input type="text" id="telefono" class="form-control" minlength="6" maxlength="15">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Correo Electrónico</label>
+                        <input type="text" id="correo" class="form-control" pattern="[^\s@]+@[^\s@]+\.[^\s@]{2,}">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Dirección</label>
+                        <input type="text" id="direccion" class="form-control text-uppercase" minlength="5" maxlength="50">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-floppy"></i> Guardar Cliente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Editar Cliente -->
+    <div class="modal fade" id="modalEditarCliente" tabindex="-1" aria-labelledby="modalEditarClienteLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <form id="formEditarCliente" class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title" id="modalEditarClienteLabel"><i class="bi bi-pencil-square"></i> Editar Cliente</h5>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="edit_id">
+                    <div class="mb-2">
+                        <label class="form-label">Nombre completo</label>
+                        <input type="text" id="edit_nombre" class="form-control text-uppercase" required minlength="5" maxlength="50">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">RUC</label>
+                        <input type="number" id="edit_ruc" class="form-control" pattern="\d+(-\d)?">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Teléfono</label>
+                        <input type="text" id="edit_telefono" class="form-control" minlength="6" maxlength="15">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Correo Electrónico</label>
+                        <input type="text" id="edit_correo" class="form-control" pattern="[^\s@]+@[^\s@]+\.[^\s@]{2,}">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Dirección</label>
+                        <input type="text" id="edit_direccion" class="form-control text-uppercase" minlength="5" maxlength="50">
+                    </div>
+                    <input type="hidden" id="edit_activo">
+                    <input type="hidden" id="edit_creacion">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                    <button type="submit" class="btn btn-warning"><i class="bi bi-floppy"></i> Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Eliminar Cliente -->
+    <div class="modal fade" id="modalEliminarCliente" tabindex="-1" aria-labelledby="modalEliminarClienteLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="modalEliminarClienteLabel"><i class="bi bi-exclamation-triangle-fill"></i> Anular Cliente</h5>
+                </div>
+                <div class="modal-body">
+                    <p class="text-center fw-bold">¿Deseas proceder con la eliminación?</p>
+                    <input type="hidden" id="del_id">
+                    <ul class="list-group mb-3">
+                        <li class="list-group-item"><strong>Nombre:</strong> <span id="del_nombre"></span></li>
+                        <li class="list-group-item"><strong>RUC:</strong> <span id="del_ruc"></span></li>
+                        <li class="list-group-item"><strong>Dirección:</strong> <span id="del_direccion"></span></li>
+                        <li class="list-group-item"><strong>Teléfono:</strong> <span id="del_telefono"></span></li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarEliminar"><i class="bi bi-trash"></i> Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MENU -->
+    <script src="menu/scripts.js"></script>
+    <!-- BOOTSTRAP -->
+    <script src="bt/bootstrap.bundle.min.js"></script>
+    <!-- ALERTIFY -->
+    <script src="alert/alertify.min.js"></script>
+    <!-- DATATABLES -->
+    <script src="dt/jquery-3.7.1.js"></script>
+    <script src="dt/datatables.min.js"></script>
+    <script src="dt/jquery.dataTables.min.js"></script>
+    <!-- DATATABLES Buttons extension -->
+    <script src="dt/dataTables.buttons.min.js"></script>
+    <script src="dt/buttons.print.min.js"></script>
+    <script src="dt/buttons.html5.min.js"></script>
+    <!-- DATATABLES JSZip y pdfmake para exportar -->
+    <script src="dt/jszip.min.js"></script>
+    <script src="dt/pdfmake.min.js"></script>
+    <script src="dt/vfs_fonts.js"></script>
+    <!-- DATATABLES Idioma Español -->
+    <script src="dt/es-ES.js"></script>
+    <!-- SCRIPTS -->
+    <script src="js/bd.js"></script>
+    <script src="js/alertas.js"></script>
+    <script src="js/clientes.js"></script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <title>Vanguardia - Compras</title>
+    <title>Vanguardia - Ventas</title>
     <link rel="icon" href="img/working.png">
     <link href="menu/styles.css" rel="stylesheet"/>
     <link rel="stylesheet" href="bt/bootstrap.min.css">
@@ -35,17 +35,17 @@
             <main>
                 <div class="container-fluid px-4">
                     <div class="d-flex justify-content-between align-items-center mt-2 mb-2">
-                        <h1 class="mb-0">Compras</h1>
-                        <button class="btn btn-sm btn-primary" onclick="$('#modalNuevaCompra').modal('show')">
-                            <i class="bi bi-cart-plus-fill me-1"></i> Nueva Compra
+                        <h1 class="mb-0">Ventas</h1>
+                        <button class="btn btn-sm btn-primary" onclick="$('#modalNuevaVenta').modal('show')">
+                            <i class="bi bi-cart-check-fill me-1"></i> Nueva Venta
                         </button>
                     </div>
                     <div class="row">
-                        <table id="tabla_compras" class="display compact" style="width:100%">
+                        <table id="tabla_ventas" class="display compact" style="width:100%">
                             <thead>
                                 <tr>
-                                    <th>Id Compra</th>
-                                    <th>Proveedor</th>
+                                    <th>Id Venta</th>
+                                    <th>Cliente</th>
                                     <th>Usuario</th>
                                     <th>Tipo Pago</th>
                                     <th>Total</th>
@@ -67,18 +67,18 @@
         </div>
     </div>
 
-    <!-- Modal Nueva Compra -->
-    <div class="modal fade modal-lg" id="modalNuevaCompra" tabindex="-1" aria-labelledby="modalNuevaCompraLabel" aria-hidden="true" data-bs-backdrop="static">
+    <!-- Modal Nueva Venta -->
+    <div class="modal fade modal-lg" id="modalNuevaVenta" tabindex="-1" aria-labelledby="modalNuevaVentaLabel" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog">
-            <form id="formNuevaCompra" class="modal-content">
+            <form id="formNuevaVenta" class="modal-content">
                 <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="modalNuevaCompraLabel"><i class="bi bi-cart-plus-fill"></i> Registrar Nueva Compra</h5>
+                    <h5 class="modal-title" id="modalNuevaVentaLabel"><i class="bi bi-cart-check-fill"></i> Registrar Nueva Venta</h5>
                 </div>
                 <div class="modal-body">
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">Proveedor</label>
-                            <select id="provider_id" class="form-select" required></select>
+                            <label class="form-label">Cliente</label>
+                            <select id="client_id" class="form-select" required></select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Tipo de Pago</label>
@@ -105,7 +105,7 @@
                             <input type="number" id="cantidad_input" class="form-control" placeholder="Cantidad" min="1">
                         </div>
                         <div class="col-md-3">
-                            <input type="number" id="precio_input" class="form-control" placeholder="Precio Unit.">
+                            <input type="number" id="precio_input" class="form-control" placeholder="Precio Unit." readonly>
                         </div>
                         <div class="col-md-1">
                             <button type="button" class="btn btn-success w-100" id="btnAgregarDetalle"><i class="bi bi-plus-lg"></i></button>
@@ -113,7 +113,7 @@
                     </div>
                     
                     <div class="table-responsive">
-                        <table class="table table-sm table-bordered" id="tabla_detalles_compra">
+                        <table class="table table-sm table-bordered" id="tabla_detalles_venta">
                             <thead class="table-light">
                                 <tr>
                                     <th>Producto</th>
@@ -129,7 +129,7 @@
                             <tfoot>
                                 <tr>
                                     <th colspan="3" class="text-end">Total:</th>
-                                    <th id="total_compra">0</th>
+                                    <th id="total_venta">0</th>
                                     <th></th>
                                 </tr>
                             </tfoot>
@@ -138,23 +138,23 @@
                 </div>
                 <div class="modal-footer">
                     <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-floppy"></i> Guardar Compra</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-floppy"></i> Guardar Venta</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Modal Ver Detalles Compra -->
+    <!-- Modal Ver Detalles Venta -->
     <div class="modal fade modal-lg" id="modalVerDetalles" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header bg-info text-white">
-                    <h5 class="modal-title"><i class="bi bi-info-circle"></i> Detalles de la Compra #<span id="ver_compra_id"></span></h5>
+                    <h5 class="modal-title"><i class="bi bi-info-circle"></i> Detalles de la Venta #<span id="ver_venta_id"></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row mb-3">
-                        <div class="col-md-6"><strong>Proveedor:</strong> <span id="ver_proveedor"></span></div>
+                        <div class="col-md-6"><strong>Cliente:</strong> <span id="ver_cliente"></span></div>
                         <div class="col-md-6"><strong>Fecha:</strong> <span id="ver_fecha"></span></div>
                         <div class="col-md-6"><strong>Usuario:</strong> <span id="ver_usuario"></span></div>
                         <div class="col-md-6"><strong>Tipo Pago:</strong> <span id="ver_tipo_pago"></span></div>
@@ -173,7 +173,7 @@
                         <tfoot>
                             <tr>
                                 <th colspan="3" class="text-end">Total:</th>
-                                <th id="ver_total_compra">0</th>
+                                <th id="ver_total_venta">0</th>
                             </tr>
                         </tfoot>
                     </table>
@@ -197,6 +197,6 @@
     <script src="dt/es-ES.js"></script>
     <script src="js/bd.js"></script>
     <script src="js/alertas.js"></script>
-    <script src="js/compras.js"></script>
+    <script src="js/ventas.js"></script>
 </body>
 </html>

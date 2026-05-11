@@ -44,7 +44,7 @@ function pedir(titulo, mensaje, value, onOk, onCancel) {
  */
 function cerrarSesion(onOk=null, onCancel=null) {
     alertify.confirm(
-        "Cerrar Sesión",
+        "Vanguardia",
         "¿Desea cerrar la sesión actual?",
         () => {
             if (onOk) onOk();
@@ -52,7 +52,10 @@ function cerrarSesion(onOk=null, onCancel=null) {
             document.location.href = "login.html";
         },
         onCancel
-    );
+    ).set('transition', 'slide').set('labels', {
+        ok: 'Sí, salir',
+        cancel: 'No'
+    });
 }
 
 /**

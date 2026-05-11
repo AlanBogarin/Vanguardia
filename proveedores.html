@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <title>Vanguardia - Proveedores</title>
+    <link rel="icon" type="image/png" href="img/working.png">
+
+    <!-- estilo menu -->
+    <link href="menu/styles.css" rel="stylesheet" />
+
+    <!-- BOOTSTRAP -->
+    <link rel="stylesheet" href="bt-icons/bootstrap-icons.min.css">
+
+    <!-- DATATABLES -->
+    <link rel="stylesheet" href="dt/datatables.min.css">
+    <link rel="stylesheet" href="dt/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="dt/buttons.dataTables.min.css">
+
+    <!-- ALERTIFYJS -->
+    <link rel="stylesheet" href="alert/alertify.min.css">
+    <link rel="stylesheet" href="alert/themes/default.min.css">
+    <script src="alert/alertify.min.js"></script>
+</head>
+<body class="sb-nav-fixed">
+
+    <!-- NAVBAR DINAMICO -->
+    <div id="contenedor-navbar"></div>
+
+    <div id="layoutSidenav">
+        <!-- SIDEBAR DINAMICO -->
+        <div id="contenedor-sidebar"></div>
+
+        <div id="layoutSidenav_content">
+            <main>
+                <div class="container-fluid px-4">
+                    <h1 class="mt-3"><i class="bi bi-truck"></i> Proveedores</h1>
+                    <p class="text-muted mb-3">Gestión de proveedores del sistema.</p>
+
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <table id="tabla_proveedores" class="display compact" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nombre</th>
+                                        <th>RUC</th>
+                                        <th>Teléfono</th>
+                                        <th>Correo</th>
+                                        <th>Dirección</th>
+                                        <th>Activo</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <footer class="py-4 bg-light mt-auto">
+                <div class="container-fluid px-4">
+                    <div class="d-flex align-items-center justify-content-between small">
+                        <div class="text-muted">Copyright &copy; Vanguardia 2026</div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- ════════════════ MODAL NUEVO PROVEEDOR ════════════════ -->
+    <div class="modal fade" id="modalNuevoProveedor" tabindex="-1"
+         aria-labelledby="modalProveedorLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg">
+            <form id="formNuevoProveedor" class="modal-content needs-validation" novalidate>
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalProveedorLabel">
+                        <i class="bi bi-truck"></i> Agregar Nuevo Proveedor
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white"
+                            data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label fw-semibold">
+                                Nombre / Razón Social <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" id="nombre" class="form-control text-uppercase"
+                                   required minlength="3" maxlength="80">
+                            <div class="invalid-feedback" id="err_nombre">
+                                Ingrese un nombre (3 a 80 caracteres).
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">RUC</label>
+                            <input type="text" id="ruc" class="form-control"
+                                   maxlength="15" pattern="^[0-9\-]*$"
+                                   placeholder="Ej: 80012345-7">
+                            <div class="invalid-feedback" id="err_ruc">
+                                Solo números y guión.
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Teléfono</label>
+                            <input type="text" id="tel" class="form-control"
+                                   maxlength="20" pattern="^[0-9\s\-\+\(\)]*$"
+                                   placeholder="0985 123-456">
+                            <div class="invalid-feedback" id="err_tel">
+                                Formato de teléfono inválido.
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Correo electrónico</label>
+                            <input type="email" id="email" class="form-control"
+                                   maxlength="80" placeholder="proveedor@dominio.com">
+                            <div class="invalid-feedback" id="err_email">
+                                Ingrese un correo válido.
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Dirección</label>
+                            <input type="text" id="address" class="form-control"
+                                   maxlength="120" placeholder="Calle / N° / Barrio / Ciudad">
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="active" checked>
+                                <label class="form-check-label fw-semibold" for="active">
+                                    Proveedor activo
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-floppy"></i> Guardar Proveedor
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ════════════════ MODAL EDITAR PROVEEDOR ════════════════ -->
+    <div class="modal fade" id="modalEditarProveedor" tabindex="-1"
+         aria-labelledby="modalEditarProveedorLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg">
+            <form id="formEditarProveedor" class="modal-content needs-validation" novalidate>
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title" id="modalEditarProveedorLabel">
+                        <i class="bi bi-pencil-square"></i> Editar Proveedor
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="edit_id">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label fw-semibold">
+                                Nombre / Razón Social <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" id="edit_nombre" class="form-control text-uppercase"
+                                   required minlength="3" maxlength="80">
+                            <div class="invalid-feedback" id="err_edit_nombre">
+                                Ingrese un nombre (3 a 80 caracteres).
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">RUC</label>
+                            <input type="text" id="edit_ruc" class="form-control"
+                                   maxlength="15" pattern="^[0-9\-]*$">
+                            <div class="invalid-feedback" id="err_edit_ruc">
+                                Solo números y guión.
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Teléfono</label>
+                            <input type="text" id="edit_tel" class="form-control"
+                                   maxlength="20" pattern="^[0-9\s\-\+\(\)]*$">
+                            <div class="invalid-feedback" id="err_edit_tel">
+                                Formato de teléfono inválido.
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Correo electrónico</label>
+                            <input type="email" id="edit_email" class="form-control" maxlength="80">
+                            <div class="invalid-feedback" id="err_edit_email">
+                                Ingrese un correo válido.
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Dirección</label>
+                            <input type="text" id="edit_address" class="form-control" maxlength="120">
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="edit_active">
+                                <label class="form-check-label fw-semibold" for="edit_active">
+                                    Proveedor activo
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-floppy"></i> Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ════════════════ MODAL ELIMINAR PROVEEDOR ════════════════ -->
+    <div class="modal fade" id="modalEliminarProveedor" tabindex="-1"
+         aria-labelledby="modalEliminarProveedorLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="modalEliminarProveedorLabel">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Eliminar Proveedor
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white"
+                            data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-center fw-bold">¿Deseas proceder con la eliminación?</p>
+                    <input type="hidden" id="del_id">
+                    <ul class="list-group mb-3">
+                        <li class="list-group-item"><strong>Nombre:</strong> <span id="del_nombre"></span></li>
+                        <li class="list-group-item"><strong>RUC:</strong> <span id="del_ruc"></span></li>
+                        <li class="list-group-item"><strong>Teléfono:</strong> <span id="del_tel"></span></li>
+                        <li class="list-group-item"><strong>Correo:</strong> <span id="del_email"></span></li>
+                    </ul>
+                    <p class="text-danger small mb-0">
+                        <i class="bi bi-exclamation-circle"></i>
+                        No se podrá eliminar si el proveedor tiene compras registradas.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MENU -->
+    <script src="menu/bootstrap.bundle.min.js"></script>
+    <script src="menu/scripts.js"></script>
+    <!-- DATATABLES -->
+    <script src="dt/jquery-3.7.1.js"></script>
+    <script src="dt/datatables.min.js"></script>
+    <script src="dt/jquery.dataTables.min.js"></script>
+    <!-- DATATABLES Buttons -->
+    <script src="dt/dataTables.buttons.min.js"></script>
+    <script src="dt/buttons.print.min.js"></script>
+    <script src="dt/buttons.html5.min.js"></script>
+    <!-- DATATABLES JSZip y pdfmake -->
+    <script src="dt/jszip.min.js"></script>
+    <script src="dt/pdfmake.min.js"></script>
+    <script src="dt/vfs_fonts.js"></script>
+    <!-- DATATABLES Idioma Español -->
+    <script src="dt/es-ES.js"></script>
+
+    <!-- LOGICA DEL SISTEMA -->
+    <script src="js/bd.js"></script>
+    <script src="js/funcionesSistema.js"></script>
+    <script src="js/proveedores.js"></script>
+</body>
+</html>
