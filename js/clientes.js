@@ -1,13 +1,56 @@
 /** @typedef {import('./bd')} */
 /** @typedef {import('./alertas')} */
+/** @typedef {import('./alertify')} */
 
 // Redirigir a login.html si no hay sesion
 window.onload = validarSesion;
 
-var clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+// var clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+// let tabla;
+// const modalNCliente = new bootstrap.Modal(document.getElementById('nuevoCliente'));
 
-let tabla;
-const modalNCliente = new bootstrap.Modal(document.getElementById('nuevoCliente'));
+function nuevoCliente() {
+    const nombreElem = document.getElementById("nombre");
+    let nombre = nombreElem.value.trim();
+    const rucElem = document.getElementById("ruc");
+    let ruc = rucElem.value.trim();
+    const telElem = document.getElementById("telefono");
+    let tel = telElem.value.trim();
+    const correoElem = document.getElementById("correo");
+    let correo = correoElem.value.trim();
+    const direccionElem = document.getElementById("direccion");
+    let direccion = direccionElem.value.trim();
+
+    if (!nombre) {
+        alertify.error("El nombre es obligatorio");
+        nombreElem.focus();
+        return;
+    } else if (ruc && !ruc.match(/^\d+(-\d)?$/)) {
+        alertify.error("El formato del ruc es invalido");
+        rucElem.focus();
+        return;
+    } else if (tel && !tel.match(/^09\d{8}$/)) {
+        alertify.error("El teléfono es invalido");
+        telElem.focus();
+        return;
+    } else if (correo && !correo.match(/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/)) {
+        alertify.error("El correo es invalido");
+        correoElem.focus();
+        return;
+    }
+    const nuevo_id = cargarClientes().length;
+    guardarCliente({
+        id: nuevo_id,
+        name: nombre.toUpperCase(),
+        ruc: ruc || null,
+        tel: tel || null,
+        email: correo ? correo.toLowerCase() : null,
+        address: direccion ? direccion.toUpperCase() : null,
+        active: true,
+        created_at: new Date(),
+        updated_at: null
+    });
+}
 
 document.addEventListener('DOMContentLoaded', function () {
     cargarComponentes();
