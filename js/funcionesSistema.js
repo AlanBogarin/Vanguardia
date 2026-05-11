@@ -3,7 +3,7 @@ function cerrarSesion() {
     alertify.confirm("Nombre del sistema", "¿Quieres cerrar la sesión del usuario?",
         function(){
             localStorage.removeItem("nomUsuario"); //Elimina el nombre del usuario
-            window.location.href = "login.html"; // Redirige al login
+            window.location.href = "l.html"; // Redirige al login
         },
         function(){
             
@@ -16,9 +16,9 @@ function cerrarSesion() {
  * Carga los componentes basicos: Navbar, Sidebar, Footer
  */
 function cargarComponentes() {
-    cargarComponente("contenedor-navbar", "componentes/navbar.html");
-    cargarComponente("contenedor-sidebar", "componentes/sidebar.html");
-    cargarComponente("contenedor-footer", "componentes/footer.html");
+    cargarComponente("contenedor-navbar", "menu/navbar.html");
+    cargarComponente("contenedor-sidebar", "menu/sidebar.html");
+    cargarComponente("contenedor-footer", "menu/footer.html");
     // Inicializar el nombre del usuario después de cargar el menú lateral
     var nom = localStorage.getItem("nomUsuario");
     if (nom != "" && nom != null) {
