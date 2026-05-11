@@ -15,14 +15,14 @@ window.addEventListener("DOMContentLoaded", () => {
 function verificarSesion() {
     const sesion = cargarSesion();
     if (!sesion) {
-        window.location.href = "login.html";  // cambiá index.html por login.html
+        window.location.href = "login.html";
         return;
     }
     const ahora = new Date();
     const expira = new Date(sesion.expire_at);
     if (ahora > expira) {
         eliminarSesion();
-        window.location.href = "login.html";  // cambiá index.html por login.html
+        window.location.href = "login.html";
     }
 }
 
@@ -31,7 +31,7 @@ function verificarSesion() {
  */
 function cerrarSesion() {
     eliminarSesion();
-    window.location.href = "index.html";
+    window.location.href = "login.html";
 }
 
 // =============================================
