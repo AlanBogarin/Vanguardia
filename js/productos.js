@@ -58,6 +58,10 @@ function inicializarTabla() {
                 data: null,
                 render: row => renderStock(row)
             },
+            { 
+                data: "active",
+                render: (data) => data ? "ACTIVO" : "INACTIVO"
+            },
             {
                 data: null,
                 orderable: false,
@@ -132,7 +136,8 @@ document.getElementById("btnConfirmarEliminar").addEventListener("click", (e) =>
     guardarProducto(producto);
     // eliminarProducto(idProductoSeleccionado);
     refrescarTodo(modalEliminar);
-    alertify.error("Producto eliminado");
+    if (producto.active) alertify.success("Producto restaurado");
+    else alertify.error("Producto eliminado");
 });
 
 function refrescarTodo(modal) {
