@@ -1,5 +1,4 @@
 <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
-
     <!-- Brand -->
     <a class="navbar-brand ps-3" href="menu.html">Vanguardia</a>
 
@@ -17,7 +16,6 @@
             <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 text-decoration-none"
                id="navbarDropdown" href="#" role="button"
                data-bs-toggle="dropdown" aria-expanded="false">
-
                 <!-- Círculo avatar -->
                 <div id="navAvatar" style="
                     width:38px; height:38px; border-radius:50%;
@@ -32,7 +30,6 @@
             <!-- Dropdown -->
             <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0"
                 style="min-width:230px; border-radius:12px; overflow:hidden;">
-
                 <!-- Encabezado con nombre -->
                 <li>
                     <div class="d-flex align-items-center gap-3 px-3 py-3"
@@ -101,10 +98,10 @@
                     <label class="form-label fw-semibold">Nombre de usuario</label>
                     <input type="text" id="cfgUsuario" class="form-control" maxlength="20">
                 </div>
-                <div class="mb-3">
+                <!-- <div class="mb-3">
                     <label class="form-label fw-semibold">Celular</label>
                     <input type="text" id="cfgCelular" class="form-control" maxlength="15">
-                </div>
+                </div> -->
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
@@ -124,7 +121,6 @@
         <div class="modal-content">
             <div class="modal-header bg-warning text-dark">
                 <h5 class="modal-title"><i class="bi bi-shield-lock-fill me-2"></i>Cambiar contraseña</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
@@ -151,137 +147,3 @@
         </div>
     </div>
 </div>
-
-<script>
-// ── Cargar datos del usuario ─────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', function () {
-    cargarDatosNavbar();
-});
-
-function cargarDatosNavbar() {
-    let nombre  = localStorage.getItem('nomUsuario')    || '';
-    let usuario = localStorage.getItem('usuarioActivo') || '';
-
-    // Leer sesion del login del compañero si no hay nomUsuario
-    if (!nombre) {
-        try {
-            const sesion   = JSON.parse(localStorage.getItem('sesion'));
-            const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
-            if (sesion && sesion.user_id) {
-                const u = usuarios.find(x => x.id === sesion.user_id);
-                if (u) {
-                    nombre  = u.name     || '';
-                    usuario = u.username || '';
-                }
-            }
-        } catch(e) {}
-    }
-
-    const inicial = nombre.charAt(0).toUpperCase() || '?';
-
-    const a1 = document.getElementById('navAvatar');
-    const a2 = document.getElementById('ddAvatar');
-    if (a1) a1.textContent = inicial;
-    if (a2) a2.textContent = inicial;
-
-    const ddNombre  = document.getElementById('ddNombre');
-    const ddUsuario = document.getElementById('ddUsuario');
-    if (ddNombre)  ddNombre.textContent  = nombre;
-    if (ddUsuario) ddUsuario.textContent = usuario ? '@' + usuario : '';
-}
-
-// ── Abrir Configuración: pre-llenar datos ────────────────────────────────────
-document.addEventListener('show.bs.modal', function (e) {
-    if (e.target.id === 'modalConfiguracion') {
-        const usuario  = localStorage.getItem('usuarioActivo') || '';
-        const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
-        const u = usuarios.find(x => x.usuario === usuario);
-        if (u) {
-            document.getElementById('cfgNombre').value  = u.nombre  || '';
-            document.getElementById('cfgUsuario').value = u.usuario || '';
-            document.getElementById('cfgCelular').value = u.celular || '';
-        }
-    }
-    if (e.target.id === 'modalCambiarContrasena') {
-        ['passActual','passNueva','passConfirmar'].forEach(id => {
-            document.getElementById(id).value = '';
-        });
-    }
-});
-
-// ── Guardar Configuración ────────────────────────────────────────────────────
-function guardarConfiguracion() {
-    const usuarioActivo = localStorage.getItem('usuarioActivo') || '';
-    const nuevoNombre   = document.getElementById('cfgNombre').value.trim().toUpperCase();
-    const nuevoUsuario  = document.getElementById('cfgUsuario').value.trim();
-    const nuevoCelular  = document.getElementById('cfgCelular').value.trim();
-
-    if (!nuevoNombre || !nuevoUsuario) {
-        alertify.error('El nombre y usuario son obligatorios.');
-        return;
-    }
-
-    let usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
-    const idx = usuarios.findIndex(x => x.usuario === usuarioActivo);
-    if (idx !== -1) {
-        usuarios[idx].nombre  = nuevoNombre;
-        usuarios[idx].usuario = nuevoUsuario;
-        usuarios[idx].celular = nuevoCelular;
-        localStorage.setItem('usuarios', JSON.stringify(usuarios));
-        localStorage.setItem('nomUsuario',    nuevoNombre);
-        localStorage.setItem('usuarioActivo', nuevoUsuario);
-        cargarDatosNavbar();
-        bootstrap.Modal.getInstance(document.getElementById('modalConfiguracion')).hide();
-        alertify.success('Configuración guardada correctamente.');
-    } else {
-        alertify.error('No se encontró el usuario activo.');
-    }
-}
-
-// ── Cambiar Contraseña ───────────────────────────────────────────────────────
-function cambiarContrasena() {
-    const usuarioActivo = localStorage.getItem('usuarioActivo') || '';
-    const actual    = document.getElementById('passActual').value;
-    const nueva     = document.getElementById('passNueva').value;
-    const confirmar = document.getElementById('passConfirmar').value;
-
-    if (!actual || !nueva || !confirmar) {
-        alertify.error('Completá todos los campos.');
-        return;
-    }
-    if (nueva.length < 6) {
-        alertify.error('La nueva contraseña debe tener mínimo 6 caracteres.');
-        return;
-    }
-    if (nueva !== confirmar) {
-        alertify.error('Las contraseñas no coinciden.');
-        return;
-    }
-
-    let usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
-    const idx = usuarios.findIndex(x => x.usuario === usuarioActivo);
-    if (idx === -1) { alertify.error('Usuario no encontrado.'); return; }
-
-    if (usuarios[idx].contrasena !== actual) {
-        alertify.error('La contraseña actual es incorrecta.');
-        return;
-    }
-
-    usuarios[idx].contrasena = nueva;
-    localStorage.setItem('usuarios', JSON.stringify(usuarios));
-    bootstrap.Modal.getInstance(document.getElementById('modalCambiarContrasena')).hide();
-    alertify.success('Contraseña cambiada correctamente.');
-}
-
-// ── Cerrar Sesión ────────────────────────────────────────────────────────────
-function cerrarSesion() {
-    alertify.confirm('Vanguardia', '¿Deseas cerrar la sesión?',
-        function () {
-            localStorage.removeItem('nomUsuario');
-            localStorage.removeItem('usuarioActivo');
-            window.location.href = 'login.html';
-        },
-        function () {}
-    ).set('labels', { ok: 'Sí, salir', cancel: 'No' }).set('transition', 'slide');
-}
-</script>

@@ -12,29 +12,34 @@ function cerrarSesion() {
 }
 //---------------------------------------------------------------------------------------
 
-// Función para cargar componentes HTML externos
+/**
+ * Carga los componentes basicos: Navbar, Sidebar, Footer
+ */
 function cargarComponentes() {
-    // Cargar Navbar
-    fetch('navbar.html')
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById('contenedor-navbar').innerHTML = data;
-        })
-        .catch(error => console.error('Error al cargar navbar:', error));
-
-    // Cargar Sidebar
-    fetch('sidebar.html')
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById('contenedor-sidebar').innerHTML = data;
-            
-            // Inicializar el nombre del usuario después de cargar el menú lateral
-            var nom = localStorage.getItem("nomUsuario");
-            if (nom != "" && nom != null) {
-                let usuarioDiv = document.getElementById("usuario");
-                if(usuarioDiv) usuarioDiv.innerHTML = nom;
-            }
-        })
-        .catch(error => console.error('Error al cargar sidebar:', error));
+    cargarComponente("contenedor-navbar", "componentes/navbar.html");
+    cargarComponente("contenedor-sidebar", "componentes/sidebar.html");
+    cargarComponente("contenedor-footer", "componentes/footer.html");
+    // Inicializar el nombre del usuario después de cargar el menú lateral
+    var nom = localStorage.getItem("nomUsuario");
+    if (nom != "" && nom != null) {
+        let usuarioDiv = document.getElementById("usuario");
+        if(usuarioDiv) usuarioDiv.innerHTML = nom;
+    }
 }
-//---------------------------------------------------------------------------------------
+
+/**
+ * Funcion para cargar componentes especificos en el html
+ * @param {string} id ID de la etiqueta html
+ * @param {string} path Ruta del archivo html a cargar
+ */
+function cargarComponente(id, path) {
+    fetch(path)
+        .then(response => {
+            if (!response.ok) throw new Error("Error al cargar " + path);
+            return response.text();
+        })
+        .then(data => {
+            document.getElementById(id).innerHTML = data;
+        })
+        .catch(error => console.error(error));
+}

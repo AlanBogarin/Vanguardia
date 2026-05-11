@@ -81,8 +81,8 @@ function guardarRol(rol) {
     const index = roles.findIndex(item => item.id === rol.id);
     const data = {
         id: rol.id,
-        name: rol.name,
-        description: rol.description,
+        name: rol.name.toUpperCase(),
+        description: rol.description.toUpperCase(),
         created_at: rol.created_at,
         updated_at: rol.updated_at
     }
@@ -109,9 +109,9 @@ function eliminarRol(id) {
 /**
  * @typedef {Object} Usuario
  * @property {number} id Identificador único del usuario
- * @property {string} username Nombre corto a mostrar
+ * @property {string} username Nombre de usuario
  * @property {string} password_hash Hash de la contraseña
- * @property {string} name Nombre de usuario
+ * @property {string} name Nombre completo
  * @property {string} email Correo electronico
  * @property {number} rol_id Identificador del Rol
  * @property {boolean} active El usuario está activo
@@ -151,10 +151,10 @@ function guardarUsuario(usuario) {
     const index = usuarios.findIndex(u => u.id === usuario.id);
     const data = {
         id: usuario.id,
-        username: usuario.username,
+        username: usuario.username.toLowerCase(),
         password_hash: usuario.password_hash,
-        name: usuario.name,
-        email: usuario.email,
+        name: usuario.name.toUpperCase(),
+        email: usuario.email.toLowerCase(),
         rol_id: usuario.rol_id,
         active: usuario.active,
         created_at: usuario.created_at,
@@ -221,11 +221,11 @@ function guardarCliente(cliente) {
     const index = clientes.findIndex(c => c.id === cliente.id);
     const data = {
         id: cliente.id,
-        name: cliente.name,
+        name: cliente.name.toUpperCase(),
         ruc: cliente.ruc,
         tel: cliente.tel,
-        email: cliente.email,
-        address: cliente.address,
+        email: cliente.email ? cliente.email.toLowerCase() : null,
+        address: cliente.address ? cliente.address.toUpperCase() : null,
         active: cliente.active,        
         created_at: cliente.created_at,
         updated_at: cliente.updated_at
@@ -291,11 +291,11 @@ function guardarProveedor(proveedor) {
     const index = proveedores.findIndex(p => p.id === proveedor.id);
     const data = {
         id: proveedor.id,
-        name: proveedor.name,
+        name: proveedor.name.toUpperCase(),
         ruc: proveedor.ruc,
         tel: proveedor.tel,
-        email: proveedor.email,
-        address: proveedor.address,
+        email: proveedor.email ? proveedor.email.toLowerCase() : null,
+        address: proveedor.address ? proveedor.address.toUpperCase() : null,
         active: proveedor.active,        
         created_at: proveedor.created_at,
         updated_at: proveedor.updated_at
@@ -357,8 +357,8 @@ function guardarCategoria(categoria) {
     const index = categorias.findIndex(c => c.id === categoria.id);
     const data = {
         id: categoria.id,
-        name: categoria.name,
-        description: categoria.description,
+        name: categoria.name.toUpperCase(),
+        description: categoria.description.toUpperCase(),
         created_at: categoria.created_at,
         updated_at: categoria.updated_at
     }
@@ -418,7 +418,7 @@ function guardarMarca(marca) {
     const index = marcas.findIndex(m => m.id === marca.id);
     const data = {
         id: marca.id,
-        name: marca.name,
+        name: marca.name.toUpperCase(),
         created_at: marca.created_at,
         updated_at: marca.updated_at
     }
@@ -489,8 +489,8 @@ function guardarProducto(producto) {
     const data = {
         id: producto.id,
         code: producto.code,
-        name: producto.name,
-        description: producto.description,
+        name: producto.name.toUpperCase(),
+        description: producto.description.toUpperCase(),
         purchase_price: producto.purchase_price,
         selling_price: producto.selling_price,
         stock: producto.stock,
@@ -566,7 +566,7 @@ function guardarCompra(compra) {
         user_id: compra.user_id,
         payment_type: compra.payment_type,
         amount: compra.amount,
-        obs: compra.obs,
+        obs: compra.obs.toUpperCase(),
         created_at: compra.created_at,
         updated_at: compra.updated_at
     }
@@ -704,7 +704,7 @@ function guardarVenta(venta) {
         user_id: venta.user_id,
         payment_type: venta.payment_type,
         amount: venta.amount,
-        obs: venta.obs,
+        obs: venta.obs.toUpperCase(),
         created_at: venta.created_at,
         updated_at: venta.updated_at
     }
@@ -983,7 +983,7 @@ function guardarPago(pago) {
         account_payable_id: pago.account_payable_id,
         amount: pago.amount,
         payment_method: pago.payment_method,
-        obs: pago.obs,
+        obs: pago.obs.toUpperCase(),
         created_at: pago.created_at
     }
     if (index === -1) {
@@ -1047,7 +1047,7 @@ function guardarCobro(cobro) {
         account_receivable_id: cobro.account_receivable_id,
         amount: cobro.amount,
         payment_method: cobro.payment_method,
-        obs: cobro.obs,
+        obs: cobro.obs.toUpperCase(),
         created_at: cobro.created_at
     }
     if (index === -1) {
