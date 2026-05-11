@@ -20,9 +20,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // Cargar los componentes dinamicamente
 window.addEventListener("DOMContentLoaded", () => {
-    cargarComponente("contenedor-navbar", "/menu/navbar.html");
-    cargarComponente("contenedor-sidebar", "/menu/sidebar.html");
-    cargarComponente("contenedor-footer", "/menu/footer.html");
+    cargarComponente("contenedor-navbar", "menu/navbar.html");
+    cargarComponente("contenedor-sidebar", "menu/sidebar.html");
+    cargarComponente("contenedor-footer", "menu/footer.html");
 })
 
 document.addEventListener("DOMContentLoaded", () => { validarSesion(); });
