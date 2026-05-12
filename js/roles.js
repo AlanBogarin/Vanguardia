@@ -311,3 +311,19 @@ function formatearFecha(fecha) {
         hour: "2-digit", minute: "2-digit"
     });
 }
+
+function _cargarFormularioEdicion(rolId) {
+    const rol = cargarRol(rolId);
+    const permisosActivos = desagruparFlags(rol.flags);
+
+    // Ejemplo: marcar checkboxes en el DOM
+    Object.keys(PERMISOS).forEach(key => {
+        const valorPermiso = PERMISOS[key];
+        const checkbox = document.getElementById(`chk-${key}`);
+        
+        if (checkbox) {
+            // Si el permiso está en la lista de desagrupados, marcarlo
+            checkbox.checked = permisosActivos.includes(valorPermiso);
+        }
+    });
+}
