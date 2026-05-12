@@ -1118,14 +1118,14 @@ function initDB() {
         description: "Administrador con acceso total",
         created_at: new Date(),
         updated_at: null
-    })
+    });
     guardarRol({
         id: 2,
         name: "VENDEDOR",
         description: "Vendedor con acceso limitado",
         created_at: new Date(),
         updated_at: null
-    })
+    });
     guardarUsuario({
         id: 1,
         username: "admin",
@@ -1137,7 +1137,19 @@ function initDB() {
         active: true,
         created_at: new Date(),
         updated_at: null
-    })
+    });
+    guardarUsuario({
+        id: 2,
+        username: "cajero",
+        // hash para "admin123" 
+        password_hash: "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9", 
+        name: "Cajero",
+        email: "cajero@vanguardia.com",
+        rol_id: 2,
+        active: true,
+        created_at: new Date(),
+        updated_at: null
+    });
     guardarCategoria({
         id: 1,
         name: "General",
@@ -1151,6 +1163,7 @@ function initDB() {
         created_at: new Date(),
         updated_at: null
     });
+
 }
 
 function cargarDatosPrueba() {
@@ -1164,6 +1177,36 @@ function cargarDatosPrueba() {
     guardarCliente({ id: 8, name: "PATRICIA NOEMI ACOSTA", ruc: "8901234", tel: "0962616717", email: null, address: "CALLE PIRIBEBUY 21O", active: true, created_at: new Date(), updated_at: null });
     guardarCliente({ id: 9, name: "MIGUEL ANGEL SANCHEZ", ruc: "9012345", tel: "0992818919", email: null, address: "AV. FERNANDO DE LA MORA 560", active: true, created_at: new Date(), updated_at: null });
     guardarCliente({ id: 10, name: "LAURA VIRGINIA ESQUIVEL", ruc: "1357924", tel: "0983020121", email: null, address: "CALLE CERRO CORA 78", active: true, created_at: new Date(), updated_at: null });
+    guardarCategoria({ id: 2, name: "BEBIDAS", description: "Cualquier tipo de bebida", created_at: new Date(), updated_at: null });
+    guardarCategoria({ id: 3, name: "ALIMENTOS", description: "Cualquier tipo de comestible", created_at: new Date(), updated_at: null });
+    guardarMarca({ id: 2, name: "COCA COLA", created_at: new Date(), updated_at: null });
+    guardarProveedor({
+        id: 1,
+        name: "COMPRA LOCAL",
+        ruc: null,
+        tel: null,
+        email: null,
+        address: null,
+        active: true,        
+        created_at: new Date(),
+        updated_at: null
+    });
+    guardarProducto({
+        id: Date.now(),
+        code: "1111111",
+        name: "COCA COLA 2L",
+        description: "GASEOSA COCA COLA",
+        purchase_price: 10000,
+        selling_price: 15000,
+        stock: 10,
+        min_stock: 1,
+        category_id: 2,
+        brand_id: 2,
+        iva: 10,
+        active: true,
+        created_at: new Date(),
+        updated_at: null
+    });
 }
 
 /**
