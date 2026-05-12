@@ -44,11 +44,82 @@ function eliminarBD(key) {
     localStorage.removeItem(key);
 }
 
+const PERMISOS = {
+    // MODULO USUARIOS Y ROLES (Bits 0-3)
+    GESTIONAR_USUARIOS: 1 << 0,  // 1
+    GESTIONAR_ROLES:    1 << 1,  // 2
+    // MODULO INVENTARIO (Bits 4-7)
+    VER_PRODUCTOS:      1 << 4,  // 16
+    EDITAR_PRODUCTOS:   1 << 5,  // 32
+    GESTIONAR_STOCKS:   1 << 6,  // 64
+    // MODULO VENTAS (Bits 8-11)
+    CREAR_VENTA:        1 << 8,  // 256
+    ANULAR_VENTA:       1 << 9,  // 512
+    VER_REPORTES_VENTA: 1 << 10, // 1024
+    // MODULO COMPRAS Y PROVEEDORES (Bits 12-15)
+    GESTIONAR_COMPRAS:  1 << 12, // 4096
+    VER_PROVEEDORES:    1 << 13, // 8192
+    // MODULO FINANZAS (Bits 16-19)
+    GESTIONAR_PAGOS:    1 << 16, // 65536
+    GESTIONAR_COBROS:   1 << 17, // 131072
+    // SUPER ADMIN
+    ADMIN_TOTAL:        (1 << 30) // bypass
+};
+
+/**
+ * Crea un número de flags a partir de un array de permisos
+ * @param {number[]} permisos Lista de permisos Ej: [PERMISOS.USUARIOS, PERMISOS.VENTAS]
+ * @returns {number}
+ */
+function agruparFlags(permisos) {
+    return permisos.reduce((acc, current) => acc | current, 0);
+}
+
+/**
+ * Convierte un número de flags en un array de permisos legibles
+ * @param {number} flags Flags del rol (ej: 68)
+ * @returns {number[]} Lista de permisos individuales (ej: [4, 64])
+ */
+function desagruparFlags(flags) {
+    return Object.values(PERMISOS).filter(permiso => (flags & permiso) !== 0);
+}
+
+/**
+ * Verifica si un rol tiene un permiso específico
+ * @param {number} flags Flags del rol
+ * @param {number} permiso Permiso a comprobar
+ * @returns {boolean}
+ */
+function tienePermiso(flags, permiso) {
+    // Si tiene el flag de ADMIN_TOTAL, siempre devuelve true
+    if ((flags & PERMISOS.ADMIN_TOTAL) !== 0) return true;
+    return (flags & permiso) !== 0;
+}
+
+/**
+ * Agrega un permiso a un flag existente
+ * @param {number} flags Flags del rol
+ * @param {number} permiso Permiso a agregar
+ */
+function agregarPermiso(flags, permiso) {
+    return flags | permiso;
+}
+
+/**
+ * Quita un permiso de un flag existente
+ * @param {number} flags Flags del rol
+ * @param {number} permiso Permiso a quitar
+ */
+function quitarPermiso(flags, permiso) {
+    return flags & ~permiso;
+}
+
 /**
  * @typedef {Object} Rol
  * @property {number} id Identificador unico del rol
  * @property {string} name Nombre del rol
  * @property {string} description Informacion del rol
+ * @property {number} flags Permisos del rol
  * @property {Date} created_at Fecha de creacion del rol
  * @property {Date?} updated_at Fecha de modificacion del rol
  */
@@ -83,8 +154,9 @@ function guardarRol(rol) {
         id: rol.id,
         name: rol.name.toUpperCase(),
         description: rol.description.toUpperCase(),
+        flags: rol.flags,
         created_at: rol.created_at,
-        updated_at: rol.updated_at
+        updated_at: rol.updated_at || null
     }
     if (index === -1) {
         roles.push(data)
@@ -1116,6 +1188,7 @@ function initDB() {
         id: 1,
         name: "ADMIN",
         description: "Administrador con acceso total",
+        flags: agruparFlags([PERMISOS.ADMIN_TOTAL]),
         created_at: new Date(),
         updated_at: null
     });
@@ -1123,6 +1196,7 @@ function initDB() {
         id: 2,
         name: "VENDEDOR",
         description: "Vendedor con acceso limitado",
+        flags: agruparFlags([PERMISOS.VER_PRODUCTOS, PERMISOS.EDITAR_PRODUCTOS, PERMISOS.CREAR_VENTA, PERMISOS.GESTIONAR_COBROS]),
         created_at: new Date(),
         updated_at: null
     });
@@ -1180,33 +1254,8 @@ function cargarDatosPrueba() {
     guardarCategoria({ id: 2, name: "BEBIDAS", description: "Cualquier tipo de bebida", created_at: new Date(), updated_at: null });
     guardarCategoria({ id: 3, name: "ALIMENTOS", description: "Cualquier tipo de comestible", created_at: new Date(), updated_at: null });
     guardarMarca({ id: 2, name: "COCA COLA", created_at: new Date(), updated_at: null });
-    guardarProveedor({
-        id: 1,
-        name: "COMPRA LOCAL",
-        ruc: null,
-        tel: null,
-        email: null,
-        address: null,
-        active: true,        
-        created_at: new Date(),
-        updated_at: null
-    });
-    guardarProducto({
-        id: Date.now(),
-        code: "1111111",
-        name: "COCA COLA 2L",
-        description: "GASEOSA COCA COLA",
-        purchase_price: 10000,
-        selling_price: 15000,
-        stock: 10,
-        min_stock: 1,
-        category_id: 2,
-        brand_id: 2,
-        iva: 10,
-        active: true,
-        created_at: new Date(),
-        updated_at: null
-    });
+    guardarProveedor({ id: 1, name: "COMPRA LOCAL", ruc: null, tel: null, email: null, address: null, active: true, created_at: new Date(), updated_at: null });
+    guardarProducto({ id: Date.now(), code: "1111111", name: "COCA COLA 2L", description: "GASEOSA COCA COLA", purchase_price: 10000, selling_price: 15000, stock: 10, min_stock: 1, category_id: 2, brand_id: 2, iva: 10, active: true, created_at: new Date(), updated_at: null });
 }
 
 /**
