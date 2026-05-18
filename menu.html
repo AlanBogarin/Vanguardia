@@ -3,12 +3,23 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <title>Vanguardia - Menu</title>
+    <title>Vanguardia - Dashboard</title>
+    <link rel="icon" href="img/working.png">
     <link href="menu/styles.css" rel="stylesheet"/>
     <link rel="stylesheet" href="bt/bootstrap.min.css">
     <link rel="stylesheet" href="bt-icons/bootstrap-icons.min.css">
     <link rel="stylesheet" href="alert/alertify.min.css">
     <link rel="stylesheet" href="alert/themes/default.min.css">
+    <link rel="stylesheet" href="css/vanguardia.css">
+    <style>
+        .card-dashboard {
+            transition: transform 0.2s;
+        }
+        .card-dashboard:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+    </style>
 </head>
 <body class="sb-nav-fixed">
     <div id="contenedor-navbar">
@@ -28,7 +39,133 @@
         </div>
         <div id="layoutSidenav_content">
             <main>
-                <!-- ... -->
+                <div class="container-fluid px-4">
+                    <h1 class="mt-4 mb-4">Dashboard</h1>
+                    
+                    <div class="row">
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card bg-primary text-white h-100 card-dashboard">
+                                <div class="card-body py-4">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="me-3">
+                                            <div class="text-white-50 small">Total Clientes</div>
+                                            <div class="fs-2 fw-bold" id="kpi_clientes">0</div>
+                                        </div>
+                                        <i class="bi bi-people-fill fs-1 text-white-50"></i>
+                                    </div>
+                                </div>
+                                <div class="card-footer d-flex align-items-center justify-content-between">
+                                    <a class="small text-white stretched-link" href="clientes.html">Ver Detalles</a>
+                                    <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card bg-warning text-white h-100 card-dashboard">
+                                <div class="card-body py-4">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="me-3">
+                                            <div class="text-white-50 small">Total Productos</div>
+                                            <div class="fs-2 fw-bold" id="kpi_productos">0</div>
+                                        </div>
+                                        <i class="bi bi-box-seam fs-1 text-white-50"></i>
+                                    </div>
+                                </div>
+                                <div class="card-footer d-flex align-items-center justify-content-between">
+                                    <a class="small text-white stretched-link" href="productos.html">Ver Detalles</a>
+                                    <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card bg-success text-white h-100 card-dashboard">
+                                <div class="card-body py-4">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="me-3">
+                                            <div class="text-white-50 small">Ventas Totales</div>
+                                            <div class="fs-4 fw-bold" id="kpi_ventas">Gs. 0</div>
+                                        </div>
+                                        <i class="bi bi-cart-check-fill fs-1 text-white-50"></i>
+                                    </div>
+                                </div>
+                                <div class="card-footer d-flex align-items-center justify-content-between">
+                                    <a class="small text-white stretched-link" href="ventas.html">Ver Detalles</a>
+                                    <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card bg-danger text-white h-100 card-dashboard">
+                                <div class="card-body py-4">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="me-3">
+                                            <div class="text-white-50 small">Cuentas por Cobrar (Pendiente)</div>
+                                            <div class="fs-4 fw-bold" id="kpi_cobrar">Gs. 0</div>
+                                        </div>
+                                        <i class="bi bi-cash-stack fs-1 text-white-50"></i>
+                                    </div>
+                                </div>
+                                <div class="card-footer d-flex align-items-center justify-content-between">
+                                    <a class="small text-white stretched-link" href="cuentasporcobrar.html">Ver Detalles</a>
+                                    <div class="small text-white"><i class="bi bi-chevron-right"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-xl-6">
+                            <div class="card mb-4">
+                                <div class="card-header bg-dark text-white">
+                                    <i class="bi bi-exclamation-triangle-fill me-1 text-warning"></i>
+                                    Productos con Bajo Stock (<= 5)
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Código</th>
+                                                    <th>Producto</th>
+                                                    <th>Stock Actual</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="tabla_bajo_stock">
+                                                <!-- Llenado dinámicamente -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-6">
+                            <div class="card mb-4">
+                                <div class="card-header bg-dark text-white">
+                                    <i class="bi bi-clock-history me-1 text-info"></i>
+                                    Últimas Ventas
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Cliente</th>
+                                                    <th>Total</th>
+                                                    <th>Fecha</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="tabla_ultimas_ventas">
+                                                <!-- Llenado dinámicamente -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
             </main>
             <footer class="py-4 bg-light mt-auto" id="contenedor-footer">
                 <!-- ========================================================= -->
@@ -39,13 +176,12 @@
             </footer>
         </div>
     </div>
+
     <script src="menu/scripts.js"></script>
-    <!-- BOOTSTRAP -->
     <script src="bt/bootstrap.bundle.min.js"></script>
-    <!-- ALERTIFY -->
     <script src="alert/alertify.min.js"></script>
-    <!-- SCRIPTS -->
     <script src="js/bd.js"></script>
     <script src="js/alertas.js"></script>
+    <script src="js/menu_dashboard.js"></script>
 </body>
 </html>

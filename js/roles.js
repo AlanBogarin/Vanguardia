@@ -108,6 +108,7 @@ function abrirModalNuevo() {
     limpiarFormulario();
     document.getElementById("modalRolLabel").textContent = "Nuevo Rol";
     document.getElementById("rol_id").value = "";
+    generarCheckboxesPermisos(0);
     const modal = new bootstrap.Modal(document.getElementById("modalRol"));
     modal.show();
 }
@@ -131,6 +132,7 @@ function abrirModalEditar(id) {
     document.getElementById("rol_id").value = rol.id;
     document.getElementById("rol_nombre").value = rol.name;
     document.getElementById("rol_descripcion").value = rol.description || "";
+    generarCheckboxesPermisos(rol.flags || 0);
     const modal = new bootstrap.Modal(document.getElementById("modalRol"));
     modal.show();
 }
@@ -160,6 +162,15 @@ function guardarRolForm() {
         return;
     }
 
+    // Calcular flags
+    let nuevosFlags = 0;
+    const checkboxes = document.querySelectorAll(".chk-permiso");
+    checkboxes.forEach(chk => {
+        if (chk.checked) {
+            nuevosFlags = agregarPermiso(nuevosFlags, parseInt(chk.value));
+        }
+    });
+
     if (esNuevo) {
         // Generar nuevo ID autoincremental
         const maxId = roles.length > 0 ? Math.max(...roles.map(r => r.id)) : 0;
@@ -167,6 +178,7 @@ function guardarRolForm() {
             id: maxId + 1,
             name: nombre,
             description: descripcion,
+            flags: nuevosFlags,
             created_at: new Date(),
             updated_at: null
         });
@@ -177,6 +189,7 @@ function guardarRolForm() {
             id: parseInt(idRaw),
             name: nombre,
             description: descripcion,
+            flags: nuevosFlags,
             created_at: rolExistente.created_at,
             updated_at: new Date()
         });
@@ -312,18 +325,38 @@ function formatearFecha(fecha) {
     });
 }
 
-function _cargarFormularioEdicion(rolId) {
-    const rol = cargarRol(rolId);
-    const permisosActivos = desagruparFlags(rol.flags);
+function generarCheckboxesPermisos(flagsActuales) {
+    const contenedor = document.getElementById("contenedor_permisos");
+    contenedor.innerHTML = "";
 
-    // Ejemplo: marcar checkboxes en el DOM
     Object.keys(PERMISOS).forEach(key => {
         const valorPermiso = PERMISOS[key];
-        const checkbox = document.getElementById(`chk-${key}`);
+        const tienePermisoActualmente = tienePermiso(flagsActuales, valorPermiso);
         
-        if (checkbox) {
-            // Si el permiso está en la lista de desagrupados, marcarlo
-            checkbox.checked = permisosActivos.includes(valorPermiso);
-        }
+        // Formatear nombre para mostrarlo amigable
+        const nombreAmigable = key.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+
+        const col = document.createElement("div");
+        col.className = "col-md-6 mb-2";
+
+        const formCheck = document.createElement("div");
+        formCheck.className = "form-check form-switch";
+
+        const input = document.createElement("input");
+        input.className = "form-check-input chk-permiso";
+        input.type = "checkbox";
+        input.id = `chk-${key}`;
+        input.value = valorPermiso;
+        input.checked = tienePermisoActualmente;
+
+        const label = document.createElement("label");
+        label.className = "form-check-label";
+        label.htmlFor = `chk-${key}`;
+        label.textContent = nombreAmigable;
+
+        formCheck.appendChild(input);
+        formCheck.appendChild(label);
+        col.appendChild(formCheck);
+        contenedor.appendChild(col);
     });
 }

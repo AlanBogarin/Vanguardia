@@ -1,5 +1,256 @@
-/** @typedef {import('jquery')} */
-/** @typedef {import('./bd')} */
+/**
+ * @typedef {import('jquery')}
+ * @typedef {import('./alertas')}
+ * @typedef {import('./bd')}
+ */
+
+const tablaRoles = new DataTable("#tabla_roles", {
+    columns: [
+        { data: "id", title: "Id Rol" },
+        { data: "name", title: "Nombre" },
+        { data: "description", title: "Descripción" },
+        { data: "flags", title: "Permisos" },
+        { data: "created_at", title: "Fecha de creación" },
+        { data: "updated_at", title: "Fecha de modificación", render: data => data || "" }
+    ],
+    language: spanish,
+    searching: false,    // Oculta el buscador
+    lengthChange: false, // Oculta el paginación
+    pageLength: 5
+});
+const tablaUsuarios = new DataTable("#tabla_usuarios", {
+    columns: [
+        { data: "id", title: "Id Usuario" },
+        { data: "username", title: "Nombre de Usuario" },
+        { data: "name", title: "Nombre del Personal" },
+        { data: "ruc", title: "Cédula o RUC" },
+        { data: "tel", title: "Teléfono" },
+        { data: "email", title: "Correo Electrónico" },
+        { data: "rol", title: "Rol", render: (data, type, row) => cargarRol(row.rol_id).name },
+        { data: "active", title: "Activo" },
+        { data: "created_at", title: "Fecha de Creación" },
+        { data: "updated_at", title: "Fecha de Modificación", render: data => data || "" },
+    ],
+    language: spanish,
+    searching: false,    // Oculta el buscador
+    lengthChange: false, // Oculta el paginación
+    pageLength: 5
+}); //ruc,tel
+const tablaClientes = new DataTable("#tabla_clientes", {
+    columns: [
+        { data: "id", title: "Id Cliente" },
+        { data: "legal_name", title: "Razón Social" },
+        { data: "ruc", title: "RUC", render: data => data || "" },
+        { data: "tel", title: "Teléfono", render: data => data || "" },
+        { data: "email", title: "Correo Electrónico", render: data => data || "" },
+        { data: "address", title: "Dirección", render: data => data || "" },
+        { data: "active", title: "Activo" },
+        { data: "created_at", title: "Fecha de Creación" },
+        { data: "updated_at", title: "Fecha de Modificación", render: data => data || "" },
+    ],
+    language: spanish,
+    searching: false,    // Oculta el buscador
+    lengthChange: false, // Oculta el paginación
+    pageLength: 5
+});
+const tablaProveedores = new DataTable("#tabla_proveedores", {
+    columns: [
+        { data: "id", title: "Id Proveedor" },
+        { data: "legal_name", title: "Razón Social" },
+        { data: "ruc", title: "RUC", render: data => data || "" },
+        { data: "tel", title: "Teléfono", render: data => data || "" },
+        { data: "email", title: "Correo Electrónico", render: data => data || "" },
+        { data: "address", title: "Dirección", render: data => data || "" },
+        { data: "active", title: "Activo" },
+        { data: "created_at", title: "Fecha de Creación" },
+        { data: "updated_at", title: "Fecha de Modificación", render: data => data || "" },
+    ],
+    language: spanish,
+    searching: false,    // Oculta el buscador
+    lengthChange: false, // Oculta el paginación
+    pageLength: 5
+});
+const tablaCategorias = new DataTable("#tabla_categorias", {
+    columns: [
+        { data: "id", title: "Id Categoria" },
+        { data: "name", title: "Nombre" },
+        { data: "description", title: "Descripción" },
+        { data: "created_at", title: "Fecha de Creación" },
+        { data: "updated_at", title: "Fecha de Modificación", render: data => data || "" },
+    ],
+    language: spanish,
+    searching: false,    // Oculta el buscador
+    lengthChange: false, // Oculta el paginación
+    pageLength: 5
+});
+const tablaMarcas = new DataTable("#tabla_marcas", {
+    columns: [
+        { data: "id", title: "Id Marca" },
+        { data: "name", title: "Nombre" },
+        { data: "created_at", title: "Fecha de Creación" },
+        { data: "updated_at", title: "Fecha de Modificación", render: data => data || "" },
+    ],
+    language: spanish,
+    searching: false,    // Oculta el buscador
+    lengthChange: false, // Oculta el paginación
+    pageLength: 5
+});
+const tablaProductos = new DataTable("#tabla_productos", {
+    columns: [
+        { data: "id", title: "Id Producto"},
+        { data: "code", title: "Código de Barra"},
+        { data: "name", title: "Nombre"},
+        { data: "description", title: "Descripción"},
+        { data: "purchase_price", title: "Precio de Compra"},
+        { 
+            data: "selling_price",
+            title: "Precio de Venta",
+            render: (data) => parseInt(data).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+        },
+        { 
+            data: "stock",
+            title: "Stock",
+            render: (data) => parseFloat(data).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+        },
+        { data: "min_stock", title: "Stock Mínimo" },
+        { data: "category", title: "Categoria", render: (data, type, row) => cargarCategoria(row.category_id).name },
+        { data: "brand", title: "Marca", render: (data, type, row) => cargarMarca(row.brand_id).name },
+        { data: "iva", title: "IVA", render: (data) => ({0: "EXENTA", 5: "5%", 10: "10%"})[data] ?? data },
+        { data: "active", title: "Activo" },
+        { data: "created_at", title: "Fecha de Creación" },
+        { data: "updated_at", title: "Fecha de Modificación", render: data => data || "" },
+    ],
+    language: spanish,
+    searching: false,    // Oculta el buscador
+    lengthChange: false, // Oculta el paginación
+    pageLength: 5
+});
+const tablaCompras = new DataTable("#tabla_compras", {
+    columns: [
+        { data: "id", title: "Id Compra" },
+        { data: "provider_id", title: "Proveedor", render: data => cargarProveedor(data).legal_name },
+        { data: "user_id", title: "Usuario", render: data => cargarUsuario(data).username },
+        { data: "payment_type", title: "Tipo de Pago" },
+        { data: "amount", title: "Monto" },
+        { data: "obs", title: "Observaciones" },
+        { data: "created_at", title: "Fecha de Creación" },
+        { data: "updated_at", title: "Fecha de Modificación", render: data => data || "" },
+    ],
+    language: spanish,
+    searching: false,    // Oculta el buscador
+    lengthChange: false, // Oculta el paginación
+    pageLength: 5
+});
+const tablaCompraDetalles = new DataTable("#tabla_detallescompra", {
+    columns: [
+        { data: "id", title: "Id Detalle" },
+        { data: "purchase_id", title: "Id Compra" },
+        { data: "product_id", title: "Producto", render: data => cargarProducto(data).name },
+        { data: "amount", title: "Cantidad" },
+        { data: "unit_price", title: "Precio Unitario" },
+        { data: "subtotal", title: "Subtotal" },
+        { data: "created_at", title: "Fecha de Creación" }
+    ],
+    language: spanish,
+    searching: false,    // Oculta el buscador
+    lengthChange: false, // Oculta el paginación
+    pageLength: 5
+});
+const tablaVentas = new DataTable("#tabla_ventas", {
+    columns: [
+        { data: "id", title: "Id Venta" },
+        { data: "client", title: "Cliente", render: (data, type, row) => cargarCliente(row.client_id).legal_name },
+        { data: "user", title: "Usuario", render: (data, type, row) => cargarUsuario(row.user_id).name },
+        { data: "payment_type", title: "Tipo de Pago" },
+        { data: "amount", title: "Monto" },
+        { data: "obs", title: "Observaciones" },
+        { data: "created_at", title: "Fecha de Creación" },
+        { data: "updated_at", title: "Fecha de Modificación", render: data => data || "" },
+    ],
+    language: spanish,
+    searching: false,    // Oculta el buscador
+    lengthChange: false, // Oculta el paginación
+    pageLength: 5
+});
+const tablaVentaDetalles = new DataTable("#tabla_detallesventa", {
+    columns: [
+        { data: "id", title: "Id Detalle" },
+        { data: "sale_id", title: "Id Venta" },
+        { data: "product", title: "Producto", render: (data, type, row) => cargarProducto(row.product_id).name },
+        { data: "amount", title: "Cantidad" },
+        { data: "unit_price", title: "Precio Unitario" },
+        { data: "subtotal", title: "Subtotal" },
+        { data: "created_at", title: "Fecha de Creación", render: data => data || "" }
+    ],
+    language: spanish,
+    searching: false,    // Oculta el buscador
+    lengthChange: false, // Oculta el paginación
+    pageLength: 5
+});
+const tablaCuentasPorPagar = new DataTable("#tabla_cuentasporpagar", {
+    columns: [
+        { data: "id", title: "Id Cuenta" },
+        { data: "purchase_id", title: "Id Compra" },
+        { data: "provider", title: "Proveedor", render: (data, type, row) => cargarProveedor(row.provider_id).legal_name },
+        { data: "amount_total", title: "Cantidad Total" },
+        { data: "amount_paid", title: "Cantidad Pagada" },
+        { data: "amount_due", title: "Cantidad Pendiente" },
+        { data: "status", title: "Estado" },
+        { data: "expire_at", title: "Fecha de Vencimiento" },
+        { data: "created_at", title: "Fecha de Creación" },
+        { data: "updated_at", title: "Fecha de Modificación", render: data => data || "" },
+    ],
+    language: spanish,
+    searching: false,    // Oculta el buscador
+    lengthChange: false, // Oculta el paginación
+    pageLength: 5
+});
+const tablaCuentasPorCobrar = new DataTable("#tabla_cuentasporcobrar", {
+    columns: [
+        { data: "id", title: "Id Cuenta" },
+        { data: "sale_id", title: "Id Compra" },
+        { data: "client", title: "Cliente", render: (data, type, row) => cargarCliente(row.client_id).legal_name },
+        { data: "amount_total", title: "Cantidad Total" },
+        { data: "amount_paid", title: "Cantidad Pagada" },
+        { data: "amount_due", title: "Cantidad Pendiente" },
+        { data: "status", title: "Estado" },
+        { data: "expire_at", title: "Fecha de Vencimiento" },
+        { data: "created_at", title: "Fecha de Creación" },
+        { data: "updated_at", title: "Fecha de Modificación", render: data => data || "" },
+    ],
+    language: spanish,
+    searching: false,    // Oculta el buscador
+    lengthChange: false, // Oculta el paginación
+    pageLength: 5
+});
+const tablaPagos = new DataTable("#tabla_pagos", {
+    columns: [
+        { data: "id", title: "Id Pago" },
+        { data: "account_payable_id", title: "Id Cuenta" },
+        { data: "amount", title: "Monto" },
+        { data: "payment_method", title: "Método de Pago" },
+        { data: "obs", title: "Observaciones" },
+        { data: "created_at", title: "Fecha de Creación" }
+    ],
+    language: spanish,
+    searching: false,    // Oculta el buscador
+    lengthChange: false, // Oculta el paginación
+    pageLength: 5
+});
+const tablaCobros = new DataTable("#tabla_cobros", {
+    columns: [
+        { data: "id", title: "Id Cobro" },
+        { data: "account_receivable_id", title: "Id Cuenta" },
+        { data: "amount", title: "Monto" },
+        { data: "payment_method", title: "Método de Pago" },
+        { data: "obs", title: "Observaciones" },
+        { data: "created_at", title: "Fecha de Creación" },
+    ],
+    language: spanish,
+    searching: false,    // Oculta el buscador
+    lengthChange: false, // Oculta el paginación
+    pageLength: 5
+});
 
 async function login() {
     const form = document.getElementById("login-form");
@@ -59,405 +310,21 @@ async function login() {
 }
 
 function verBD() {
-    const tablas = ["#tabla_roles", "#tabla_usuarios", "#tabla_clientes", "#tabla_proveedores", "#tabla_categorias",
-                    "#tabla_marcas", "#tabla_productos", "#tabla_compras", "#tabla_detallescompra", "#tabla_ventas",
-                    "#tabla_detallesventa", "#tabla_cuentasporpagar", "#tabla_cuentasporcobrar", "#tabla_pagos",
-                    "#tabla_cobros"];
-    // Si ya existe una instancia de DataTable, destruirla
-    for (const tabla of tablas) {
-        if ($.fn.DataTable.isDataTable(tabla)) {
-            $(tabla).DataTable().destroy(); // .clear()
-        }
-    }
-
-    const roles = cargarRoles();
-    const rolMap = {};
-    roles.forEach(r => { rolMap[r.id] = r.name });
-    const usuarios = cargarUsuarios();
-    const usuarioMap = {};
-    usuarios.forEach(u => { usuarioMap[u.id] = u.username });
-    const clientes = cargarClientes();
-    const clienteMap = {};
-    clientes.forEach(c => { clienteMap[c.id] = c.name });
-    const proveedores = cargarProveedores();
-    const proveedorMap = {};
-    proveedores.forEach(p => { proveedorMap[p.id] = p.name })
-    const categorias = cargarCategorias();
-    const categoriaMap = {};
-    categorias.forEach(c => { categoriaMap[c.id] = c.name });
-    const marcas = cargarMarcas();
-    const marcaMap = {};
-    marcas.forEach(m => {marcaMap[m.id] = m.name });
-    const productos = cargarProductos();
-    const productoMap = {};
-    productos.forEach(p => { productoMap[p.id] = p.name });
-    const compras = cargarCompras();
-    const compraDetalles = cargarCompraDetalles();
-    const ventas = cargarVentas();
-    const ventaDetalles = cargarVentaDetalles();
-    const cuentasPorPagar = cargarCuentasPorPagar();
-    const cuentasPorCobrar = cargarCuentasPorCobrar();
-    const pagos = cargarPagos();
-    const cobros = cargarCobros();
-
-    console.log(roles.map(r => {
-        return {
-            ...r,
-            updated_at: r.updated_at || ""
-        };
-    }));
-    new DataTable("#tabla_roles", {
-        data: roles.map(r => {
-            return {
-                ...r,
-                updated_at: r.updated_at || ""
-            };
-        }),
-        columns: [
-            { data: "id", title: "Id Rol"},
-            { data: "name", title: "Nombre"},
-            { data: "description", title: "Descripción"},
-            { data: "created_at", title: "Fecha de creación"},
-            { data: "updated_at", title: "Fecha de modificación"}
-        ],
-        language: spanish,
-        searching: false,    // Oculta el buscador
-        lengthChange: false, // Oculta el paginación
-        pageLength: 5
-    });
-    new DataTable("#tabla_usuarios", {
-        data: usuarios.map(u => {
-            return {
-                ...u,
-                rol: rolMap[u.rol_id],
-                updated_at: u.updated_at || ""
-            };
-        }),
-        columns: [
-            { data: "id", title: "Id Usuario"},
-            { data: "username", title: "Nombre de Usuario"},
-            // { data: "password_hash", title: "Hash de Contraseña"},
-            { data: "name", title: "Nombre del Personal"},
-            { data: "email", title: "Correo Electrónico"},
-            { data: "rol", title: "Rol"},
-            { data: "active", title: "Activo"},
-            { data: "created_at", title: "Fecha de Creación"},
-            { data: "updated_at", title: "Fecha de Modificación"},
-        ],
-        language: spanish,
-        searching: false,    // Oculta el buscador
-        lengthChange: false, // Oculta el paginación
-        pageLength: 5
-    });
-    new DataTable("#tabla_clientes", {
-        data: clientes.map(c => {
-            return {
-                ...c,
-                ruc: c.ruc || "",
-                tel: c.tel || "",
-                email: c.email || "",
-                address: c.address || "",
-                updated_at: c.updated_at || ""
-            };
-        }),
-        columns: [
-            { data: "id", title: "Id Cliente"},
-            { data: "name", title: "Nombre"},
-            { data: "ruc", title: "RUC"},
-            { data: "tel", title: "Teléfono"},
-            { data: "email", title: "Correo Electrónico"},
-            { data: "address", title: "Dirección"},
-            { data: "active", title: "Activo"},
-            { data: "created_at", title: "Fecha de Creación"},
-            { data: "updated_at", title: "Fecha de Modificación"},
-        ],
-        language: spanish,
-        searching: false,    // Oculta el buscador
-        lengthChange: false, // Oculta el paginación
-        pageLength: 5
-    });
-    new DataTable("#tabla_proveedores", {
-        data: proveedores.map(p => {
-            return {
-                ...p,
-                ruc: p.ruc || "",
-                tel: p.tel || "",
-                email: p.email || "",
-                address: p.address || "",
-                updated_at: p.updated_at || ""
-            };
-        }),
-        columns: [
-            { data: "id", title: "Id Proveedor"},
-            { data: "name", title: "Nombre"},
-            { data: "ruc", title: "RUC"},
-            { data: "tel", title: "Teléfono"},
-            { data: "email", title: "Correo Electrónico"},
-            { data: "address", title: "Dirección"},
-            { data: "active", title: "Activo"},
-            { data: "updated_at", title: "Fecha de Modificación"},
-        ],
-        language: spanish,
-        searching: false,    // Oculta el buscador
-        lengthChange: false, // Oculta el paginación
-        pageLength: 5
-    });
-    new DataTable("#tabla_categorias", {
-        data: categorias.map(c => {
-            return {
-                ...c,
-                updated_at: c.updated_at || ""
-            };
-        }),
-        columns: [
-            { data: "id", title: "Id Categoria"},
-            { data: "name", title: "Nombre"},
-            { data: "description", title: "Descripción"},
-            { data: "created_at", title: "Fecha de Creación"},
-            { data: "updated_at", title: "Fecha de Modificación"},
-        ],
-        language: spanish,
-        searching: false,    // Oculta el buscador
-        lengthChange: false, // Oculta el paginación
-        pageLength: 5
-    });
-    new DataTable("#tabla_marcas", {
-        data: marcas.map(m => {
-            return {
-                ...m,
-                updated_at: m.updated_at || ""
-            };
-        }),
-        columns: [
-            { data: "id", title: "Id Marca"},
-            { data: "name", title: "Nombre"},
-            { data: "created_at", title: "Fecha de Creación"},
-            { data: "updated_at", title: "Fecha de Modificación"},
-        ],
-        language: spanish,
-        searching: false,    // Oculta el buscador
-        lengthChange: false, // Oculta el paginación
-        pageLength: 5
-    });
-    new DataTable("#tabla_productos", {
-        data: productos.map(p => {
-            return {
-                ...p,
-                category: categoriaMap[p.category_id],
-                brand: marcaMap[p.brand_id],
-                updated_at: p.updated_at || ""
-            }
-        }),
-        columns: [
-            { data: "id", title: "Id Producto"},
-            { data: "code", title: "Código de Barra"},
-            { data: "name", title: "Nombre"},
-            { data: "description", title: "Descripción"},
-            { data: "purchase_price", title: "Precio de Compra"},
-            { 
-                data: "selling_price",
-                title: "Precio de Venta",
-                render: (data) => {
-                    parseInt(data).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
-                }
-            },
-            { 
-                data: "stock",
-                title: "Stock",
-                render: (data) => {
-                    parseFloat(data).toFixed(2).replace('.', ',')
-                    .replace(/\B(?=(\d{3})+(?!\d))/g, '.')
-                }
-            },
-            { data: "min_stock", title: "Stock Mínimo"},
-            { data: "category", title: "Categoria"},
-            { data: "brand", title: "Marca"},
-            { 
-                data: "iva", title: "IVA", render: (data) => ({
-                    0: "EXENTA",
-                    5: "5%",
-                    10: "10%"
-                })[data] ?? data
-            },
-            { data: "active", title: "Activo"},
-            { data: "created_at", title: "Fecha de Creación"},
-            { data: "updated_at", title: "Fecha de Modificación"},
-        ],
-        language: spanish,
-        searching: false,    // Oculta el buscador
-        lengthChange: false, // Oculta el paginación
-        pageLength: 5
-    });
-    new DataTable("#tabla_compras", {
-        data: compras.map((c) => {
-            return {
-                ...c,
-                provider: proveedorMap[c.provider_id],
-                user: usuarioMap[c.user_id],
-                updated_at: c.updated_at || ""
-            };
-        }),
-        columns: [
-            { data: "id", title: "Id Compra"},
-            { data: "provider", title: "Proveedor"},
-            { data: "user", title: "Usuario"},
-            { data: "payment_type", title: "Tipo de Pago"},
-            { data: "amount", title: "Monto"},
-            { data: "obs", title: "Observaciones"},
-            { data: "created_at", title: "Fecha de Creación"},
-            { data: "updated_at", title: "Fecha de Modificación"},
-        ],
-        language: spanish,
-        searching: false,    // Oculta el buscador
-        lengthChange: false, // Oculta el paginación
-        pageLength: 5
-    });
-    new DataTable("#tabla_detallescompra", {
-        data: compraDetalles.map((d) => {
-            return {
-                ...d,
-                product: productoMap[d.product_id]
-            };
-        }),
-        columns: [
-            { data: "id", title: "Id Detalle"},
-            { data: "purchase_id", title: "Id Compra"},
-            { data: "product", title: "Producto"},
-            { data: "amount", title: "Cantidad"},
-            { data: "unit_price", title: "Precio Unitario"},
-            { data: "subtotal", title: "Subtotal"},
-            { data: "created_at", title: "Fecha de Creación"}
-        ],
-        language: spanish,
-        searching: false,    // Oculta el buscador
-        lengthChange: false, // Oculta el paginación
-        pageLength: 5
-    });
-    new DataTable("#tabla_ventas", {
-        data: ventas.map((v) => {
-            return {
-                ...v,
-                client: clienteMap[v.client_id],
-                user: usuarioMap[v.user_id],
-                updated_at: v.updated_at || ""
-            };
-        }),
-        columns: [
-            { data: "id", title: "Id Venta"},
-            { data: "client", title: "Cliente"},
-            { data: "user", title: "Usuario"},
-            { data: "payment_type", title: "Tipo de Pago"},
-            { data: "amount", title: "Monto"},
-            { data: "obs", title: "Observaciones"},
-            { data: "created_at", title: "Fecha de Creación"},
-            { data: "updated_at", title: "Fecha de Modificación"},
-        ],
-        language: spanish,
-        searching: false,    // Oculta el buscador
-        lengthChange: false, // Oculta el paginación
-        pageLength: 5
-    });
-    new DataTable("#tabla_detallesventa", {
-        data: ventaDetalles.map((d) => {
-            return {
-                ...d,
-                product: productoMap[d.product_id],
-            };
-        }),
-        columns: [
-            { data: "id", title: "Id Detalle"},
-            { data: "sale_id", title: "Id Venta"},
-            { data: "product", title: "Producto"},
-            { data: "amount", title: "Cantidad"},
-            { data: "unit_price", title: "Precio Unitario"},
-            { data: "subtotal", title: "Subtotal"},
-            { data: "created_at", title: "Fecha de Creación"}
-        ],
-        language: spanish,
-        searching: false,    // Oculta el buscador
-        lengthChange: false, // Oculta el paginación
-        pageLength: 5
-    });
-    new DataTable("#tabla_cuentasporpagar", {
-        data: cuentasPorPagar.map((c) => {
-            return {
-                ...c,
-                provider: proveedorMap[c.provider_id],
-                updated_at: c.updated_at || ""
-            };
-        }),
-        columns: [
-            { data: "id", title: "Id Cuenta"},
-            { data: "purchase_id", title: "Id Compra"},
-            { data: "provider", title: "Proveedor"},
-            { data: "amount_total", title: "Cantidad Total"},
-            { data: "amount_paid", title: "Cantidad Pagada"},
-            { data: "amount_due", title: "Cantidad Pendiente"},
-            { data: "status", title: "Estado"},
-            { data: "expire_at", title: "Fecha de Vencimiento"},
-            { data: "created_at", title: "Fecha de Creación"},
-            { data: "updated_at", title: "Fecha de Modificación"},
-        ],
-        language: spanish,
-        searching: false,    // Oculta el buscador
-        lengthChange: false, // Oculta el paginación
-        pageLength: 5
-    });
-    new DataTable("#tabla_cuentasporcobrar", {
-        data: cuentasPorCobrar.map((c) => {
-            return {
-                ...c,
-                client: clienteMap[c.client_id],
-                updated_at: c.updated_at
-            };
-        }),
-        columns: [
-            { data: "id", title: "Id Cuenta"},
-            { data: "sale_id", title: "Id Compra"},
-            { data: "client", title: "Proveedor"},
-            { data: "amount_total", title: "Cantidad Total"},
-            { data: "amount_paid", title: "Cantidad Pagada"},
-            { data: "amount_due", title: "Cantidad Pendiente"},
-            { data: "status", title: "Estado"},
-            { data: "expire_at", title: "Fecha de Vencimiento"},
-            { data: "created_at", title: "Fecha de Creación"},
-            { data: "updated_at", title: "Fecha de Modificación"},
-        ],
-        language: spanish,
-        searching: false,    // Oculta el buscador
-        lengthChange: false, // Oculta el paginación
-        pageLength: 5
-    });
-    new DataTable("#tabla_pagos", {
-        data: pagos,
-        columns: [
-            { data: "id", title: "Id Pago"},
-            { data: "account_payable_id", title: "Id Cuenta"},
-            { data: "amount", title: "Monto"},
-            { data: "payment_method", title: "Método de Pago"},
-            { data: "obs", title: "Observaciones"},
-            { data: "created_at", title: "Fecha de Creación"}
-        ],
-        language: spanish,
-        searching: false,    // Oculta el buscador
-        lengthChange: false, // Oculta el paginación
-        pageLength: 5
-    });
-    new DataTable("#tabla_cobros", {
-        data: cobros,
-        columns: [
-            { data: "id", title: "Id Cobro"},
-            { data: "account_receivable_id", title: "Id Cuenta"},
-            { data: "amount", title: "Monto"},
-            { data: "payment_method", title: "Método de Pago"},
-            { data: "obs", title: "Observaciones"},
-            { data: "created_at", title: "Fecha de Creación"},
-        ],
-        language: spanish,
-        searching: false,    // Oculta el buscador
-        lengthChange: false, // Oculta el paginación
-        pageLength: 5
-    });
+    tablaRoles.clear().rows.add(cargarRoles()).draw();
+    tablaUsuarios.clear().rows.add(cargarUsuarios()).draw();
+    tablaClientes.clear().rows.add(cargarClientes()).draw();
+    tablaProveedores.clear().rows.add(cargarProveedores()).draw();
+    tablaCategorias.clear().rows.add(cargarCategorias()).draw();
+    tablaMarcas.clear().rows.add(cargarMarcas()).draw();
+    tablaProductos.clear().rows.add(cargarProductos()).draw();
+    tablaCompras.clear().rows.add(cargarCompras()).draw();
+    tablaCompraDetalles.clear().rows.add(cargarCompraDetalles()).draw();
+    tablaVentas.clear().rows.add(cargarVentas()).draw();
+    tablaVentaDetalles.clear().rows.add(cargarVentaDetalles()).draw();
+    tablaCuentasPorPagar.clear().rows.add(cargarCuentasPorPagar()).draw();
+    tablaCuentasPorCobrar.clear().rows.add(cargarCuentasPorCobrar()).draw();
+    tablaPagos.clear().rows.add(cargarPagos()).draw();
+    tablaCobros.clear().rows.add(cargarCobros()).draw();
     // FECHA year-month-day -> day/month/year
     // render: (data) => {
     //     if (!data) return "";
@@ -472,8 +339,15 @@ function verBD() {
 
 function nuevoBD() {
     initDB();
-    cargarDatosPrueba();
-    alertify.success("Base de datos original cargada");
+    confirmar(
+        "Cargar Base de Datos",
+        "¿Desea cargar datos de prueba?",
+        () => {
+            cargarDatosPrueba();
+            alertify.success("Base de Datos de Prueba cargada!");
+        },
+        () => alertify.success("Base de datos creada!")
+    );
 }
 
 function borrarBD() {

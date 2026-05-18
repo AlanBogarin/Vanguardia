@@ -1,4 +1,4 @@
-// @type {}
+/** @typedef {import('./alertas')} */
 
 // BD
 const KEY_ROLES = "roles";
@@ -21,10 +21,10 @@ const KEY_SESION = "sesion";
 /**
  * Carga un elemento del Local Storage
  * @param {string} key 
- * @returns {Object?}
+ * @returns {any}
  */
 function cargarBD(key) {
-    return JSON.parse(localStorage.getItem(key));
+    return JSON.parse(localStorage.getItem(key) || "null");
 }
 
 /**
@@ -48,10 +48,13 @@ const PERMISOS = {
     // MODULO USUARIOS Y ROLES (Bits 0-3)
     GESTIONAR_USUARIOS: 1 << 0,  // 1
     GESTIONAR_ROLES:    1 << 1,  // 2
+    GESTIONAR_CLIENTES: 1 << 2,  // 4
+    GESTIONAR_CATEGORIAS: 1 << 3, // 8
     // MODULO INVENTARIO (Bits 4-7)
     VER_PRODUCTOS:      1 << 4,  // 16
     EDITAR_PRODUCTOS:   1 << 5,  // 32
     GESTIONAR_STOCKS:   1 << 6,  // 64
+    GESTIONAR_MARCAS:   1 << 7,  // 128
     // MODULO VENTAS (Bits 8-11)
     CREAR_VENTA:        1 << 8,  // 256
     ANULAR_VENTA:       1 << 9,  // 512
@@ -62,6 +65,8 @@ const PERMISOS = {
     // MODULO FINANZAS (Bits 16-19)
     GESTIONAR_PAGOS:    1 << 16, // 65536
     GESTIONAR_COBROS:   1 << 17, // 131072
+    GESTIONAR_CUENTAS_PAGAR: 1 << 18, // 262144
+    GESTIONAR_CUENTAS_COBRAR: 1 << 19, // 524288
     // SUPER ADMIN
     ADMIN_TOTAL:        (1 << 30) // bypass
 };
@@ -172,7 +177,7 @@ function guardarRol(rol) {
  */
 function eliminarRol(id) {
     const roles = cargarRoles();
-    index = roles.findIndex(rol => rol.id === id);
+    const index = roles.findIndex(rol => rol.id === id);
     if (index === -1) return;
     roles.splice(index, 1);
     guardarBD(KEY_ROLES, roles);
@@ -184,6 +189,8 @@ function eliminarRol(id) {
  * @property {string} username Nombre de usuario
  * @property {string} password_hash Hash de la contraseña
  * @property {string} name Nombre completo
+ * @property {string} ruc Cédula o RUC del usuario
+ * @property {string} tel Teléfono
  * @property {string} email Correo electronico
  * @property {number} rol_id Identificador del Rol
  * @property {boolean} active El usuario está activo
@@ -226,6 +233,8 @@ function guardarUsuario(usuario) {
         username: usuario.username.toLowerCase(),
         password_hash: usuario.password_hash,
         name: usuario.name.toUpperCase(),
+        ruc: usuario.ruc,
+        tel: usuario.tel,
         email: usuario.email.toLowerCase(),
         rol_id: usuario.rol_id,
         active: usuario.active,
@@ -255,11 +264,11 @@ function eliminarUsuario(id) {
 /**
  * @typedef {Object} Cliente
  * @property {number} id Identificador unico del cliente
- * @property {string} name Nombre del cliente
- * @property {string?} ruc RUC del cliente
- * @property {string?} tel Telefono del cliente
+ * @property {string} legal_name Razón Social
+ * @property {string} ruc Cédula o RUC del cliente
+ * @property {string} tel Telefono del cliente
  * @property {string?} email Correo electronico del cliente
- * @property {string?} address Direccion fisica del cliente
+ * @property {string} address Direccion fisica del cliente
  * @property {boolean} active El cliente está activo
  * @property {Date} created_at Fecha de creacion del cliente
  * @property {Date?} updated_at Fecha de modificacion del cliente
@@ -293,11 +302,11 @@ function guardarCliente(cliente) {
     const index = clientes.findIndex(c => c.id === cliente.id);
     const data = {
         id: cliente.id,
-        name: cliente.name.toUpperCase(),
+        legal_name: cliente.legal_name.toUpperCase(),
         ruc: cliente.ruc,
         tel: cliente.tel,
         email: cliente.email ? cliente.email.toLowerCase() : null,
-        address: cliente.address ? cliente.address.toUpperCase() : null,
+        address: cliente.address.toUpperCase(),
         active: cliente.active,        
         created_at: cliente.created_at,
         updated_at: cliente.updated_at
@@ -325,8 +334,8 @@ function eliminarCliente(id) {
 /**
  * @typedef {Object} Proveedor
  * @property {number} id Identificador unico del proveedor
- * @property {string} name Nombre del proveedor
- * @property {string?} ruc RUC del proveedor
+ * @property {string} legal_name Razón Social
+ * @property {string?} ruc Cédula o RUC del proveedor
  * @property {string?} tel Telefono del proveedor
  * @property {string?} email Correo electronico del proveedor
  * @property {string?} address Direccion fisica del proveedor
@@ -363,7 +372,7 @@ function guardarProveedor(proveedor) {
     const index = proveedores.findIndex(p => p.id === proveedor.id);
     const data = {
         id: proveedor.id,
-        name: proveedor.name.toUpperCase(),
+        legal_name: proveedor.legal_name.toUpperCase(),
         ruc: proveedor.ruc,
         tel: proveedor.tel,
         email: proveedor.email ? proveedor.email.toLowerCase() : null,
@@ -605,7 +614,7 @@ function eliminarProducto(id) {
  * @property {Date} created_at Fecha de creacion de la compra
  * @property {Date?} updated_at Fecha de modificacion de la compra
  */
-
+    
 /**
  * Recupera una compra mediante el ID
  * @param {number} id Identificador de la compra
@@ -672,7 +681,7 @@ function eliminarCompra(id) {
  * @property {number} subtotal Subtotal de compra: precio * cantidad
  * @property {Date} created_at Fecha de creacion de la compra
  */
-
+    
 /**
  * Recupera un detalle de compra mediante el ID
  * @param {number} id Identificador de la compra
@@ -1135,6 +1144,10 @@ function guardarCobro(cobro) {
  * @param {number} id Identificador del cobro
  */
 function eliminarCobro(id) {
+    if (!tienePermisoSesion(PERMISOS.GESTIONAR_COBROS)) {
+        mensajeError("El usuario no tiene permisos para gestionar cobros");
+        return;
+    }
     const cobros = cargarCobros();
     const index = cobros.findIndex(c => c.id === id);
     if (index === -1) return;
@@ -1174,7 +1187,22 @@ function guardarSesion(sesion) {
  * Elimina la sesion actual
  */
 function eliminarSesion() {
-    guardarBD(KEY_SESION, null);
+    localStorage.removeItem(KEY_SESION);
+}
+
+/**
+ * Comprobar si el usuario actual tiene un permiso (flags)
+ * @param {number} permiso 
+ * @returns {boolean}
+ */
+function tienePermisoSesion(permiso) {
+    const sesion = cargarSesion();
+    if (!sesion) return false;
+    const usuario = cargarUsuario(sesion.user_id);
+    if (!usuario) return false;
+    const rol = cargarRol(usuario.rol_id);
+    if (!rol) return false;
+    return tienePermiso(rol.flags, permiso);
 }
 
 function initDB() {
@@ -1183,7 +1211,7 @@ function initDB() {
             KEY_VENTADETALLES, KEY_CUENTASPORPAGAR, KEY_CUENTASPORCOBRAR, KEY_PAGOS, KEY_COBROS]) {
         guardarBD(key, []);
     }
-    guardarBD(KEY_SESION, null);
+    eliminarSesion();
     guardarRol({
         id: 1,
         name: "ADMIN",
@@ -1203,9 +1231,11 @@ function initDB() {
     guardarUsuario({
         id: 1,
         username: "admin",
-        // hash para "admin123" 
-        password_hash: "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9", 
+        // hash para "admin@123" 
+        password_hash: "7676aaafb027c825bd9abab78b234070e702752f625b752e55e55b48e607e358", 
         name: "Administrador",
+        ruc: "0000000",
+        tel: "0971234567",
         email: "admin@vanguardia.com",
         rol_id: 1,
         active: true,
@@ -1215,9 +1245,11 @@ function initDB() {
     guardarUsuario({
         id: 2,
         username: "cajero",
-        // hash para "admin123" 
-        password_hash: "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9", 
+        // hash para "cajero@123" 
+        password_hash: "b83e76bcbbde2bda5e2d3781c8b4ae3d9765e3353495f101450898fc038b1a9c", 
         name: "Cajero",
+        ruc: "0000000",
+        tel: "0981234567",
         email: "cajero@vanguardia.com",
         rol_id: 2,
         active: true,
@@ -1241,21 +1273,162 @@ function initDB() {
 }
 
 function cargarDatosPrueba() {
-    guardarCliente({ id: 1, name: "JUAN CARLOS LOPEZ", ruc: "1234567", tel: "0985111222", email: null, address: "AV. BRASIL 123", active: true, created_at: new Date(), updated_at: null });
-    guardarCliente({ id: 2, name: "MARIA ELENA GOMEZ", ruc: "2345678", tel: "0971333444", email: null, address: "CALLE SAN PEDRO 45", active: true, created_at: new Date(), updated_at: null });
-    guardarCliente({ id: 3, name: "PEDRO ANTONIO MARTINEZ", ruc: "3456789", tel: "0961555666", email: null, address: "BARRIO SAN JORGE SN", active: true, created_at: new Date(), updated_at: null });
-    guardarCliente({ id: 4, name: "ANA BEATRIZ BENITEZ", ruc: "4567890", tel: "0981777888", email: null, address: "AV. MCAL. LOPEZ 800", active: true, created_at: new Date(), updated_at: null });
-    guardarCliente({ id: 5, name: "CARLOS DANIEL GIMENEZ", ruc: "5678901", tel: "0991999000", email: null, address: "CALLE INDEPENDENCIA 320", active: true, created_at: new Date(), updated_at: null });
-    guardarCliente({ id: 6, name: "ROSA MERCEDES PAREDES", ruc: "6789012", tel: "0982121313", email: null, address: "BO. REPUBLICANO MZ 5 CS 2", active: true, created_at: new Date(), updated_at: null });
-    guardarCliente({ id: 7, name: "LUIS FERNANDO ROJAS", ruc: "7890123", tel: "0972414515", email: null, address: "AV. EUSEBIO AYALA 1100", active: true, created_at: new Date(), updated_at: null });
-    guardarCliente({ id: 8, name: "PATRICIA NOEMI ACOSTA", ruc: "8901234", tel: "0962616717", email: null, address: "CALLE PIRIBEBUY 21O", active: true, created_at: new Date(), updated_at: null });
-    guardarCliente({ id: 9, name: "MIGUEL ANGEL SANCHEZ", ruc: "9012345", tel: "0992818919", email: null, address: "AV. FERNANDO DE LA MORA 560", active: true, created_at: new Date(), updated_at: null });
-    guardarCliente({ id: 10, name: "LAURA VIRGINIA ESQUIVEL", ruc: "1357924", tel: "0983020121", email: null, address: "CALLE CERRO CORA 78", active: true, created_at: new Date(), updated_at: null });
+    // 1. Roles
+    guardarRol({ id: 1, name: "ADMINISTRADOR", description: "Acceso total al sistema", flags: PERMISOS.ADMIN_TOTAL, created_at: new Date(), updated_at: null });
+    guardarRol({ id: 2, name: "CAJERO", description: "Ventas y cobros", flags: PERMISOS.CREAR_VENTA | PERMISOS.GESTIONAR_COBROS, created_at: new Date(), updated_at: null });
+    guardarRol({ id: 3, name: "VENDEDOR", description: "Solo ventas", flags: PERMISOS.CREAR_VENTA, created_at: new Date(), updated_at: null });
+    guardarRol({ id: 4, name: "ENCARGADO COMPRAS", description: "Compras y proveedores", flags: PERMISOS.GESTIONAR_COMPRAS | PERMISOS.VER_PROVEEDORES, created_at: new Date(), updated_at: null });
+    guardarRol({ id: 5, name: "GERENTE", description: "Reportes y visualización", flags: PERMISOS.VER_REPORTES_VENTA | PERMISOS.VER_PRODUCTOS, created_at: new Date(), updated_at: null });
+    guardarRol({ id: 6, name: "REPOSITOR", description: "Stock de productos", flags: PERMISOS.GESTIONAR_STOCKS | PERMISOS.VER_PRODUCTOS, created_at: new Date(), updated_at: null });
+    guardarRol({ id: 7, name: "CONTADOR", description: "Finanzas completas", flags: PERMISOS.GESTIONAR_PAGOS | PERMISOS.GESTIONAR_COBROS | PERMISOS.GESTIONAR_CUENTAS_PAGAR | PERMISOS.GESTIONAR_CUENTAS_COBRAR, created_at: new Date(), updated_at: null });
+    guardarRol({ id: 8, name: "SUPERVISOR", description: "Supervisor de ventas", flags: PERMISOS.CREAR_VENTA | PERMISOS.ANULAR_VENTA, created_at: new Date(), updated_at: null });
+    guardarRol({ id: 9, name: "ATENCION CLIENTE", description: "Gestion de clientes", flags: PERMISOS.GESTIONAR_CLIENTES, created_at: new Date(), updated_at: null });
+    guardarRol({ id: 10, name: "AUDITOR", description: "Auditoria general", flags: PERMISOS.VER_PRODUCTOS | PERMISOS.VER_REPORTES_VENTA, created_at: new Date(), updated_at: null });
+
+    // 2. Usuarios (contraseña: {nombre}@123)
+    // guardarUsuario({ id: 1, username: "admin", password_hash: "7676aaafb027c825bd9abab78b234070e702752f625b752e55e55b48e607e358", name: "VICTOR BOGARIN", ruc: "4555123", tel: "0981123123", email: "admin@vanguardia.com", rol_id: 1, active: true, created_at: new Date(), updated_at: null });
+    // guardarUsuario({ id: 2, username: "cajero1", password_hash: "b83e76bcbbde2bda5e2d3781c8b4ae3d9765e3353495f101450898fc038b1a9c", name: "LUCAS MEDINA", ruc: "3444111", tel: "0971456456", email: "cajero@vanguardia.com", rol_id: 2, active: true, created_at: new Date(), updated_at: null });
+    guardarUsuario({ id: 3, username: "vendedor1", password_hash: "ac2ffb535559135abd405a030d939a7e19b76caabc3c9ea2446e94c81798d6fd", name: "SOFIA RECALDE", ruc: "5666222", tel: "0961789789", email: "ventas@vanguardia.com", rol_id: 3, active: true, created_at: new Date(), updated_at: null });
+    guardarUsuario({ id: 4, username: "compras", password_hash: "8c361ffeb68201251eb110f2516b4ab99f1060e5d71533b0d89b488879f89278", name: "MARCOS VERA", ruc: "2333444", tel: "0991112233", email: "compras@vanguardia.com", rol_id: 4, active: true, created_at: new Date(), updated_at: null });
+    guardarUsuario({ id: 5, username: "gerencia", password_hash: "c04f81358bb5b8b0197e4171e7d376e4ae93da7c5552c8fcedb6fe48dc0569a7", name: "DIANA GOMEZ", ruc: "1222333", tel: "0985556677", email: "gerencia@vanguardia.com", rol_id: 5, active: true, created_at: new Date(), updated_at: null });
+    guardarUsuario({ id: 6, username: "deposito", password_hash: "67ee7622ca365040fcf51d7e66060831cd19264d1d416374c2a43ca606e13c9d", name: "CARLOS RUIZ", ruc: "6777888", tel: "0972889900", email: "deposito@vanguardia.com", rol_id: 6, active: true, created_at: new Date(), updated_at: null });
+    guardarUsuario({ id: 7, username: "contador", password_hash: "678937af7c10fc15f32109935e0fb55686aa864baa8d97af287011827b019079", name: "ANA SILVA", ruc: "4888999", tel: "0962334455", email: "conta@vanguardia.com", rol_id: 7, active: true, created_at: new Date(), updated_at: null });
+    guardarUsuario({ id: 8, username: "supervisor", password_hash: "36918746c2ccb348d9650cc99bf3101f4a56412aa8bcf59cf55aa2a728583b57", name: "DIEGO MENDOZA", ruc: "3999000", tel: "0983112233", email: "super@vanguardia.com", rol_id: 8, active: true, created_at: new Date(), updated_at: null });
+    guardarUsuario({ id: 9, username: "atencion", password_hash: "b18fb4dc75a4fc08240a97f5d0e65c39d5fd8b5e03cdfa666f912ccdb296a97d", name: "LAURA FRANCO", ruc: "5111222", tel: "0973445566", email: "atencion@vanguardia.com", rol_id: 9, active: true, created_at: new Date(), updated_at: null });
+    guardarUsuario({ id: 10, username: "auditoria", password_hash: "d715074a9c2a596308a7e3ed5d41a0b51626b4a691551cd9ba4f6baca2cd1189", name: "JULIO BAEZ", ruc: "2888111", tel: "0992778899", email: "auditor@vanguardia.com", rol_id: 10, active: true, created_at: new Date(), updated_at: null });
+
+    // 3. Clientes
+    guardarCliente({ id: 1, legal_name: "JUAN CARLOS LOPEZ", ruc: "1234567", tel: "0985111222", email: null, address: "AV. BRASIL 123", active: true, created_at: new Date(), updated_at: null });
+    guardarCliente({ id: 2, legal_name: "MARIA ELENA GOMEZ", ruc: "2345678", tel: "0971333444", email: null, address: "CALLE SAN PEDRO 45", active: true, created_at: new Date(), updated_at: null });
+    guardarCliente({ id: 3, legal_name: "PEDRO ANTONIO MARTINEZ", ruc: "3456789", tel: "0961555666", email: null, address: "BARRIO SAN JORGE SN", active: true, created_at: new Date(), updated_at: null });
+    guardarCliente({ id: 4, legal_name: "ANA BEATRIZ BENITEZ", ruc: "4567890", tel: "0981777888", email: null, address: "AV. MCAL. LOPEZ 800", active: true, created_at: new Date(), updated_at: null });
+    guardarCliente({ id: 5, legal_name: "CARLOS DANIEL GIMENEZ", ruc: "5678901", tel: "0991999000", email: null, address: "CALLE INDEPENDENCIA 320", active: true, created_at: new Date(), updated_at: null });
+    guardarCliente({ id: 6, legal_name: "ROSA MERCEDES PAREDES", ruc: "6789012", tel: "0982121313", email: null, address: "BO. REPUBLICANO MZ 5 CS 2", active: true, created_at: new Date(), updated_at: null });
+    guardarCliente({ id: 7, legal_name: "LUIS FERNANDO ROJAS", ruc: "7890123", tel: "0972414515", email: null, address: "AV. EUSEBIO AYALA 1100", active: true, created_at: new Date(), updated_at: null });
+    guardarCliente({ id: 8, legal_name: "PATRICIA NOEMI ACOSTA", ruc: "8901234", tel: "0962616717", email: null, address: "CALLE PIRIBEBUY 21O", active: true, created_at: new Date(), updated_at: null });
+    guardarCliente({ id: 9, legal_name: "MIGUEL ANGEL SANCHEZ", ruc: "9012345", tel: "0992818919", email: null, address: "AV. FERNANDO DE LA MORA 560", active: true, created_at: new Date(), updated_at: null });
+    guardarCliente({ id: 10, legal_name: "LAURA VIRGINIA ESQUIVEL", ruc: "1357924", tel: "0983020121", email: null, address: "CALLE CERRO CORA 78", active: true, created_at: new Date(), updated_at: null });
+
+    // 4. Categorias
+    guardarCategoria({ id: 1, name: "GENERAL", description: "Categoría general", created_at: new Date(), updated_at: null });
     guardarCategoria({ id: 2, name: "BEBIDAS", description: "Cualquier tipo de bebida", created_at: new Date(), updated_at: null });
     guardarCategoria({ id: 3, name: "ALIMENTOS", description: "Cualquier tipo de comestible", created_at: new Date(), updated_at: null });
+    guardarCategoria({ id: 4, name: "LACTEOS", description: "Leches, quesos, yogures", created_at: new Date(), updated_at: null });
+    guardarCategoria({ id: 5, name: "LIMPIEZA", description: "Articulos de limpieza del hogar", created_at: new Date(), updated_at: null });
+    guardarCategoria({ id: 6, name: "PERFUMERIA", description: "Higiene personal y cuidado", created_at: new Date(), updated_at: null });
+    guardarCategoria({ id: 7, name: "PANADERIA", description: "Panificados y dulces", created_at: new Date(), updated_at: null });
+    guardarCategoria({ id: 8, name: "CARNES", description: "Carnes rojas y blancas", created_at: new Date(), updated_at: null });
+    guardarCategoria({ id: 9, name: "VERDULERIA", description: "Frutas y verduras frescas", created_at: new Date(), updated_at: null });
+    guardarCategoria({ id: 10, name: "SNACKS", description: "Papas, galletitas saladas", created_at: new Date(), updated_at: null });
+
+    // 5. Marcas
+    guardarMarca({ id: 1, name: "SIN MARCA", created_at: new Date(), updated_at: null });
     guardarMarca({ id: 2, name: "COCA COLA", created_at: new Date(), updated_at: null });
-    guardarProveedor({ id: 1, name: "COMPRA LOCAL", ruc: null, tel: null, email: null, address: null, active: true, created_at: new Date(), updated_at: null });
-    guardarProducto({ id: Date.now(), code: "1111111", name: "COCA COLA 2L", description: "GASEOSA COCA COLA", purchase_price: 10000, selling_price: 15000, stock: 10, min_stock: 1, category_id: 2, brand_id: 2, iva: 10, active: true, created_at: new Date(), updated_at: null });
+    guardarMarca({ id: 3, name: "PEPSI", created_at: new Date(), updated_at: null });
+    guardarMarca({ id: 4, name: "LACTOLANDA", created_at: new Date(), updated_at: null });
+    guardarMarca({ id: 5, name: "TREBOL", created_at: new Date(), updated_at: null });
+    guardarMarca({ id: 6, name: "OMO", created_at: new Date(), updated_at: null });
+    guardarMarca({ id: 7, name: "COLGATE", created_at: new Date(), updated_at: null });
+    guardarMarca({ id: 8, name: "ARCOR", created_at: new Date(), updated_at: null });
+    guardarMarca({ id: 9, name: "OCHSI", created_at: new Date(), updated_at: null });
+    guardarMarca({ id: 10, name: "NESTLE", created_at: new Date(), updated_at: null });
+
+    // 6. Proveedores
+    guardarProveedor({ id: 1, legal_name: "COMPRA LOCAL", ruc: "80001111-1", tel: "021444555", email: "local@gmail.com", address: "ASUNCION", active: true, created_at: new Date(), updated_at: null });
+    guardarProveedor({ id: 2, legal_name: "DISTRIBUIDORA PARAGUAYA SA", ruc: "80002222-2", tel: "021555666", email: "ventas@distripy.com", address: "FERNANDO DE LA MORA", active: true, created_at: new Date(), updated_at: null });
+    guardarProveedor({ id: 3, legal_name: "LACTEOS COOPERATIVA", ruc: "80003333-3", tel: "021666777", email: "pedidos@lacteos.com", address: "J. EULOGIO ESTIGARRIBIA", active: true, created_at: new Date(), updated_at: null });
+    guardarProveedor({ id: 4, legal_name: "IMPORTADORA DEL SUR SRL", ruc: "80004444-4", tel: "021777888", email: "contacto@delsur.com.py", address: "ENCARNACION", active: true, created_at: new Date(), updated_at: null });
+    guardarProveedor({ id: 5, legal_name: "MAYORISTA SAN JOSE", ruc: "80005555-5", tel: "021888999", email: "sanjose@mayorista.com", address: "SAN LORENZO", active: true, created_at: new Date(), updated_at: null });
+    guardarProveedor({ id: 6, legal_name: "FRIGORIFICO GUARANI", ruc: "80006666-6", tel: "021999000", email: "ventas@frigoguarani.com", address: "LUQUE", active: true, created_at: new Date(), updated_at: null });
+    guardarProveedor({ id: 7, legal_name: "UNILEVER PARAGUAY", ruc: "80007777-7", tel: "021111222", email: "info@unilever.com.py", address: "VILLA ELISA", active: true, created_at: new Date(), updated_at: null });
+    guardarProveedor({ id: 8, legal_name: "CERVECERIA PARAGUAYA SA", ruc: "80008888-8", tel: "021222333", email: "pedidos@cervepar.com.py", address: "YPANÉ", active: true, created_at: new Date(), updated_at: null });
+    guardarProveedor({ id: 9, legal_name: "NESTLE PARAGUAY", ruc: "80009999-9", tel: "021333444", email: "nestle@py.nestle.com", address: "ASUNCION", active: true, created_at: new Date(), updated_at: null });
+    guardarProveedor({ id: 10, legal_name: "MOLINOS HARINEROS SA", ruc: "80000000-0", tel: "021444111", email: "ventas@molinos.com", address: "ITAUGUA", active: true, created_at: new Date(), updated_at: null });
+
+    // 7. Productos
+    guardarProducto({ id: 1, code: "78400111", name: "COCA COLA 2L", description: "GASEOSA COCA COLA NO RETORNABLE", purchase_price: 10000, selling_price: 15000, stock: 120, min_stock: 20, category_id: 2, brand_id: 2, iva: 10, active: true, created_at: new Date(), updated_at: null });
+    guardarProducto({ id: 2, code: "78400222", name: "PEPSI 2L", description: "GASEOSA PEPSI NO RETORNABLE", purchase_price: 9000, selling_price: 13000, stock: 85, min_stock: 20, category_id: 2, brand_id: 3, iva: 10, active: true, created_at: new Date(), updated_at: null });
+    guardarProducto({ id: 3, code: "78400333", name: "LECHE ENTERA LACTOLANDA 1L", description: "LECHE EN CARTON UHT", purchase_price: 4500, selling_price: 6000, stock: 200, min_stock: 50, category_id: 4, brand_id: 4, iva: 5, active: true, created_at: new Date(), updated_at: null });
+    guardarProducto({ id: 4, code: "78400444", name: "YOGURT TREBOL FRUTILLA 1L", description: "YOGURT BEBIBLE", purchase_price: 8000, selling_price: 11000, stock: 45, min_stock: 15, category_id: 4, brand_id: 5, iva: 5, active: true, created_at: new Date(), updated_at: null });
+    guardarProducto({ id: 5, code: "78400555", name: "JABON EN POLVO OMO 1KG", description: "JABON PARA ROPA", purchase_price: 18000, selling_price: 25000, stock: 30, min_stock: 10, category_id: 5, brand_id: 6, iva: 10, active: true, created_at: new Date(), updated_at: null });
+    guardarProducto({ id: 6, code: "78400666", name: "CREMA DENTAL COLGATE 90G", description: "MINT", purchase_price: 7000, selling_price: 10000, stock: 60, min_stock: 12, category_id: 6, brand_id: 7, iva: 10, active: true, created_at: new Date(), updated_at: null });
+    guardarProducto({ id: 7, code: "78400777", name: "GALLETITAS ARCOR CHOCOLATE", description: "PAQUETE 150G", purchase_price: 3500, selling_price: 5000, stock: 150, min_stock: 30, category_id: 10, brand_id: 8, iva: 10, active: true, created_at: new Date(), updated_at: null });
+    guardarProducto({ id: 8, code: "78400888", name: "PANCHOS OCHSI 6 UNID", description: "SALCHICHAS TIPO VIENA", purchase_price: 9500, selling_price: 13500, stock: 40, min_stock: 10, category_id: 8, brand_id: 9, iva: 5, active: true, created_at: new Date(), updated_at: null });
+    guardarProducto({ id: 9, code: "78400999", name: "NESCAFE CLASICO 100G", description: "CAFE SOLUBLE", purchase_price: 22000, selling_price: 30000, stock: 25, min_stock: 5, category_id: 3, brand_id: 10, iva: 10, active: true, created_at: new Date(), updated_at: null });
+    guardarProducto({ id: 10, code: "78401000", name: "PAN LACTAL BLANCO 400G", description: "PAN EN RODAJAS", purchase_price: 8000, selling_price: 12000, stock: 20, min_stock: 5, category_id: 7, brand_id: 1, iva: 5, active: true, created_at: new Date(), updated_at: null });
+
+    // 8. Compras
+    guardarCompra({ id: 1, provider_id: 2, user_id: 4, payment_type: "CONTADO", amount: 1500000, obs: "Compra semanal bebidas", created_at: new Date(Date.now() - 86400000 * 5), updated_at: null });
+    guardarCompra({ id: 2, provider_id: 3, user_id: 4, payment_type: "CREDITO", amount: 800000, obs: "Lácteos del mes", created_at: new Date(Date.now() - 86400000 * 4), updated_at: null });
+    guardarCompra({ id: 3, provider_id: 7, user_id: 4, payment_type: "CONTADO", amount: 2500000, obs: "Art. limpieza", created_at: new Date(Date.now() - 86400000 * 3), updated_at: null });
+    guardarCompra({ id: 4, provider_id: 6, user_id: 4, payment_type: "CREDITO", amount: 1200000, obs: "Carnes y fiambres", created_at: new Date(Date.now() - 86400000 * 2), updated_at: null });
+    guardarCompra({ id: 5, provider_id: 9, user_id: 4, payment_type: "CONTADO", amount: 550000, obs: "Café Nestle", created_at: new Date(Date.now() - 86400000 * 1), updated_at: null });
+    guardarCompra({ id: 6, provider_id: 2, user_id: 4, payment_type: "CREDITO", amount: 1900000, obs: "Reposición Pepsi", created_at: new Date(), updated_at: null });
+    guardarCompra({ id: 7, provider_id: 10, user_id: 4, payment_type: "CONTADO", amount: 300000, obs: "Harinas", created_at: new Date(), updated_at: null });
+    guardarCompra({ id: 8, provider_id: 5, user_id: 4, payment_type: "CREDITO", amount: 600000, obs: "Abarrotes", created_at: new Date(), updated_at: null });
+    guardarCompra({ id: 9, provider_id: 8, user_id: 4, payment_type: "CONTADO", amount: 3500000, obs: "Cerveza finde", created_at: new Date(), updated_at: null });
+    guardarCompra({ id: 10, provider_id: 4, user_id: 4, payment_type: "CREDITO", amount: 900000, obs: "Importados", created_at: new Date(), updated_at: null });
+
+    // 9. CompraDetalles
+    guardarCompraDetalle({ id: 1, purchase_id: 1, product_id: 1, amount: 150, unit_price: 10000, subtotal: 1500000, created_at: new Date(Date.now() - 86400000 * 5) });
+    guardarCompraDetalle({ id: 2, purchase_id: 2, product_id: 3, amount: 100, unit_price: 4500, subtotal: 450000, created_at: new Date(Date.now() - 86400000 * 4) });
+    guardarCompraDetalle({ id: 3, purchase_id: 2, product_id: 4, amount: 43, unit_price: 8000, subtotal: 344000, created_at: new Date(Date.now() - 86400000 * 4) });
+    guardarCompraDetalle({ id: 4, purchase_id: 3, product_id: 5, amount: 100, unit_price: 18000, subtotal: 1800000, created_at: new Date(Date.now() - 86400000 * 3) });
+    guardarCompraDetalle({ id: 5, purchase_id: 3, product_id: 6, amount: 100, unit_price: 7000, subtotal: 700000, created_at: new Date(Date.now() - 86400000 * 3) });
+    guardarCompraDetalle({ id: 6, purchase_id: 4, product_id: 8, amount: 126, unit_price: 9500, subtotal: 1197000, created_at: new Date(Date.now() - 86400000 * 2) });
+    guardarCompraDetalle({ id: 7, purchase_id: 5, product_id: 9, amount: 25, unit_price: 22000, subtotal: 550000, created_at: new Date(Date.now() - 86400000 * 1) });
+    guardarCompraDetalle({ id: 8, purchase_id: 6, product_id: 2, amount: 211, unit_price: 9000, subtotal: 1899000, created_at: new Date() });
+    guardarCompraDetalle({ id: 9, purchase_id: 7, product_id: 10, amount: 37, unit_price: 8000, subtotal: 296000, created_at: new Date() });
+    guardarCompraDetalle({ id: 10, purchase_id: 8, product_id: 7, amount: 171, unit_price: 3500, subtotal: 598500, created_at: new Date() });
+
+    // 10. Ventas
+    guardarVenta({ id: 1, client_id: 2, user_id: 2, payment_type: "CONTADO", amount: 45000, obs: "", created_at: new Date(Date.now() - 86400000 * 3), updated_at: null });
+    guardarVenta({ id: 2, client_id: 3, user_id: 3, payment_type: "CREDITO", amount: 150000, obs: "Compra mensual", created_at: new Date(Date.now() - 86400000 * 2), updated_at: null });
+    guardarVenta({ id: 3, client_id: 5, user_id: 2, payment_type: "CONTADO", amount: 25000, obs: "", created_at: new Date(Date.now() - 86400000 * 1), updated_at: null });
+    guardarVenta({ id: 4, client_id: 7, user_id: 3, payment_type: "CREDITO", amount: 350000, obs: "Surtido", created_at: new Date(), updated_at: null });
+    guardarVenta({ id: 5, client_id: 9, user_id: 2, payment_type: "CONTADO", amount: 60000, obs: "", created_at: new Date(), updated_at: null });
+    guardarVenta({ id: 6, client_id: 1, user_id: 3, payment_type: "CONTADO", amount: 13000, obs: "", created_at: new Date(), updated_at: null });
+    guardarVenta({ id: 7, client_id: 4, user_id: 2, payment_type: "CREDITO", amount: 210000, obs: "", created_at: new Date(), updated_at: null });
+    guardarVenta({ id: 8, client_id: 6, user_id: 3, payment_type: "CONTADO", amount: 95000, obs: "", created_at: new Date(), updated_at: null });
+    guardarVenta({ id: 9, client_id: 8, user_id: 2, payment_type: "CREDITO", amount: 50000, obs: "", created_at: new Date(), updated_at: null });
+    guardarVenta({ id: 10, client_id: 10, user_id: 3, payment_type: "CONTADO", amount: 120000, obs: "", created_at: new Date(), updated_at: null });
+
+    // 11. VentaDetalles
+    guardarVentaDetalle({ id: 1, sale_id: 1, product_id: 1, amount: 3, unit_price: 15000, subtotal: 45000 });
+    guardarVentaDetalle({ id: 2, sale_id: 2, product_id: 5, amount: 6, unit_price: 25000, subtotal: 150000 });
+    guardarVentaDetalle({ id: 3, sale_id: 3, product_id: 7, amount: 5, unit_price: 5000, subtotal: 25000 });
+    guardarVentaDetalle({ id: 4, sale_id: 4, product_id: 9, amount: 10, unit_price: 30000, subtotal: 300000 });
+    guardarVentaDetalle({ id: 5, sale_id: 4, product_id: 7, amount: 10, unit_price: 5000, subtotal: 50000 });
+    guardarVentaDetalle({ id: 6, sale_id: 5, product_id: 3, amount: 10, unit_price: 6000, subtotal: 60000 });
+    guardarVentaDetalle({ id: 7, sale_id: 6, product_id: 2, amount: 1, unit_price: 13000, subtotal: 13000 });
+    guardarVentaDetalle({ id: 8, sale_id: 7, product_id: 5, amount: 5, unit_price: 25000, subtotal: 125000 });
+    guardarVentaDetalle({ id: 9, sale_id: 7, product_id: 4, amount: 5, unit_price: 11000, subtotal: 55000 });
+    guardarVentaDetalle({ id: 10, sale_id: 8, product_id: 1, amount: 2, unit_price: 15000, subtotal: 30000 });
+
+    // 12. CuentasPorPagar (las compras a credito fueron: id 2, 4, 6, 8, 10)
+    guardarCuentaPorPagar({ id: 1, purchase_id: 2, provider_id: 3, amount_total: 800000, amount_paid: 400000, amount_due: 400000, status: "PARCIAL", expire_at: new Date(Date.now() + 86400000 * 25), created_at: new Date(Date.now() - 86400000 * 4), updated_at: null });
+    guardarCuentaPorPagar({ id: 2, purchase_id: 4, provider_id: 6, amount_total: 1200000, amount_paid: 1200000, amount_due: 0, status: "PAGADA", expire_at: new Date(Date.now() + 86400000 * 28), created_at: new Date(Date.now() - 86400000 * 2), updated_at: null });
+    guardarCuentaPorPagar({ id: 3, purchase_id: 6, provider_id: 2, amount_total: 1900000, amount_paid: 0, amount_due: 1900000, status: "PENDIENTE", expire_at: new Date(Date.now() + 86400000 * 30), created_at: new Date(), updated_at: null });
+    guardarCuentaPorPagar({ id: 4, purchase_id: 8, provider_id: 5, amount_total: 600000, amount_paid: 0, amount_due: 600000, status: "PENDIENTE", expire_at: new Date(Date.now() + 86400000 * 30), created_at: new Date(), updated_at: null });
+    guardarCuentaPorPagar({ id: 5, purchase_id: 10, provider_id: 4, amount_total: 900000, amount_paid: 100000, amount_due: 800000, status: "PARCIAL", expire_at: new Date(Date.now() + 86400000 * 30), created_at: new Date(), updated_at: null });
+
+    // 13. Pagos
+    guardarPago({ id: 1, account_payable_id: 1, amount: 200000, payment_method: "TRANSFERENCIA", obs: "Trf. ITAU", created_at: new Date(Date.now() - 86400000 * 3) });
+    guardarPago({ id: 2, account_payable_id: 1, amount: 200000, payment_method: "EFECTIVO", obs: "Recibo 001", created_at: new Date(Date.now() - 86400000 * 1) });
+    guardarPago({ id: 3, account_payable_id: 2, amount: 600000, payment_method: "CHEQUE", obs: "Chq. BNF 5544", created_at: new Date(Date.now() - 86400000 * 1) });
+    guardarPago({ id: 4, account_payable_id: 2, amount: 600000, payment_method: "EFECTIVO", obs: "Recibo 005", created_at: new Date() });
+    guardarPago({ id: 5, account_payable_id: 5, amount: 100000, payment_method: "TRANSFERENCIA", obs: "Trf. Familiar", created_at: new Date() });
+
+    // 14. CuentasPorCobrar (ventas a credito fueron id 2, 4, 7, 9)
+    guardarCuentaPorCobrar({ id: 1, sale_id: 2, client_id: 3, amount_total: 150000, amount_paid: 50000, amount_due: 100000, status: "PARCIAL", expire_at: new Date(Date.now() + 86400000 * 28), created_at: new Date(Date.now() - 86400000 * 2), updated_at: null });
+    guardarCuentaPorCobrar({ id: 2, sale_id: 4, client_id: 7, amount_total: 350000, amount_paid: 350000, amount_due: 0, status: "COBRADA", expire_at: new Date(Date.now() + 86400000 * 30), created_at: new Date(), updated_at: null });
+    guardarCuentaPorCobrar({ id: 3, sale_id: 7, client_id: 4, amount_total: 210000, amount_paid: 0, amount_due: 210000, status: "PENDIENTE", expire_at: new Date(Date.now() + 86400000 * 30), created_at: new Date(), updated_at: null });
+    guardarCuentaPorCobrar({ id: 4, sale_id: 9, client_id: 8, amount_total: 50000, amount_paid: 0, amount_due: 50000, status: "PENDIENTE", expire_at: new Date(Date.now() + 86400000 * 30), created_at: new Date(), updated_at: null });
+
+    // 15. Cobros
+    guardarCobro({ id: 1, account_receivable_id: 1, amount: 50000, payment_method: "EFECTIVO", obs: "Caja", created_at: new Date(Date.now() - 86400000 * 1) });
+    guardarCobro({ id: 2, account_receivable_id: 2, amount: 200000, payment_method: "EFECTIVO", obs: "Caja", created_at: new Date() });
+    guardarCobro({ id: 3, account_receivable_id: 2, amount: 150000, payment_method: "TRANSFERENCIA", obs: "Trf. Atlas", created_at: new Date() });
 }
 
 /**

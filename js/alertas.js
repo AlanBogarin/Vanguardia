@@ -38,6 +38,38 @@ function pedir(titulo, mensaje, value, onOk, onCancel) {
 }
 
 /**
+ * Mostrar un mensaje generico
+ * @param {string} mensaje 
+ */
+function mensajeInfo(mensaje) {
+    alertify.message(mensaje);
+}
+
+/**
+ * Mostrar un mensaje de una acción existosa
+ * @param {string} mensaje 
+ */
+function mensajeSuccess(mensaje) {
+    alertify.success(mensaje);
+}
+
+/**
+ * Mostrar un mensaje de advertencia
+ * @param {string} mensaje 
+ */
+function mensajeWarn(mensaje) {
+    alertify.warning(mensaje);
+}
+
+/**
+ * Mostrar un mensaje de un error
+ * @param {string} mensaje 
+ */
+function mensajeError(mensaje) {
+    alertify.error(mensaje);
+}
+
+/**
  * Dialogo Apeptar/Cancelar para cerrar sesion
  * @param {Function?} onOk Funcion sin parametros
  * @param {Function?} onCancel Funcion sin parametros

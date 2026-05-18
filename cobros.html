@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Vanguardia - Cobros</title>
+    <link rel="icon" href="img/working.png">
+    <link href="menu/styles.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="bt/bootstrap.min.css">
+    <link rel="stylesheet" href="bt-icons/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="alert/alertify.min.css">
+    <link rel="stylesheet" href="alert/themes/default.min.css">
+    <link rel="stylesheet" href="dt/datatables.min.css">
+    <link rel="stylesheet" href="dt/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="dt/buttons.dataTables.min.css">
+    <link rel="stylesheet" href="css/vanguardia.css">
+</head>
+<body class="sb-nav-fixed">
+    <div id="contenedor-navbar"></div>
+    <div id="layoutSidenav">
+        <div id="contenedor-sidebar"></div>
+        <div id="layoutSidenav_content">
+            <main>
+                <div class="container-fluid px-4">
+                    <div class="d-flex justify-content-between align-items-center mt-2 mb-2">
+                        <div>
+                            <h1 class="mb-0 d-inline-block me-3">Cobros a Clientes</h1>
+                            <a href="cuentasporcobrar.html" class="btn btn-sm btn-secondary"><i class="bi bi-arrow-left"></i> Volver a Cuentas por Cobrar</a>
+                        </div>
+                        <button class="btn btn-sm btn-primary" onclick="$('#modalNuevoCobro').modal('show')">
+                            <i class="bi bi-cash-stack me-1"></i> Registrar Nuevo Cobro
+                        </button>
+                    </div>
+                    <div class="row">
+                        <table id="tabla_cobros" class="display compact" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>Id Cobro</th>
+                                    <th>Id Cuenta</th>
+                                    <th>Cliente</th>
+                                    <th>Monto Cobrado</th>
+                                    <th>Método</th>
+                                    <th>Referencia</th>
+                                    <th>Fecha de Cobro</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </main>
+            <footer class="py-4 bg-light mt-auto" id="contenedor-footer"></footer>
+        </div>
+    </div>
+
+    <!-- Modal Nuevo Cobro -->
+    <div class="modal fade" id="modalNuevoCobro" tabindex="-1" aria-labelledby="modalNuevoCobroLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <form id="formNuevoCobro" class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="modalNuevoCobroLabel"><i class="bi bi-cash"></i> Registrar Cobro</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label class="form-label">Cuenta por Cobrar (Pendientes)</label>
+                        <select id="account_receivable_id" class="form-select" required></select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Saldo Pendiente</label>
+                        <input type="text" id="saldo_pendiente" class="form-control" readonly>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Monto a Cobrar</label>
+                        <input type="number" id="monto" class="form-control" required min="1">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Método de Pago</label>
+                        <select id="metodo" class="form-select" required>
+                            <option value="">Seleccione...</option>
+                            <option value="Efectivo">Efectivo</option>
+                            <option value="Transferencia Bancaria">Transferencia Bancaria</option>
+                            <option value="Tarjeta de Crédito">Tarjeta de Crédito</option>
+                            <option value="Tarjeta de Débito">Tarjeta de Débito</option>
+                            <option value="Cheque">Cheque</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Nro. Referencia / Comprobante (Opcional)</label>
+                        <input type="text" id="referencia" class="form-control" maxlength="50">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                    <button type="submit" class="btn btn-success"><i class="bi bi-floppy"></i> Guardar Cobro</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="menu/scripts.js"></script>
+    <script src="bt/bootstrap.bundle.min.js"></script>
+    <script src="alert/alertify.min.js"></script>
+    <script src="dt/jquery-3.7.1.js"></script>
+    <script src="dt/datatables.min.js"></script>
+    <script src="dt/jquery.dataTables.min.js"></script>
+    <script src="dt/dataTables.buttons.min.js"></script>
+    <script src="dt/buttons.print.min.js"></script>
+    <script src="dt/buttons.html5.min.js"></script>
+    <script src="dt/jszip.min.js"></script>
+    <script src="dt/pdfmake.min.js"></script>
+    <script src="dt/vfs_fonts.js"></script>
+    <script src="dt/es-ES.js"></script>
+    <script src="js/bd.js"></script>
+    <script src="js/alertas.js"></script>
+    <script src="js/cobros.js"></script>
+</body>
+</html>

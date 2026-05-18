@@ -26,7 +26,6 @@ window.addEventListener("DOMContentLoaded", () => {
 })
 
 document.addEventListener("DOMContentLoaded", () => { validarSesion(); });
-document.addEventListener("DOMContentLoaded", () => { cargarDatosNavbar(); });
 
 /**
  * Funcion para cargar componentes especificos en el html
@@ -41,6 +40,12 @@ function cargarComponente(id, path) {
         })
         .then(data => {
             document.getElementById(id).innerHTML = data;
+            if (id === "contenedor-sidebar") {
+                aplicarPermisosSidebar();
+            }
+            if (id === "contenedor-navbar") {
+                cargarDatosNavbar();
+            }
         })
         .catch(error => console.error(error));
 }
@@ -64,6 +69,43 @@ function cargarDatosNavbar() {
     // 
     const usuarioDiv = document.getElementById("usuario");
     if (usuarioDiv) usuarioDiv.innerHTML = nombre;
+}
+
+function aplicarPermisosSidebar() {
+    const sesion = cargarSesion();
+    if (!sesion) return;
+    const usuario = cargarUsuario(sesion.user_id);
+    if (!usuario) return;
+    
+    const roles = cargarRoles();
+    const rolUsuario = roles.find(r => r.id === usuario.rol_id);
+    if (!rolUsuario) return;
+
+    const flags = rolUsuario.flags || 0;
+
+    const items = document.querySelectorAll('[data-permission]');
+    items.forEach(item => {
+        const requiredFlag = item.getAttribute('data-permission');
+        // Usar la función tienePermiso de bd.js
+        if (PERMISOS[requiredFlag] !== undefined && !tienePermiso(flags, PERMISOS[requiredFlag])) {
+            item.style.display = 'none';
+            item.classList.add('d-none'); // Bootstrap class for hiding
+        }
+    });
+
+    // Ocultar categorías principales si todos sus subelementos están ocultos
+    const collapseMenus = document.querySelectorAll('.collapse');
+    collapseMenus.forEach(menu => {
+        const links = menu.querySelectorAll('.nav-link');
+        const visibleLinks = Array.from(links).filter(link => !link.classList.contains('d-none'));
+        
+        if (visibleLinks.length === 0) {
+            const controlledBy = document.querySelector(`[data-bs-target="#${menu.id}"]`);
+            if (controlledBy) {
+                controlledBy.style.display = 'none';
+            }
+        }
+    });
 }
 
 // ── Abrir Configuración: pre-llenar datos ────────────────────────────────────
@@ -90,7 +132,7 @@ function guardarConfiguracion() {
         alertify.error('El nombre y usuario son obligatorios.');
         return;
     }
-    usuario.nombre = nuevoNombre;
+    usuario.name = nuevoNombre;
     usuario.username = nuevoUsuario;
     // usuario.tel = nuevoCelular;
     guardarUsuario(usuario);

@@ -4,11 +4,16 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Vanguardia - Marcas</title>
+    <link rel="icon" href="img/working.png">
     <link href="menu/styles.css" rel="stylesheet"/>
     <link rel="stylesheet" href="bt/bootstrap.min.css">
     <link rel="stylesheet" href="bt-icons/bootstrap-icons.min.css">
     <link rel="stylesheet" href="alert/alertify.min.css">
     <link rel="stylesheet" href="alert/themes/default.min.css">
+    <link rel="stylesheet" href="dt/datatables.min.css">
+    <link rel="stylesheet" href="dt/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="dt/buttons.dataTables.min.css">
+    <link rel="stylesheet" href="css/vanguardia.css">
 </head>
 <body class="sb-nav-fixed">
     <div id="contenedor-navbar">
@@ -28,7 +33,27 @@
         </div>
         <div id="layoutSidenav_content">
             <main>
-                <!-- ... -->
+                <div class="container-fluid px-4">
+                    <div class="d-flex justify-content-between align-items-center mt-2 mb-2">
+                        <h1 class="mb-0">Marcas</h1>
+                        <button class="btn btn-sm btn-primary" onclick="$('#modalNuevaMarca').modal('show')">
+                            <i class="bi bi-tag-fill me-1"></i> Nueva Marca
+                        </button>
+                    </div>
+                    <div class="row">
+                        <table id="tabla_marcas" class="display compact" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>Id Marca</th>
+                                    <th>Nombre</th>
+                                    <th>Fecha de Creación</th>
+                                    <th>Fecha de Modificación</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
             </main>
             <footer class="py-4 bg-light mt-auto" id="contenedor-footer">
                 <!-- ========================================================= -->
@@ -39,13 +64,88 @@
             </footer>
         </div>
     </div>
+
+    <!-- Modal Nueva Marca -->
+    <div class="modal fade" id="modalNuevaMarca" tabindex="-1" aria-labelledby="modalNuevaMarcaLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <form id="formNuevaMarca" class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalNuevaMarcaLabel"><i class="bi bi-tag-fill"></i> Agregar Nueva Marca</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label class="form-label">Nombre de la Marca</label>
+                        <input type="text" id="nombre" class="form-control text-uppercase" required minlength="2" maxlength="50">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-floppy"></i> Guardar Marca</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Editar Marca -->
+    <div class="modal fade" id="modalEditarMarca" tabindex="-1" aria-labelledby="modalEditarMarcaLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <form id="formEditarMarca" class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title" id="modalEditarMarcaLabel"><i class="bi bi-pencil-square"></i> Editar Marca</h5>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="edit_id">
+                    <div class="mb-2">
+                        <label class="form-label">Nombre de la Marca</label>
+                        <input type="text" id="edit_nombre" class="form-control text-uppercase" required minlength="2" maxlength="50">
+                    </div>
+                    <input type="hidden" id="edit_creacion">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                    <button type="submit" class="btn btn-warning"><i class="bi bi-floppy"></i> Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Eliminar Marca -->
+    <div class="modal fade" id="modalEliminarMarca" tabindex="-1" aria-labelledby="modalEliminarMarcaLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="modalEliminarMarcaLabel"><i class="bi bi-exclamation-triangle-fill"></i> Eliminar Marca</h5>
+                </div>
+                <div class="modal-body">
+                    <p class="text-center fw-bold">¿Deseas proceder con la eliminación?</p>
+                    <input type="hidden" id="del_id">
+                    <ul class="list-group mb-3">
+                        <li class="list-group-item"><strong>Nombre:</strong> <span id="del_nombre"></span></li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarEliminar"><i class="bi bi-trash"></i> Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="menu/scripts.js"></script>
-    <!-- BOOTSTRAP -->
     <script src="bt/bootstrap.bundle.min.js"></script>
-    <!-- ALERTIFY -->
     <script src="alert/alertify.min.js"></script>
-    <!-- SCRIPTS -->
+    <script src="dt/jquery-3.7.1.js"></script>
+    <script src="dt/datatables.min.js"></script>
+    <script src="dt/jquery.dataTables.min.js"></script>
+    <script src="dt/dataTables.buttons.min.js"></script>
+    <script src="dt/buttons.print.min.js"></script>
+    <script src="dt/buttons.html5.min.js"></script>
+    <script src="dt/jszip.min.js"></script>
+    <script src="dt/pdfmake.min.js"></script>
+    <script src="dt/vfs_fonts.js"></script>
+    <script src="dt/es-ES.js"></script>
     <script src="js/bd.js"></script>
     <script src="js/alertas.js"></script>
+    <script src="js/marcas.js"></script>
 </body>
 </html>

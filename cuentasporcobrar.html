@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Vanguardia - Cuentas por Cobrar</title>
+    <link rel="icon" href="img/working.png">
+    <link href="menu/styles.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="bt/bootstrap.min.css">
+    <link rel="stylesheet" href="bt-icons/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="alert/alertify.min.css">
+    <link rel="stylesheet" href="alert/themes/default.min.css">
+    <link rel="stylesheet" href="dt/datatables.min.css">
+    <link rel="stylesheet" href="dt/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="dt/buttons.dataTables.min.css">
+    <link rel="stylesheet" href="css/vanguardia.css">
+</head>
+<body class="sb-nav-fixed">
+    <div id="contenedor-navbar"></div>
+    <div id="layoutSidenav">
+        <div id="contenedor-sidebar"></div>
+        <div id="layoutSidenav_content">
+            <main>
+                <div class="container-fluid px-4">
+                    <div class="d-flex justify-content-between align-items-center mt-2 mb-2">
+                        <h1 class="mb-0">Cuentas por Cobrar</h1>
+                        <a href="cobros.html" class="btn btn-sm btn-success">
+                            <i class="bi bi-cash-stack me-1"></i> Ver Cobros
+                        </a>
+                    </div>
+                    <div class="row">
+                        <table id="tabla_cuentas_cobrar" class="display compact" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>Id Cuenta</th>
+                                    <th>Id Venta</th>
+                                    <th>Cliente</th>
+                                    <th>Total a Cobrar</th>
+                                    <th>Monto Cobrado</th>
+                                    <th>Saldo Pendiente</th>
+                                    <th>Estado</th>
+                                    <th>Vencimiento</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </main>
+            <footer class="py-4 bg-light mt-auto" id="contenedor-footer"></footer>
+        </div>
+    </div>
+
+    <!-- Modal Detalle Cuenta (Informativo) -->
+    <div class="modal fade" id="modalDetalleCuenta" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-dark">
+                    <h5 class="modal-title"><i class="bi bi-info-circle"></i> Detalle de la Cuenta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="list-group mb-3">
+                        <li class="list-group-item"><strong>Cliente:</strong> <span id="det_cliente"></span></li>
+                        <li class="list-group-item"><strong>ID Venta:</strong> <span id="det_venta"></span></li>
+                        <li class="list-group-item"><strong>Fecha Emisión:</strong> <span id="det_emision"></span></li>
+                        <li class="list-group-item"><strong>Vencimiento:</strong> <span id="det_vencimiento"></span></li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="menu/scripts.js"></script>
+    <script src="bt/bootstrap.bundle.min.js"></script>
+    <script src="alert/alertify.min.js"></script>
+    <script src="dt/jquery-3.7.1.js"></script>
+    <script src="dt/datatables.min.js"></script>
+    <script src="dt/jquery.dataTables.min.js"></script>
+    <script src="dt/dataTables.buttons.min.js"></script>
+    <script src="dt/buttons.print.min.js"></script>
+    <script src="dt/buttons.html5.min.js"></script>
+    <script src="dt/jszip.min.js"></script>
+    <script src="dt/pdfmake.min.js"></script>
+    <script src="dt/vfs_fonts.js"></script>
+    <script src="dt/es-ES.js"></script>
+    <script src="js/bd.js"></script>
+    <script src="js/alertas.js"></script>
+    <script src="js/cuentasporcobrar.js"></script>
+</body>
+</html>
