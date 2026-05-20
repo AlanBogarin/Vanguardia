@@ -29,7 +29,6 @@ let tabla;
 const modalNCliente = new bootstrap.Modal(document.getElementById('modalNuevoCliente'));
 
 document.addEventListener('DOMContentLoaded', function () {
-    cargarComponentes();
     cargarTablaClientes();
 
     // Evento Nuevo Cliente

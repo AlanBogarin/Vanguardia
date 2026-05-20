@@ -24,7 +24,7 @@ function cargarOpcionesCuentas(preselectId = null) {
     let options = '<option value="">Seleccione una cuenta pendiente...</option>';
     cuentas.forEach(c => {
         const prov = proveedores.find(p => p.id === c.provider_id);
-        const provName = prov ? prov.name : 'Desconocido';
+        const provName = prov ? prov.legal_name : 'Desconocido';
         options += `<option value="${c.id}" data-saldo="${c.amount_due}">ID: ${c.id} - ${provName} (Pendiente: ${formatoMoneda(c.amount_due)})</option>`;
     });
     
@@ -141,7 +141,7 @@ function cargarTablaPagos() {
         
         return {
             ...p,
-            proveedor_name: prov ? prov.name : 'Desconocido',
+            proveedor_name: prov ? prov.legal_name : 'Desconocido',
             monto_fmt: formatoMoneda(p.amount),
             fecha_fmt: new Date(p.created_at).toLocaleString()
         };
@@ -158,11 +158,11 @@ function cargarTablaPagos() {
         columns: [
             { data: 'id' },
             { data: 'account_payable_id' },
-            { data: 'proveedor_name' },
-            { data: 'monto_fmt' },
+            // { data: 'proveedor_name' },
+            { data: 'amount' },
             { data: 'payment_method' },
-            { data: 'reference_number' },
-            { data: 'fecha_fmt' }
+            { data: 'obs' },
+            { data: 'created_at' }
         ],
         dom: '<"d-flex justify-content-between align-items-center mb-2"Bf>rtip',
         buttons: [

@@ -220,7 +220,7 @@ async function exportarPDF() {
 
         let logo = new Image();
 
-        logo.src = "./img/logo.png";
+        logo.src = "./img/logo_x64.jpg";
 
         await new Promise((resolve) => {
 

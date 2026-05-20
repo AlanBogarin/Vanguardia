@@ -2,52 +2,33 @@
 /** @typedef {import("../js/bd")} */
 /** @typedef {import("../js/alertas")} */
 
-// Mostrar y Ocultar el sidebar
-window.addEventListener('DOMContentLoaded', () => {
-    const sidebarToggle = document.body.querySelector('#sidebarToggle');
-    if (sidebarToggle) {
-        // Sidebar persistente al refrescar pagina
-        if (localStorage.getItem('sb|sidebar-toggle') === 'true') {
-            document.body.classList.toggle('sb-sidenav-toggled');
-        }
-        sidebarToggle.addEventListener('click', event => {
-            event.preventDefault();
-            document.body.classList.toggle('sb-sidenav-toggled');
-            localStorage.setItem('sb|sidebar-toggle', document.body.classList.contains('sb-sidenav-toggled'));
-        });
-    }
-});
 
-// Cargar los componentes dinamicamente
-window.addEventListener("DOMContentLoaded", () => {
-    cargarComponente("contenedor-navbar", "menu/navbar.html");
-    cargarComponente("contenedor-sidebar", "menu/sidebar.html");
-    cargarComponente("contenedor-footer", "menu/footer.html");
-})
-
-document.addEventListener("DOMContentLoaded", () => { validarSesion(); });
+/**
+ * Descargar un recurso/archivo del sistema
+ * @param {string} path 
+ * @returns {Promise<Response>}
+ */
+async function descargarRecurso(path) {
+    const response = await fetch(path);
+    if (!response.ok) throw new Error("Error al cargar " + path);
+    return response;
+}
 
 /**
  * Funcion para cargar componentes especificos en el html
  * @param {string} id ID de la etiqueta html
  * @param {string} path Ruta del archivo html a cargar
  */
-function cargarComponente(id, path) {
-    fetch(path)
-        .then(response => {
-            if (!response.ok) throw new Error("Error al cargar " + path);
-            return response.text();
-        })
-        .then(data => {
-            document.getElementById(id).innerHTML = data;
-            if (id === "contenedor-sidebar") {
-                aplicarPermisosSidebar();
-            }
-            if (id === "contenedor-navbar") {
-                cargarDatosNavbar();
-            }
-        })
-        .catch(error => console.error(error));
+async function cargarComponente(id, path) {
+    try {
+        const response = await descargarRecurso(path)
+        const data = await response.text();
+        document.getElementById(id).innerHTML = data;
+        if (id === "contenedor-sidebar") aplicarPermisosSidebar();
+        if (id === "contenedor-navbar") cargarDatosNavbar();
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 function cargarDatosNavbar() {
@@ -74,20 +55,13 @@ function cargarDatosNavbar() {
 function aplicarPermisosSidebar() {
     const sesion = cargarSesion();
     if (!sesion) return;
-    const usuario = cargarUsuario(sesion.user_id);
-    if (!usuario) return;
-    
-    const roles = cargarRoles();
-    const rolUsuario = roles.find(r => r.id === usuario.rol_id);
-    if (!rolUsuario) return;
+    const rol = cargarRol(cargarUsuario(sesion.user_id).rol_id);
+    if (!rol) return;
+    const flags = rol.flags;
 
-    const flags = rolUsuario.flags || 0;
-
-    const items = document.querySelectorAll('[data-permission]');
-    items.forEach(item => {
-        const requiredFlag = item.getAttribute('data-permission');
-        // Usar la función tienePermiso de bd.js
-        if (PERMISOS[requiredFlag] !== undefined && !tienePermiso(flags, PERMISOS[requiredFlag])) {
+    document.querySelectorAll('[data-permission]').forEach(item => {
+        const permiso = item.getAttribute('data-permission').toUpperCase().replace("-", "_");
+        if (!tienePermiso(flags, PERMISOS[permiso])) {
             item.style.display = 'none';
             item.classList.add('d-none'); // Bootstrap class for hiding
         }
@@ -107,21 +81,6 @@ function aplicarPermisosSidebar() {
         }
     });
 }
-
-// ── Abrir Configuración: pre-llenar datos ────────────────────────────────────
-document.addEventListener('show.bs.modal', function (e) {
-    if (e.target.id === 'modalConfiguracion') {
-        const usuario = cargarUsuario(cargarSesion().user_id);
-        if (!usuario) return;
-        document.getElementById('cfgNombre').value  = usuario.name;
-        document.getElementById('cfgUsuario').value = usuario.username;
-        // document.getElementById('cfgCelular').value = usuario.tel;
-    } else if (e.target.id === 'modalCambiarContrasena') {
-        ['passActual','passNueva','passConfirmar'].forEach(id => {
-            document.getElementById(id).value = '';
-        });
-    }
-});
 
 function guardarConfiguracion() {
     const usuario = cargarUsuario(cargarSesion().user_id);
@@ -168,4 +127,45 @@ async function cambiarContrasena() {
     alertify.success('Contraseña cambiada correctamente.');
 }
 
-// cerrarSesion(): definido en `alertas.js`
+function configurarSideBar() {
+    const sidebarToggle = document.body.querySelector('#sidebarToggle');
+    if (!sidebarToggle) return;
+    // Sidebar persistente al refrescar pagina
+    if (localStorage.getItem('sb|sidebar-toggle') === 'true') {
+        document.body.classList.toggle('sb-sidenav-toggled');
+    }
+    sidebarToggle.addEventListener('click', event => {
+        event.preventDefault();
+        document.body.classList.toggle('sb-sidenav-toggled');
+        localStorage.setItem('sb|sidebar-toggle', document.body.classList.contains('sb-sidenav-toggled'));
+    });
+}
+
+async function configurarComponentesDinamicos() {
+    await cargarComponente("contenedor-navbar", "menu/navbar.html");
+    await cargarComponente("contenedor-sidebar", "menu/sidebar.html");
+    await cargarComponente("contenedor-footer", "menu/footer.html");
+}
+
+function configurarModales(e) {
+        if (e.target.id === 'modalConfiguracion') {
+            const usuario = cargarUsuario(cargarSesion().user_id);
+            if (!usuario) return;
+            document.getElementById('cfgNombre').value  = usuario.name;
+            document.getElementById('cfgUsuario').value = usuario.username;
+            // document.getElementById('cfgCelular').value = usuario.tel;
+        } else if (e.target.id === 'modalCambiarContrasena') {
+            ['passActual','passNueva','passConfirmar'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+        }
+    }
+
+if (!window.location.href.endsWith("login.html")) {
+    // Cargar los componentes dinamicamente
+    document.addEventListener("DOMContentLoaded", () => configurarComponentesDinamicos().then(() => {
+        configurarSideBar();
+        validarSesion()
+    }))
+    document.addEventListener('show.bs.modal', configurarModales);
+}

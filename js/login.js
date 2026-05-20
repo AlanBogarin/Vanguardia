@@ -2,255 +2,158 @@
  * @typedef {import('jquery')}
  * @typedef {import('./alertas')}
  * @typedef {import('./bd')}
+ * @typedef {import('./tablas')}
  */
 
-const tablaRoles = new DataTable("#tabla_roles", {
-    columns: [
-        { data: "id", title: "Id Rol" },
-        { data: "name", title: "Nombre" },
-        { data: "description", title: "Descripción" },
-        { data: "flags", title: "Permisos" },
-        { data: "created_at", title: "Fecha de creación" },
-        { data: "updated_at", title: "Fecha de modificación", render: data => data || "" }
-    ],
-    language: spanish,
-    searching: false,    // Oculta el buscador
-    lengthChange: false, // Oculta el paginación
-    pageLength: 5
-});
-const tablaUsuarios = new DataTable("#tabla_usuarios", {
-    columns: [
-        { data: "id", title: "Id Usuario" },
-        { data: "username", title: "Nombre de Usuario" },
-        { data: "name", title: "Nombre del Personal" },
-        { data: "ruc", title: "Cédula o RUC" },
-        { data: "tel", title: "Teléfono" },
-        { data: "email", title: "Correo Electrónico" },
-        { data: "rol", title: "Rol", render: (data, type, row) => cargarRol(row.rol_id).name },
-        { data: "active", title: "Activo" },
-        { data: "created_at", title: "Fecha de Creación" },
-        { data: "updated_at", title: "Fecha de Modificación", render: data => data || "" },
-    ],
-    language: spanish,
-    searching: false,    // Oculta el buscador
-    lengthChange: false, // Oculta el paginación
-    pageLength: 5
-}); //ruc,tel
-const tablaClientes = new DataTable("#tabla_clientes", {
-    columns: [
-        { data: "id", title: "Id Cliente" },
-        { data: "legal_name", title: "Razón Social" },
-        { data: "ruc", title: "RUC", render: data => data || "" },
-        { data: "tel", title: "Teléfono", render: data => data || "" },
-        { data: "email", title: "Correo Electrónico", render: data => data || "" },
-        { data: "address", title: "Dirección", render: data => data || "" },
-        { data: "active", title: "Activo" },
-        { data: "created_at", title: "Fecha de Creación" },
-        { data: "updated_at", title: "Fecha de Modificación", render: data => data || "" },
-    ],
-    language: spanish,
-    searching: false,    // Oculta el buscador
-    lengthChange: false, // Oculta el paginación
-    pageLength: 5
-});
-const tablaProveedores = new DataTable("#tabla_proveedores", {
-    columns: [
-        { data: "id", title: "Id Proveedor" },
-        { data: "legal_name", title: "Razón Social" },
-        { data: "ruc", title: "RUC", render: data => data || "" },
-        { data: "tel", title: "Teléfono", render: data => data || "" },
-        { data: "email", title: "Correo Electrónico", render: data => data || "" },
-        { data: "address", title: "Dirección", render: data => data || "" },
-        { data: "active", title: "Activo" },
-        { data: "created_at", title: "Fecha de Creación" },
-        { data: "updated_at", title: "Fecha de Modificación", render: data => data || "" },
-    ],
-    language: spanish,
-    searching: false,    // Oculta el buscador
-    lengthChange: false, // Oculta el paginación
-    pageLength: 5
-});
-const tablaCategorias = new DataTable("#tabla_categorias", {
-    columns: [
-        { data: "id", title: "Id Categoria" },
-        { data: "name", title: "Nombre" },
-        { data: "description", title: "Descripción" },
-        { data: "created_at", title: "Fecha de Creación" },
-        { data: "updated_at", title: "Fecha de Modificación", render: data => data || "" },
-    ],
-    language: spanish,
-    searching: false,    // Oculta el buscador
-    lengthChange: false, // Oculta el paginación
-    pageLength: 5
-});
-const tablaMarcas = new DataTable("#tabla_marcas", {
-    columns: [
-        { data: "id", title: "Id Marca" },
-        { data: "name", title: "Nombre" },
-        { data: "created_at", title: "Fecha de Creación" },
-        { data: "updated_at", title: "Fecha de Modificación", render: data => data || "" },
-    ],
-    language: spanish,
-    searching: false,    // Oculta el buscador
-    lengthChange: false, // Oculta el paginación
-    pageLength: 5
-});
-const tablaProductos = new DataTable("#tabla_productos", {
-    columns: [
-        { data: "id", title: "Id Producto"},
-        { data: "code", title: "Código de Barra"},
-        { data: "name", title: "Nombre"},
-        { data: "description", title: "Descripción"},
-        { data: "purchase_price", title: "Precio de Compra"},
-        { 
-            data: "selling_price",
-            title: "Precio de Venta",
-            render: (data) => parseInt(data).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
-        },
-        { 
-            data: "stock",
-            title: "Stock",
-            render: (data) => parseFloat(data).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.')
-        },
-        { data: "min_stock", title: "Stock Mínimo" },
-        { data: "category", title: "Categoria", render: (data, type, row) => cargarCategoria(row.category_id).name },
-        { data: "brand", title: "Marca", render: (data, type, row) => cargarMarca(row.brand_id).name },
-        { data: "iva", title: "IVA", render: (data) => ({0: "EXENTA", 5: "5%", 10: "10%"})[data] ?? data },
-        { data: "active", title: "Activo" },
-        { data: "created_at", title: "Fecha de Creación" },
-        { data: "updated_at", title: "Fecha de Modificación", render: data => data || "" },
-    ],
-    language: spanish,
-    searching: false,    // Oculta el buscador
-    lengthChange: false, // Oculta el paginación
-    pageLength: 5
-});
-const tablaCompras = new DataTable("#tabla_compras", {
-    columns: [
-        { data: "id", title: "Id Compra" },
-        { data: "provider_id", title: "Proveedor", render: data => cargarProveedor(data).legal_name },
-        { data: "user_id", title: "Usuario", render: data => cargarUsuario(data).username },
-        { data: "payment_type", title: "Tipo de Pago" },
-        { data: "amount", title: "Monto" },
-        { data: "obs", title: "Observaciones" },
-        { data: "created_at", title: "Fecha de Creación" },
-        { data: "updated_at", title: "Fecha de Modificación", render: data => data || "" },
-    ],
-    language: spanish,
-    searching: false,    // Oculta el buscador
-    lengthChange: false, // Oculta el paginación
-    pageLength: 5
-});
-const tablaCompraDetalles = new DataTable("#tabla_detallescompra", {
-    columns: [
-        { data: "id", title: "Id Detalle" },
-        { data: "purchase_id", title: "Id Compra" },
-        { data: "product_id", title: "Producto", render: data => cargarProducto(data).name },
-        { data: "amount", title: "Cantidad" },
-        { data: "unit_price", title: "Precio Unitario" },
-        { data: "subtotal", title: "Subtotal" },
-        { data: "created_at", title: "Fecha de Creación" }
-    ],
-    language: spanish,
-    searching: false,    // Oculta el buscador
-    lengthChange: false, // Oculta el paginación
-    pageLength: 5
-});
-const tablaVentas = new DataTable("#tabla_ventas", {
-    columns: [
-        { data: "id", title: "Id Venta" },
-        { data: "client", title: "Cliente", render: (data, type, row) => cargarCliente(row.client_id).legal_name },
-        { data: "user", title: "Usuario", render: (data, type, row) => cargarUsuario(row.user_id).name },
-        { data: "payment_type", title: "Tipo de Pago" },
-        { data: "amount", title: "Monto" },
-        { data: "obs", title: "Observaciones" },
-        { data: "created_at", title: "Fecha de Creación" },
-        { data: "updated_at", title: "Fecha de Modificación", render: data => data || "" },
-    ],
-    language: spanish,
-    searching: false,    // Oculta el buscador
-    lengthChange: false, // Oculta el paginación
-    pageLength: 5
-});
-const tablaVentaDetalles = new DataTable("#tabla_detallesventa", {
-    columns: [
-        { data: "id", title: "Id Detalle" },
-        { data: "sale_id", title: "Id Venta" },
-        { data: "product", title: "Producto", render: (data, type, row) => cargarProducto(row.product_id).name },
-        { data: "amount", title: "Cantidad" },
-        { data: "unit_price", title: "Precio Unitario" },
-        { data: "subtotal", title: "Subtotal" },
-        { data: "created_at", title: "Fecha de Creación", render: data => data || "" }
-    ],
-    language: spanish,
-    searching: false,    // Oculta el buscador
-    lengthChange: false, // Oculta el paginación
-    pageLength: 5
-});
-const tablaCuentasPorPagar = new DataTable("#tabla_cuentasporpagar", {
-    columns: [
-        { data: "id", title: "Id Cuenta" },
-        { data: "purchase_id", title: "Id Compra" },
-        { data: "provider", title: "Proveedor", render: (data, type, row) => cargarProveedor(row.provider_id).legal_name },
-        { data: "amount_total", title: "Cantidad Total" },
-        { data: "amount_paid", title: "Cantidad Pagada" },
-        { data: "amount_due", title: "Cantidad Pendiente" },
-        { data: "status", title: "Estado" },
-        { data: "expire_at", title: "Fecha de Vencimiento" },
-        { data: "created_at", title: "Fecha de Creación" },
-        { data: "updated_at", title: "Fecha de Modificación", render: data => data || "" },
-    ],
-    language: spanish,
-    searching: false,    // Oculta el buscador
-    lengthChange: false, // Oculta el paginación
-    pageLength: 5
-});
-const tablaCuentasPorCobrar = new DataTable("#tabla_cuentasporcobrar", {
-    columns: [
-        { data: "id", title: "Id Cuenta" },
-        { data: "sale_id", title: "Id Compra" },
-        { data: "client", title: "Cliente", render: (data, type, row) => cargarCliente(row.client_id).legal_name },
-        { data: "amount_total", title: "Cantidad Total" },
-        { data: "amount_paid", title: "Cantidad Pagada" },
-        { data: "amount_due", title: "Cantidad Pendiente" },
-        { data: "status", title: "Estado" },
-        { data: "expire_at", title: "Fecha de Vencimiento" },
-        { data: "created_at", title: "Fecha de Creación" },
-        { data: "updated_at", title: "Fecha de Modificación", render: data => data || "" },
-    ],
-    language: spanish,
-    searching: false,    // Oculta el buscador
-    lengthChange: false, // Oculta el paginación
-    pageLength: 5
-});
-const tablaPagos = new DataTable("#tabla_pagos", {
-    columns: [
-        { data: "id", title: "Id Pago" },
-        { data: "account_payable_id", title: "Id Cuenta" },
-        { data: "amount", title: "Monto" },
-        { data: "payment_method", title: "Método de Pago" },
-        { data: "obs", title: "Observaciones" },
-        { data: "created_at", title: "Fecha de Creación" }
-    ],
-    language: spanish,
-    searching: false,    // Oculta el buscador
-    lengthChange: false, // Oculta el paginación
-    pageLength: 5
-});
-const tablaCobros = new DataTable("#tabla_cobros", {
-    columns: [
-        { data: "id", title: "Id Cobro" },
-        { data: "account_receivable_id", title: "Id Cuenta" },
-        { data: "amount", title: "Monto" },
-        { data: "payment_method", title: "Método de Pago" },
-        { data: "obs", title: "Observaciones" },
-        { data: "created_at", title: "Fecha de Creación" },
-    ],
-    language: spanish,
-    searching: false,    // Oculta el buscador
-    lengthChange: false, // Oculta el paginación
-    pageLength: 5
-});
+const tablaRoles = crearDataTable("tabla_roles", [
+    { data: "id", title: "Id Rol", render: renderRaw },
+    { data: "name", title: "Nombre", render: renderString },
+    { data: "description", title: "Descripción", render: renderString },
+    { data: "flags", title: "Permisos" },
+    { data: "created_at", title: "Fecha de creación", render: renderFecha },
+    { data: "updated_at", title: "Fecha de modificación", render: renderFecha }
+]);
+const tablaUsuarios = crearDataTable("tabla_usuarios", [
+    { data: "id", title: "Id Usuario", render: renderRaw },
+    { data: "username", title: "Nombre de Usuario", render: data => renderString(data).toLowerCase() },
+    { data: "name", title: "Nombre del Personal", render: renderString },
+    { data: "ruc", title: "Cédula o RUC", render: renderString },
+    { data: "tel", title: "Teléfono", render: renderString },
+    { data: "email", title: "Correo Electrónico", render: data => renderString(data).toLowerCase() },
+    { data: "rol_id", title: "Rol", render: data => renderString(cargarRol(data).name) },
+    { data: "active", title: "Activo", render: renderBoolean },
+    { data: "created_at", title: "Fecha de Creación", render: renderFecha },
+    { data: "updated_at", title: "Fecha de Modificación", render: renderFecha }
+]);
+const tablaClientes = crearDataTable("tabla_clientes", [
+    { data: "id", title: "Id Cliente", render: renderRaw },
+    { data: "legal_name", title: "Razón Social", render: renderString },
+    { data: "ruc", title: "RUC", render: renderString },
+    { data: "tel", title: "Teléfono", render: renderString },
+    { data: "email", title: "Correo Electrónico", render: renderString },
+    { data: "address", title: "Dirección", render: renderString },
+    { data: "active", title: "Activo", renderBoolean },
+    { data: "created_at", title: "Fecha de Creación", render: renderFecha },
+    { data: "updated_at", title: "Fecha de Modificación", render: renderFecha }
+]);
+const tablaProveedores = crearDataTable("tabla_proveedores", [
+    { data: "id", title: "Id Proveedor", render: renderRaw },
+    { data: "legal_name", title: "Razón Social", render: renderString },
+    { data: "ruc", title: "RUC", render: renderString },
+    { data: "tel", title: "Teléfono", render: renderString },
+    { data: "email", title: "Correo Electrónico", render: data => renderString(data).toLowerCase() },
+    { data: "address", title: "Dirección", render: renderString },
+    { data: "active", title: "Activo", render: renderBoolean },
+    { data: "created_at", title: "Fecha de Creación", render: renderFecha },
+    { data: "updated_at", title: "Fecha de Modificación", render: renderFecha }
+]);
+const tablaCategorias = crearDataTable("tabla_categorias", [
+    { data: "id", title: "Id Categoria", render: renderRaw },
+    { data: "name", title: "Nombre", render: renderString },
+    { data: "description", title: "Descripción", render: renderString },
+    { data: "created_at", title: "Fecha de Creación", render: renderFecha },
+    { data: "updated_at", title: "Fecha de Modificación", render: renderFecha },
+]);
+const tablaMarcas = crearDataTable("tabla_marcas", [
+    { data: "id", title: "Id Marca", render: renderRaw },
+    { data: "name", title: "Nombre", render: renderString },
+    { data: "created_at", title: "Fecha de Creación", render: renderFecha },
+    { data: "updated_at", title: "Fecha de Modificación", render: renderFecha }
+]);
+const tablaProductos = crearDataTable("tabla_productos", [
+    { data: "id", title: "Id Producto", render: renderRaw },
+    { data: "code", title: "Código de Barra", render: renderString },
+    { data: "name", title: "Nombre", render: renderString },
+    { data: "description", title: "Descripción", render: renderString },
+    { data: "purchase_price", title: "Precio de Compra", render: renderMoneda },
+    { data: "selling_price", title: "Precio de Venta", render: renderMoneda },
+    { data: "stock", title: "Stock", render: renderNumber },
+    { data: "min_stock", title: "Stock Mínimo", render: renderNumber },
+    { data: "category_id", title: "Categoria", render: data => renderString(cargarCategoria(data).name) },
+    { data: "brand_id", title: "Marca", render: data => renderString(cargarMarca(data).name) },
+    { data: "iva", title: "IVA", render: data => data === 0 ? "EXENTA" : `${data}%` },
+    { data: "active", title: "Activo", render: renderBoolean },
+    { data: "created_at", title: "Fecha de Creación", render: renderFecha },
+    { data: "updated_at", title: "Fecha de Modificación", render: renderFecha }
+]);
+const tablaCompras = crearDataTable("tabla_compras", [
+    { data: "id", title: "Id Compra", render: renderRaw },
+    { data: "provider_id", title: "Proveedor", render: data => renderString(cargarProveedor(data).legal_name) },
+    { data: "user_id", title: "Usuario", render: data => renderString(cargarUsuario(data).username).toLowerCase() },
+    { data: "payment_type", title: "Tipo de Pago", render: renderString },
+    { data: "amount", title: "Monto", render: renderMoneda },
+    { data: "obs", title: "Observaciones", render: renderString },
+    { data: "created_at", title: "Fecha de Creación", render: renderFecha },
+    { data: "updated_at", title: "Fecha de Modificación", render: renderFecha }
+]);
+const tablaCompraDetalles = crearDataTable("tabla_detallescompra", [
+    { data: "id", title: "Id Detalle", render: renderRaw },
+    { data: "purchase_id", title: "Id Compra", render: renderRaw },
+    { data: "product_id", title: "Producto", render: data => renderString(cargarProducto(data).name) },
+    { data: "amount", title: "Cantidad", render: renderNumber },
+    { data: "unit_price", title: "Precio Unitario", render: renderMoneda },
+    { data: "subtotal", title: "Subtotal", render: renderMoneda },
+    { data: "created_at", title: "Fecha de Creación", render: renderFecha }
+]);
+const tablaVentas = crearDataTable("tabla_ventas", [
+    { data: "id", title: "Id Venta", render: renderRaw },
+    { data: "client_id", title: "Cliente", render: data => renderString(cargarCliente(data).legal_name) },
+    { data: "user_id", title: "Usuario", render: data => renderString(cargarUsuario(data).username).toLowerCase() },
+    { data: "payment_type", title: "Tipo de Pago", render: renderString },
+    { data: "amount", title: "Monto", render: renderMoneda },
+    { data: "obs", title: "Observaciones", render: renderString },
+    { data: "created_at", title: "Fecha de Creación", render: renderFecha },
+    { data: "updated_at", title: "Fecha de Modificación", render: renderFecha }
+]);
+const tablaVentaDetalles = crearDataTable("tabla_detallesventa", [
+    { data: "id", title: "Id Detalle", render: renderRaw },
+    { data: "sale_id", title: "Id Venta", render: renderRaw },
+    { data: "product_id", title: "Producto", render: data => renderString(cargarProducto(data).name) },
+    { data: "amount", title: "Cantidad", render: renderNumber },
+    { data: "unit_price", title: "Precio Unitario", render: renderMoneda },
+    { data: "subtotal", title: "Subtotal", render: renderMoneda },
+    { data: "created_at", title: "Fecha de Creación", render: renderFecha }
+]);
+const tablaCuentasPorPagar = crearDataTable("tabla_cuentasporpagar", [
+    { data: "id", title: "Id Cuenta", render: renderRaw },
+    { data: "purchase_id", title: "Id Compra", render: renderRaw },
+    { data: "provider_id", title: "Proveedor", render: data => renderString(cargarProveedor(data).legal_name) },
+    { data: "amount_total", title: "Cantidad Total", render: renderMoneda },
+    { data: "amount_paid", title: "Cantidad Pagada", render: renderMoneda },
+    { data: "amount_due", title: "Cantidad Pendiente", render: renderMoneda },
+    { data: "status", title: "Estado", render: renderString },
+    { data: "expire_at", title: "Fecha de Vencimiento", render: renderFecha },
+    { data: "created_at", title: "Fecha de Creación", render: renderFecha },
+    { data: "updated_at", title: "Fecha de Modificación", render: renderFecha }
+]);
+const tablaCuentasPorCobrar = crearDataTable("tabla_cuentasporcobrar", [
+    { data: "id", title: "Id Cuenta", render: renderRaw },
+    { data: "sale_id", title: "Id Compra", render: renderRaw },
+    { data: "client_id", title: "Cliente", render: data => renderString(cargarCliente(data).legal_name) },
+    { data: "amount_total", title: "Cantidad Total", render: renderMoneda },
+    { data: "amount_paid", title: "Cantidad Pagada", render: renderMoneda },
+    { data: "amount_due", title: "Cantidad Pendiente", render: renderMoneda },
+    { data: "status", title: "Estado", render: renderString },
+    { data: "expire_at", title: "Fecha de Vencimiento", render: renderFecha },
+    { data: "created_at", title: "Fecha de Creación", render: renderFecha },
+    { data: "updated_at", title: "Fecha de Modificación", render: renderFecha }
+]);
+const tablaPagos = crearDataTable("tabla_pagos", [
+    { data: "id", title: "Id Pago", render: renderRaw },
+    { data: "account_payable_id", title: "Id Cuenta", render: renderRaw },
+    { data: "amount", title: "Monto", render: renderMoneda },
+    { data: "payment_method", title: "Método de Pago", render: renderString },
+    { data: "obs", title: "Observaciones", render: renderString },
+    { data: "created_at", title: "Fecha de Creación", render: renderFecha }
+]);
+const tablaCobros = crearDataTable("tabla_cobros", [
+    { data: "id", title: "Id Cobro", render: renderRaw },
+    { data: "account_receivable_id", title: "Id Cuenta", render: renderRaw },
+    { data: "amount", title: "Monto", render: renderMoneda },
+    { data: "payment_method", title: "Método de Pago", render: renderString },
+    { data: "obs", title: "Observaciones", render: renderString },
+    { data: "created_at", title: "Fecha de Creación", render: renderFecha }
+]);
 
 async function login() {
     const form = document.getElementById("login-form");
@@ -325,16 +228,6 @@ function verBD() {
     tablaCuentasPorCobrar.clear().rows.add(cargarCuentasPorCobrar()).draw();
     tablaPagos.clear().rows.add(cargarPagos()).draw();
     tablaCobros.clear().rows.add(cargarCobros()).draw();
-    // FECHA year-month-day -> day/month/year
-    // render: (data) => {
-    //     if (!data) return "";
-    //     const partes = data.split('-');
-    //     return `${partes[2]}/${partes[1]}/${partes[0]}`;
-    // }
-    // SEPARADOR DE MILES
-    // render: (data) => {
-    //     parseInt(data).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
-    // }
 }
 
 function nuevoBD() {

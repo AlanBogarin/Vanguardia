@@ -19,7 +19,7 @@ function verDetalle(e) {
         const clientes = cargarClientes();
         const cli = clientes.find(c => c.id === cuenta.client_id);
 
-        document.getElementById('det_cliente').textContent = cli ? `${cli.name} ${cli.last_name}` : "Desconocido";
+        document.getElementById('det_cliente').textContent = cli ? cli.legal_name : "Desconocido";
         document.getElementById('det_venta').textContent = cuenta.sale_id;
         document.getElementById('det_emision').textContent = new Date(cuenta.created_at).toLocaleDateString();
         document.getElementById('det_vencimiento').textContent = new Date(cuenta.expire_at).toLocaleDateString();
@@ -45,7 +45,7 @@ function cargarTablaCuentas() {
 
         return {
             ...c,
-            cliente_name: cli ? `${cli.name} ${cli.last_name}` : 'Desconocido',
+            cliente_name: cli ? cli.legal_name : 'Desconocido',
             monto_total_fmt: formatoMoneda(c.amount_total),
             monto_cobrado_fmt: formatoMoneda(c.amount_paid),
             monto_pendiente_fmt: formatoMoneda(c.amount_due),

@@ -202,7 +202,7 @@ function verDetallesCompra(e) {
         const user = usuarios.find(u => u.id === compra.user_id);
 
         document.getElementById("ver_compra_id").textContent = compra.id;
-        document.getElementById("ver_proveedor").textContent = prov ? prov.name : 'Desconocido';
+        document.getElementById("ver_proveedor").textContent = prov ? prov.legal_name : 'Desconocido';
         document.getElementById("ver_usuario").textContent = user ? user.username : 'Desconocido';
         document.getElementById("ver_fecha").textContent = new Date(compra.created_at).toLocaleString();
         document.getElementById("ver_tipo_pago").textContent = compra.payment_type;
@@ -260,7 +260,7 @@ function cargarTablaCompras() {
 
         return {
             ...c,
-            proveedor_name: prov ? prov.name : 'Desconocido',
+            proveedor_name: prov ? prov.legal_name : 'Desconocido',
             usuario_name: u ? u.username : 'Desconocido',
             total_fmt: formatoMoneda(c.amount),
             fecha_fmt: new Date(c.created_at).toLocaleString()

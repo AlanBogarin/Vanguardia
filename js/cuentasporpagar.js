@@ -19,7 +19,7 @@ function verDetalle(e) {
         const proveedores = cargarProveedores();
         const prov = proveedores.find(p => p.id === cuenta.provider_id);
 
-        document.getElementById('det_proveedor').textContent = prov ? prov.name : "Desconocido";
+        document.getElementById('det_proveedor').textContent = prov ? prov.legal_name : "Desconocido";
         document.getElementById('det_compra').textContent = cuenta.purchase_id;
         document.getElementById('det_emision').textContent = new Date(cuenta.created_at).toLocaleDateString();
         document.getElementById('det_vencimiento').textContent = new Date(cuenta.expire_at).toLocaleDateString();
@@ -45,7 +45,7 @@ function cargarTablaCuentas() {
 
         return {
             ...c,
-            proveedor_name: prov ? prov.name : 'Desconocido',
+            proveedor_name: prov ? prov.legal_name : 'Desconocido',
             monto_total_fmt: formatoMoneda(c.amount_total),
             monto_pagado_fmt: formatoMoneda(c.amount_paid),
             monto_pendiente_fmt: formatoMoneda(c.amount_due),

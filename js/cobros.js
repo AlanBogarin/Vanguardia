@@ -24,7 +24,7 @@ function cargarOpcionesCuentas(preselectId = null) {
     let options = '<option value="">Seleccione una cuenta pendiente...</option>';
     cuentas.forEach(c => {
         const cli = clientes.find(client => client.id === c.client_id);
-        const cliName = cli ? `${cli.name} ${cli.last_name}` : 'Desconocido';
+        const cliName = cli ? cli.legal_name : 'Desconocido';
         options += `<option value="${c.id}" data-saldo="${c.amount_due}">ID: ${c.id} - ${cliName} (Pendiente: ${formatoMoneda(c.amount_due)})</option>`;
     });
 
@@ -140,7 +140,7 @@ function cargarTablaCobros() {
         
         return {
             ...c,
-            cliente_name: cli ? `${cli.name} ${cli.last_name}` : 'Desconocido',
+            cliente_name: cli ? cli.legal_name : 'Desconocido',
             monto_fmt: formatoMoneda(c.amount),
             fecha_fmt: new Date(c.created_at).toLocaleString()
         };

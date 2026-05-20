@@ -24,7 +24,7 @@ function cargarSelects() {
     
     let cliOptions = '<option value="">Seleccione un cliente...</option>';
     clientes.forEach(c => {
-        cliOptions += `<option value="${c.id}">${c.name} ${c.last_name} (${c.document_number})</option>`;
+        cliOptions += `<option value="${c.id}">${c.legal_name} (${c.ruc})</option>`;
     });
     document.getElementById("client_id").innerHTML = cliOptions;
 
@@ -228,7 +228,7 @@ function verDetallesVenta(e) {
         const user = usuarios.find(u => u.id === venta.user_id);
 
         document.getElementById("ver_venta_id").textContent = venta.id;
-        document.getElementById("ver_cliente").textContent = cli ? `${cli.name} ${cli.last_name}` : 'Desconocido';
+        document.getElementById("ver_cliente").textContent = cli ? cli.legal_name : 'Desconocido';
         document.getElementById("ver_usuario").textContent = user ? user.username : 'Desconocido';
         document.getElementById("ver_fecha").textContent = new Date(venta.created_at).toLocaleString();
         document.getElementById("ver_tipo_pago").textContent = venta.payment_type;
@@ -278,7 +278,7 @@ function cargarTablaVentas() {
 
         return {
             ...v,
-            cliente_name: cli ? `${cli.name} ${cli.last_name}` : 'Desconocido',
+            cliente_name: cli ? cli.legal_name : 'Desconocido',
             usuario_name: u ? u.username : 'Desconocido',
             total_fmt: formatoMoneda(v.amount),
             fecha_fmt: new Date(v.created_at).toLocaleString()

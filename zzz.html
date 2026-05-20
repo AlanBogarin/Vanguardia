@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte de Exportación - Vanguardia</title>
+    <style>
+        @page {
+            margin: 1.5cm;
+            @bottom-right {
+                content: "Página " counter(page) " de " counter(pages);
+                font-family: Arial, sans-serif;
+                font-size: 9px;
+                color: #777;
+            }
+        }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            font-size: 12px;
+        }
+        /* Encabezado */
+        .header-container {
+            width: 100%;
+            border-bottom: 2px solid #80D8FF;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .company-info {
+            float: left;
+            width: 70%;
+        }
+        .company-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #4B3F72;
+            margin: 0 0 5px 0;
+        }
+        .company-details {
+            font-size: 10px;
+            color: #555;
+            line-height: 1.4;
+        }
+        .report-title {
+            float: right;
+            width: 28%;
+            text-align: right;
+        }
+        .report-title h2 {
+            margin: 0;
+            color: #333;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+        .meta-box {
+            font-size: 9px;
+            color: #777;
+            margin-top: 5px;
+        }
+        .clearfix {
+            clear: both;
+        }
+        /* Tabla Estilizada */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th {
+            background-color: #4B3F72;
+            color: white;
+            font-weight: bold;
+            text-align: left;
+            padding: 8px 10px;
+            font-size: 11px;
+            text-transform: uppercase;
+            border: 1px solid #4B3F72;
+        }
+        td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #E0E0E0;
+            font-size: 11px;
+        }
+        tr:nth-child(even) {
+            background-color: #F7F9FC;
+        }
+        /* Alineaciones del Sistema */
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .font-bold { font-weight: bold; }
+        
+        /* Evitar que una fila se corte a mitad de página */
+        tr { page-break-inside: avoid; }
+    </style>
+</head>
+<body>
+
+    <div class="header-container">
+        <div class="company-info">
+            <h1 class="company-name">Vanguardia</h1>
+            <div class="company-details">
+                <strong>Comercialización de Productos Informáticos y Tecnológicos</strong><br>
+                Dir: Previstero Juan Carlos García / Madrinas de Guerra – Bo. Villa Armando – Concepción<br>
+                Tel: 0985-495-253
+            </div>
+        </div>
+        <div class="report-title">
+            <h2>Reporte General</h2>
+            <div class="meta-box">
+                <strong>Fecha:</strong> [FECHA_SISTEMA]<br>
+                <strong>Hora:</strong> [HORA_SISTEMA]<br>
+                <strong>Usuario:</strong> [USUARIO_ACTUAL]
+            </div>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 12%;">Código</th>
+                <th style="width: 45%;">Descripción del Producto</th>
+                <th style="width: 18%;">Categoría</th>
+                <th style="width: 10%;" class="text-center">Stock</th>
+                <th style="width: 15%;" class="text-right">Precio Unit.</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="font-bold">PRD-001</td>
+                <td>Notebook ASUS ROG Strix Core i7 16GB SSD 512GB</td>
+                <td>Laptops / Notebooks</td>
+                <td class="text-center">15</td>
+                <td class="text-right">8.450.000 ₲</td>
+            </tr>
+            <tr>
+                <td class="font-bold">PRD-002</td>
+                <td>Monitor Gigabyte 24" G24F 165Hz IPS Gaming</td>
+                <td>Monitores</td>
+                <td class="text-center">8</td>
+                <td class="text-right">1.580.000 ₲</td>
+            </tr>
+            <tr>
+                <td class="font-bold">PRD-003</td>
+                <td>Memoria RAM Kingston FURY Beast 16GB DDR4 3200MHz</td>
+                <td>Componentes</td>
+                <td class="text-center">32</td>
+                <td class="text-right">390.000 ₲</td>
+            </tr>
+            <tr>
+                <td class="font-bold">PRD-004</td>
+                <td>Disco Sólido SSD Kingston NV2 1TB NVMe PCIe 4.0</td>
+                <td>Almacenamiento</td>
+                <td class="text-center">20</td>
+                <td class="text-right">480.000 ₲</td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+</html>

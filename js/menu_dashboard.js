@@ -50,7 +50,7 @@ function cargarDashboard() {
         let rows = '';
         ultimas.forEach(v => {
             const cli = cargarCliente(v.client_id);
-            const cliName = cli ? `${cli.legal_name}` : 'Desconocido';
+            const cliName = cli ? cli.legal_name : 'Desconocido';
             rows += `
                 <tr>
                     <td>#${v.id}</td>

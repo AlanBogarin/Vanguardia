@@ -5,14 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Vanguardia - Marcas</title>
     <link rel="icon" href="img/working.png">
+    <!-- ESTILOS DEL MENU -->
     <link href="menu/styles.css" rel="stylesheet"/>
+    <!-- BOOTSTRAP -->
     <link rel="stylesheet" href="bt/bootstrap.min.css">
+    <!-- BOOTSTRAP ICONS -->
     <link rel="stylesheet" href="bt-icons/bootstrap-icons.min.css">
+    <!-- ALERTIFY -->
     <link rel="stylesheet" href="alert/alertify.min.css">
     <link rel="stylesheet" href="alert/themes/default.min.css">
+    <!-- DATATABLES -->
     <link rel="stylesheet" href="dt/datatables.min.css">
     <link rel="stylesheet" href="dt/jquery.dataTables.min.css">
     <link rel="stylesheet" href="dt/buttons.dataTables.min.css">
+    <!-- TEMA VANGUARDIA -->
     <link rel="stylesheet" href="css/vanguardia.css">
 </head>
 <body class="sb-nav-fixed">
@@ -42,15 +48,6 @@
                     </div>
                     <div class="row">
                         <table id="tabla_marcas" class="display compact" style="width:100%">
-                            <thead>
-                                <tr>
-                                    <th>Id Marca</th>
-                                    <th>Nombre</th>
-                                    <th>Fecha de Creación</th>
-                                    <th>Fecha de Modificación</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
                         </table>
                     </div>
                 </div>
@@ -79,8 +76,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-floppy"></i> Guardar Marca</button>
+                    <button class="btn btn-secondary" type="reset" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                    <button class="btn btn-primary" onclick="btnGuardarMarca()"><i class="bi bi-floppy"></i> Guardar Marca</button>
                 </div>
             </form>
         </div>
@@ -99,11 +96,10 @@
                         <label class="form-label">Nombre de la Marca</label>
                         <input type="text" id="edit_nombre" class="form-control text-uppercase" required minlength="2" maxlength="50">
                     </div>
-                    <input type="hidden" id="edit_creacion">
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
-                    <button type="submit" class="btn btn-warning"><i class="bi bi-floppy"></i> Guardar Cambios</button>
+                    <button class="btn btn-secondary" type="reset" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                    <button class="btn btn-warning" onclick="btnEditarMarca()"><i class="bi bi-floppy"></i> Guardar Cambios</button>
                 </div>
             </form>
         </div>
@@ -124,8 +120,8 @@
                     </ul>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
-                    <button type="button" class="btn btn-danger" id="btnConfirmarEliminar"><i class="bi bi-trash"></i> Eliminar</button>
+                    <button class="btn btn-secondary" type="button" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                    <button class="btn btn-danger" type="button" onclick="btnEliminarMarca()"><i class="bi bi-trash"></i> Eliminar</button>
                 </div>
             </div>
         </div>
@@ -134,18 +130,23 @@
     <script src="menu/scripts.js"></script>
     <script src="bt/bootstrap.bundle.min.js"></script>
     <script src="alert/alertify.min.js"></script>
+    <!-- DATATABLES -->
     <script src="dt/jquery-3.7.1.js"></script>
     <script src="dt/datatables.min.js"></script>
     <script src="dt/jquery.dataTables.min.js"></script>
+    <script src="dt/es-ES.js"></script>
+    <!-- DATATABLES Buttons extension -->
     <script src="dt/dataTables.buttons.min.js"></script>
     <script src="dt/buttons.print.min.js"></script>
     <script src="dt/buttons.html5.min.js"></script>
+    <!-- DATATABLES JSZip y pdfmake para exportar -->
     <script src="dt/jszip.min.js"></script>
     <script src="dt/pdfmake.min.js"></script>
     <script src="dt/vfs_fonts.js"></script>
-    <script src="dt/es-ES.js"></script>
+    <!-- SCRIPTS -->
     <script src="js/bd.js"></script>
     <script src="js/alertas.js"></script>
+    <script src="js/tablas.js"></script>
     <script src="js/marcas.js"></script>
 </body>
 </html>

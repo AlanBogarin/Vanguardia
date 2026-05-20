@@ -49,20 +49,6 @@
                     </div>
                     <div class="row">
                         <table id="tabla_clientes" class="display compact" style="width:100%">
-                            <thead>
-                                <tr>
-                                    <th>Id Cliente</th>
-                                    <th>Nombre</th>
-                                    <th>RUC</th>
-                                    <th>Teléfono</th>
-                                    <th>Correo</th>
-                                    <th>Dirección</th>
-                                    <th>Activo</th>
-                                    <th>Fecha de Creación</th>
-                                    <th>Fecha de Modificación</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
                         </table>
                     </div>
                 </div>
@@ -80,35 +66,35 @@
     <!-- Modal Nuevo Cliente -->
     <div class="modal fade" id="modalNuevoCliente" tabindex="-1" aria-labelledby="modalNuevoClienteLabel" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog">
-            <form id="formNuevoCliente" class="modal-content">
+            <form class="modal-content">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title" id="modalNuevoClienteLabel"><i class="bi bi-person-plus-fill"></i> Agregar Nuevo Cliente</h5>
                 </div>
                 <div class="modal-body">
                     <div class="mb-2">
-                        <label class="form-label">Nombre completo</label>
-                        <input type="text" id="nombre" class="form-control text-uppercase" required minlength="5" maxlength="50">
+                        <label class="form-label">Razón Social</label>
+                        <input type="text" id="razonsocial" class="form-control text-uppercase" minlength="5" maxlength="50" pattern="^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\s']{5,50}$" required>
                     </div>
                     <div class="mb-2">
-                        <label class="form-label">RUC</label>
-                        <input type="number" id="ruc" class="form-control" pattern="\d+(-\d)?">
+                        <label class="form-label">RUC/Cédula</label>
+                        <input type="number" id="ruc" class="form-control" pattern="^\d{5,8}[A-Z]?(-\d)?$" required>
                     </div>
                     <div class="mb-2">
                         <label class="form-label">Teléfono</label>
-                        <input type="text" id="telefono" class="form-control" minlength="6" maxlength="15">
+                        <input type="text" id="telefono" class="form-control" pattern="^09\d{8}$" required>
                     </div>
                     <div class="mb-2">
                         <label class="form-label">Correo Electrónico</label>
-                        <input type="text" id="correo" class="form-control" pattern="[^\s@]+@[^\s@]+\.[^\s@]{2,}">
+                        <input type="text" id="correo" class="form-control" pattern="[^\s@]+@[^\s@]+\.[^\s@]{2,}" required>
                     </div>
                     <div class="mb-2">
                         <label class="form-label">Dirección</label>
-                        <input type="text" id="direccion" class="form-control text-uppercase" minlength="5" maxlength="50">
+                        <input type="text" id="direccion" class="form-control text-uppercase" minlength="5" maxlength="50" pattern="^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚüÜ\s,.:°#\/\-]{5,50}$" required>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-floppy"></i> Guardar Cliente</button>
+                    <button class="btn btn-secondary" type="reset" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                    <button class="btn btn-primary" onclick="btnNuevoCliente()"><i class="bi bi-floppy"></i> Guardar Cliente</button>
                 </div>
             </form>
         </div>
@@ -117,38 +103,36 @@
     <!-- Modal Editar Cliente -->
     <div class="modal fade" id="modalEditarCliente" tabindex="-1" aria-labelledby="modalEditarClienteLabel" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog">
-            <form id="formEditarCliente" class="modal-content">
+            <form class="modal-content">
                 <div class="modal-header bg-warning text-dark">
                     <h5 class="modal-title" id="modalEditarClienteLabel"><i class="bi bi-pencil-square"></i> Editar Cliente</h5>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="edit_id">
                     <div class="mb-2">
-                        <label class="form-label">Nombre completo</label>
-                        <input type="text" id="edit_nombre" class="form-control text-uppercase" required minlength="5" maxlength="50">
+                        <label class="form-label">Razón Social</label>
+                        <input type="text" id="edit_razonsocial" class="form-control text-uppercase" minlength="5" maxlength="50" pattern="^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\s']{5,50}$" required>
                     </div>
                     <div class="mb-2">
-                        <label class="form-label">RUC</label>
-                        <input type="number" id="edit_ruc" class="form-control" pattern="\d+(-\d)?">
+                        <label class="form-label">RUC/Cédula</label>
+                        <input type="number" id="edit_ruc" class="form-control" pattern="^\d{5,8}[A-Z]?(-\d)?$" required>
                     </div>
                     <div class="mb-2">
                         <label class="form-label">Teléfono</label>
-                        <input type="text" id="edit_telefono" class="form-control" minlength="6" maxlength="15">
+                        <input type="text" id="edit_telefono" class="form-control" pattern="^09\d{8}$" required>
                     </div>
                     <div class="mb-2">
                         <label class="form-label">Correo Electrónico</label>
-                        <input type="text" id="edit_correo" class="form-control" pattern="[^\s@]+@[^\s@]+\.[^\s@]{2,}">
+                        <input type="text" id="edit_correo" class="form-control" pattern="[^\s@]+@[^\s@]+\.[^\s@]{2,}" required>
                     </div>
                     <div class="mb-2">
                         <label class="form-label">Dirección</label>
-                        <input type="text" id="edit_direccion" class="form-control text-uppercase" minlength="5" maxlength="50">
+                        <input type="text" id="edit_direccion" class="form-control text-uppercase" minlength="5" maxlength="50" pattern="^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚüÜ\s,.:°#/-]{5,50}$" required>
                     </div>
-                    <input type="hidden" id="edit_activo">
-                    <input type="hidden" id="edit_creacion">
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
-                    <button type="submit" class="btn btn-warning"><i class="bi bi-floppy"></i> Guardar Cambios</button>
+                    <button class="btn btn-secondary" type="reset" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                    <button class="btn btn-warning" onclick="btnEditarCliente()"><i class="bi bi-floppy"></i> Guardar Cambios</button>
                 </div>
             </form>
         </div>
@@ -159,21 +143,21 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title" id="modalEliminarClienteLabel"><i class="bi bi-exclamation-triangle-fill"></i> Anular Cliente</h5>
+                    <h5 class="modal-title" id="modalEliminarClienteLabel"><i class="bi bi-exclamation-triangle-fill"></i> Eliminar Cliente</h5>
                 </div>
                 <div class="modal-body">
                     <p class="text-center fw-bold">¿Deseas proceder con la eliminación?</p>
                     <input type="hidden" id="del_id">
                     <ul class="list-group mb-3">
-                        <li class="list-group-item"><strong>Nombre:</strong> <span id="del_nombre"></span></li>
+                        <li class="list-group-item"><strong>Razón Social:</strong> <span id="del_razonsocial"></span></li>
                         <li class="list-group-item"><strong>RUC:</strong> <span id="del_ruc"></span></li>
                         <li class="list-group-item"><strong>Dirección:</strong> <span id="del_direccion"></span></li>
                         <li class="list-group-item"><strong>Teléfono:</strong> <span id="del_telefono"></span></li>
                     </ul>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
-                    <button type="button" class="btn btn-danger" id="btnConfirmarEliminar"><i class="bi bi-trash"></i> Eliminar</button>
+                    <button class="btn btn-secondary" type="reset" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                    <button class="btn btn-danger" onclick="btnEliminarCliente()"><i class="bi bi-trash"></i> Eliminar</button>
                 </div>
             </div>
         </div>
@@ -189,6 +173,7 @@
     <script src="dt/jquery-3.7.1.js"></script>
     <script src="dt/datatables.min.js"></script>
     <script src="dt/jquery.dataTables.min.js"></script>
+    <script src="dt/es-ES.js"></script>
     <!-- DATATABLES Buttons extension -->
     <script src="dt/dataTables.buttons.min.js"></script>
     <script src="dt/buttons.print.min.js"></script>
@@ -197,11 +182,10 @@
     <script src="dt/jszip.min.js"></script>
     <script src="dt/pdfmake.min.js"></script>
     <script src="dt/vfs_fonts.js"></script>
-    <!-- DATATABLES Idioma Español -->
-    <script src="dt/es-ES.js"></script>
     <!-- SCRIPTS -->
     <script src="js/bd.js"></script>
     <script src="js/alertas.js"></script>
+    <script src="js/tablas.js"></script>
     <script src="js/clientes.js"></script>
 </body>
 </html>

@@ -11,7 +11,7 @@ alertify.defaults.glossary.cancel = "Cancelar"
  * @param {Function?} onExit 
  */
 function alertar(titulo, mensaje, onExit) {
-    alertify.alert(titulo, mensaje, onExit);
+    return alertify.alert(titulo, mensaje, onExit);
 }
 
 /**
@@ -22,7 +22,7 @@ function alertar(titulo, mensaje, onExit) {
  * @param {Function?} onCancel 
  */
 function confirmar(titulo, mensaje, onOk, onCancel) {
-    alertify.confirm(titulo, mensaje, onOk, onCancel);
+    return alertify.confirm(titulo, mensaje, onOk, onCancel);
 }
 
 /**
@@ -34,7 +34,7 @@ function confirmar(titulo, mensaje, onOk, onCancel) {
  * @param {Function?} onCancel Funcion sin parametros
  */
 function pedir(titulo, mensaje, value, onOk, onCancel) {
-    alertify.prompt(titulo, mensaje, value || "", onOk, onCancel);
+    return alertify.prompt(titulo, mensaje, value || "", onOk, onCancel);
 }
 
 /**
@@ -81,7 +81,7 @@ function cerrarSesion(onOk=null, onCancel=null) {
         () => {
             if (onOk) onOk();
             eliminarSesion();
-            document.location.href = "login.html";
+            redirigir("login.html");
         },
         onCancel
     ).set('transition', 'slide').set('labels', {
@@ -95,13 +95,38 @@ function cerrarSesion(onOk=null, onCancel=null) {
  */
 function validarSesion() {
     const sesion = cargarSesion();
+    let titulo, mensaje;
     if (sesion) {
         const expire_at = new Date(sesion.expire_at);
         if (new Date() < expire_at) return;
+        titulo = "Sesión Expirada";
+        mensaje = `La sesión expiró en: ${expire_at}`;
         alertar("Sesión Expirada", `La sesión expiró en: ${expire_at}`);
     } else {
-        alertar("Sesión Invalida", "Inicie sesión antes de continuar");
+        titulo = "Sesión Invalida"
+        mensaje = "Inicie sesión antes de continuar"
     }
-    eliminarSesion();
-    document.location.href = "login.html";
+    alertar(titulo, mensaje, () => {
+        eliminarSesion();
+        redirigir("login.html");
+    });
+}
+
+function redirigir(path) {
+    document.location.href = path;
+}
+
+/**
+ * Validar que la sesion actual pueda acceder a una pagina html
+ * @param {number} permiso Flags del permiso de rol 
+ * @returns {boolean}
+ */
+function validarPermiso(permiso) {
+    if (tienePermisoSesion(permiso)) return true;
+    alertar(
+        "Acceso Denegado",
+        "No tienes permiso para usar este recurso",
+        () => redirigir("menu.html")
+    );
+    return false;
 }
