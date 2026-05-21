@@ -1,18 +1,13 @@
-/** @typedef {import('alertify')} */
-/** @typedef {import('jquery')} */
-/** @typedef {import('./bd')} */
-/** @typedef {import('./alertas')} */
-/** @typedef {import('./tablas')} */
+/**
+ * @typedef {import('jquery')}
+ * @typedef {import('./bd')}
+ * @typedef {import('./alertas')}
+ * @typedef {import('./tablas')}
+ */
 
-const RAZON_SOCIAL_REGEX = /^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\s']{5,50}$/;
-const RUC_REGEX = /^\d{5,8}[A-Z]?(-\d)?$/;
-const TEL_REGEX = /^09\d{8}$/;
-const CORREO_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const DIRECCION_REGEX = /^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚüÜ\s,.:°#/-]{5,50}$/;
-
-const modalNCliente = new bootstrap.Modal(document.getElementById('modalNuevoCliente'));
-const modalECliente = new bootstrap.Modal(document.getElementById('modalEditarCliente'));
-const modalDCliente = new bootstrap.Modal(document.getElementById('modalEliminarCliente'));
+const modalNuevo = new bootstrap.Modal(document.getElementById('modalNuevoCliente'));
+const modalEditar = new bootstrap.Modal(document.getElementById('modalEditarCliente'));
+const modalEliminar = new bootstrap.Modal(document.getElementById('modalEliminarCliente'));
 
 const tablaClientes = crearDataTable("tabla_clientes", [
     { data: 'id', title: 'Id Cliente' },
@@ -28,9 +23,8 @@ const tablaClientes = crearDataTable("tabla_clientes", [
     buttons: true,
     pageLength: 10,
     searching: true,
-    actions: tienePermisoSesion(PERMISOS.CLIENTES_EDITAR) ? (c) => {
-        const cliente = cargarCliente(c.id);
-        const anulable = cargarVentas().some(v => v.client_id === c.id);
+    actions: tienePermisoSesion(PERMISOS.CLIENTES_EDITAR) ? (cliente) => {
+        const anulable = cargarVentas().some(v => v.client_id === cliente.id);
         return {
             edit: `ventanaEditarCliente(${cliente.id})`,
             delete: anulable ? null : `ventanaEliminarCliente(${cliente.id})`,
@@ -40,6 +34,10 @@ const tablaClientes = crearDataTable("tabla_clientes", [
     } : null
 });
 
+function ventanaNuevoCliente() {
+    modalNuevo.show();
+}
+
 /**
  * Guardar Nuevo Cliente
  * @param {SubmitEvent} e 
@@ -48,7 +46,7 @@ function btnNuevoCliente() {
     const razonElem = document.getElementById("razonsocial");
     const razonsocial = razonElem.value.trim().toUpperCase();
     const rucElem = document.getElementById("ruc");
-    const ruc = rucElem.value.trim();
+    const ruc = rucElem.value.trim().toUpperCase();
     const telElem = document.getElementById("telefono");
     const tel = telElem.value.trim();
     const correoElem = document.getElementById("correo");
@@ -59,7 +57,7 @@ function btnNuevoCliente() {
         mensajeError("La razón social es obligatoria");
         razonElem.focus();
         return;
-    } else if (!razonsocial.match(RAZON_SOCIAL_REGEX)) {
+    } else if (!razonsocial.match(REGEX_RAZON_SOCIAL)) {
         mensajeError("La razón social es inválida");
         razonElem.focus();
         return;
@@ -71,7 +69,7 @@ function btnNuevoCliente() {
         mensajeError("El ruc o cédula es obligatorio");
         rucElem.focus();
         return;
-    } else if (!ruc.match(RUC_REGEX)) {
+    } else if (!ruc.match(REGEX_RUC)) {
         mensajeError("El formato del ruc es invalido");
         rucElem.focus();
         return;
@@ -83,7 +81,7 @@ function btnNuevoCliente() {
         mensajeError("El teléfono es obligatorio");
         telElem.focus();
         return;
-    } else if (!tel.match(TEL_REGEX)) {
+    } else if (!tel.match(REGEX_TELEFONO)) {
         mensajeError("El teléfono es invalido");
         telElem.focus();
         return;
@@ -95,7 +93,7 @@ function btnNuevoCliente() {
         mensajeError("El correo es obligatorio");
         correoElem.focus();
         return;
-    } else if (!correo.match(CORREO_REGEX)) {
+    } else if (!correo.match(REGEX_CORREO)) {
         mensajeError("El correo es invalido");
         correoElem.focus();
         return;
@@ -107,7 +105,7 @@ function btnNuevoCliente() {
         mensajeError("La dirección es obligatoria");
         direccionElem.focus();
         return;
-    } else if (!direccion.match(DIRECCION_REGEX)) {
+    } else if (!direccion.match(REGEX_DIRECCION)) {
         mensajeError("Dirección invalida");
         direccionElem.focus();
         return;
@@ -127,8 +125,8 @@ function btnNuevoCliente() {
         created_at: new Date(),
         updated_at: null
     });
-    cargarTablaClientes();
-    modalNCliente.hide();
+    cargarDatos();
+    modalNuevo.hide();
     mensajeSuccess("Cliente guardado");
 }
 
@@ -148,7 +146,7 @@ function ventanaEditarCliente(id) {
     document.getElementById('edit_telefono').value = cliente.tel || "";
     document.getElementById('edit_correo').value = cliente.email || "";
     document.getElementById('edit_direccion').value = cliente.address || "";
-    modalECliente.show();
+    modalEditar.show();
 }
 
 /**
@@ -156,12 +154,13 @@ function ventanaEditarCliente(id) {
  * @param {SubmitEvent} e 
  */
 function btnEditarCliente() {
-    const id = Number.parseInt(document.getElementById("edit_id").value.trim());
+    const id = parseInt(document.getElementById("edit_id").value.trim());
     const cliente = cargarCliente(id);
+    if (!cliente) return;
     const razonElem = document.getElementById("edit_razonsocial");
     const razonsocial = razonElem.value.trim().toUpperCase();
     const rucElem = document.getElementById("edit_ruc");
-    const ruc = rucElem.value.trim();
+    const ruc = rucElem.value.trim().toUpperCase();
     const telElem = document.getElementById("edit_telefono");
     const tel = telElem.value.trim();
     const correoElem = document.getElementById("edit_correo");
@@ -172,7 +171,7 @@ function btnEditarCliente() {
         mensajeError("La razón social es obligatoria");
         razonElem.focus();
         return;
-    } else if (!razonsocial.match(RAZON_SOCIAL_REGEX)) {
+    } else if (!razonsocial.match(REGEX_RAZON_SOCIAL)) {
         mensajeError("La razón social es inválida");
         razonElem.focus();
         return;
@@ -184,7 +183,7 @@ function btnEditarCliente() {
         mensajeError("El ruc o cédula es obligatorio");
         rucElem.focus();
         return;
-    } else if (!ruc.match(RUC_REGEX)) {
+    } else if (!ruc.match(REGEX_RUC)) {
         mensajeError("El formato del ruc es invalido");
         rucElem.focus();
         return;
@@ -196,7 +195,7 @@ function btnEditarCliente() {
         mensajeError("El teléfono es obligatorio");
         telElem.focus();
         return;
-    } else if (!tel.match(TEL_REGEX)) {
+    } else if (!tel.match(REGEX_TELEFONO)) {
         mensajeError("El teléfono es invalido");
         telElem.focus();
         return;
@@ -208,7 +207,7 @@ function btnEditarCliente() {
         mensajeError("El correo es obligatorio");
         correoElem.focus();
         return;
-    } else if (!correo.match(CORREO_REGEX)) {
+    } else if (!correo.match(REGEX_CORREO)) {
         mensajeError("El correo es invalido");
         correoElem.focus();
         return;
@@ -220,7 +219,7 @@ function btnEditarCliente() {
         mensajeError("La dirección es obligatoria");
         direccionElem.focus();
         return;
-    } else if (!direccion.match(DIRECCION_REGEX)) {
+    } else if (!direccion.match(REGEX_DIRECCION)) {
         mensajeError("Dirección invalida");
         direccionElem.focus();
         return;
@@ -236,8 +235,8 @@ function btnEditarCliente() {
     cliente.address = direccion;
     cliente.updated_at = new Date();
     guardarCliente(cliente);
-    cargarTablaClientes();
-    modalECliente.hide();
+    cargarDatos();
+    modalEditar.hide();
     mensajeSuccess("Cliente actualizado");
 }
 
@@ -256,7 +255,7 @@ function ventanaEliminarCliente(id) {
     document.getElementById('del_ruc').textContent = renderString(cliente.ruc);
     document.getElementById('del_direccion').textContent = renderString(cliente.address);
     document.getElementById('del_telefono').textContent = renderString(cliente.tel);
-    modalDCliente.show();
+    modalEliminar.show();
 }
 
 function btnEliminarCliente() {
@@ -267,17 +266,17 @@ function btnEliminarCliente() {
         "Eliminar cliente",
         "¿Realmente deseas eliminar de forma permanente a este cliente?",
         () => {
-            modalDCliente.hide();
+            modalEliminar.hide();
             if (cargarVentas().some(v => v.client_id === id) || cargarCuentasPorCobrar().some(c => c.client_id === id)) {
                 mensajeError("No se puede eliminar el cliente porque está asociada a uno o más registros.");
                 return;
             }
             eliminarCliente(id);
-            cargarTablaClientes();
+            cargarDatos();
             mensajeSuccess("Cliente eliminado");
         },
         () => {
-            modalDCliente.hide();
+            modalEliminar.hide();
             mensajeError("Eliminación cancelada");
         }
     ).set("labels", {
@@ -296,10 +295,10 @@ function ventanaHabilitarCliente(id) {
         "¿Deseas proceder con la habilitación?",
         () => {
             const cliente = cargarCliente(id);
-            cliente.active = !cliente.active;
+            cliente.active = true;
             cliente.updated_at = new Date();
             guardarCliente(cliente);
-            cargarTablaClientes();
+            cargarDatos();
             mensajeSuccess("Cliente habilitado correctamente");
         },
         () => mensajeError("Habilitación cancelada")
@@ -316,25 +315,25 @@ function ventanaAnularCliente(id) {
         "¿Deseas proceder con la anulación?",
         () => {
             if (cargarCuentasPorCobrar().some(c => c.client_id === id && c.status !== "COBRADA")) {
-                mensajeError("No se puede anular el cliente porque está asociada a uno o más registros.");
+                mensajeError("No se puede anular el cliente porque tiene cuentas por cobrar pendientes.");
                 return;
             }
             const cliente = cargarCliente(id);
-            cliente.active = !cliente.active;
+            cliente.active = false;
             cliente.updated_at = new Date();
             guardarCliente(cliente);
-            cargarTablaClientes();
+            cargarDatos();
             mensajeSuccess("Cliente anulado correctamente");
         },
-        () => mensajeError("Eliminación cancelada")
+        () => mensajeError("Anulación cancelada")
     );
 }
 
-function cargarTablaClientes() {
+function cargarDatos() {
     cargarDataTable(tablaClientes, cargarClientes());
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    if (validarPermiso(PERMISOS.CLIENTES_VER)) cargarTablaClientes();
+    if (validarPermiso(PERMISOS.CLIENTES_VER)) cargarDatos();
 });
 

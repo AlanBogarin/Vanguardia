@@ -1,7 +1,7 @@
-/** @typedef {import("alertify")} */
-/** @typedef {import("../js/bd")} */
-/** @typedef {import("../js/alertas")} */
-
+/**
+ * @typedef {import("../js/bd")}
+ * @typedef {import("../js/alertas")}
+ */
 
 /**
  * Descargar un recurso/archivo del sistema
@@ -88,7 +88,7 @@ function guardarConfiguracion() {
     const nuevoUsuario = document.getElementById('cfgUsuario').value.trim();
     // const nuevoCelular = document.getElementById('cfgCelular').value.trim();
     if (!nuevoNombre || !nuevoUsuario) {
-        alertify.error('El nombre y usuario son obligatorios.');
+        mensajeError('El nombre y usuario son obligatorios.');
         return;
     }
     usuario.name = nuevoNombre;
@@ -97,34 +97,34 @@ function guardarConfiguracion() {
     guardarUsuario(usuario);
     cargarDatosNavbar();
     bootstrap.Modal.getInstance(document.getElementById('modalConfiguracion')).hide();
-    alertify.success('Configuración guardada correctamente.');
+    mensajeSuccess('Configuración guardada correctamente.');
 }
 
 async function cambiarContrasena() {
     const usuario = cargarUsuario(cargarSesion().user_id)
-    const actual    = document.getElementById('passActual').value;
-    const nueva     = document.getElementById('passNueva').value;
+    const actual = document.getElementById('passActual').value;
+    const nueva = document.getElementById('passNueva').value;
     const confirmar = document.getElementById('passConfirmar').value;
     if (!actual || !nueva || !confirmar) {
-        alertify.error('Completá todos los campos.');
+        mensajeError('Completá todos los campos.');
         return;
     }
     if (nueva.length < 6) {
-        alertify.error('La nueva contraseña debe tener mínimo 6 caracteres.');
+        mensajeError('La nueva contraseña debe tener mínimo 6 caracteres.');
         return;
     }
     if (nueva !== confirmar) {
-        alertify.error('Las contraseñas no coinciden.');
+        mensajeError('Las contraseñas no coinciden.');
         return;
     }
     if (usuario.password_hash !== await hashPassword(actual)) {
-        alertify.error('La contraseña actual es incorrecta.');
+        mensajeError('La contraseña actual es incorrecta.');
         return;
     }
     usuario.password_hash = await hashPassword(nueva);
     guardarUsuario(usuario);
     bootstrap.Modal.getInstance(document.getElementById('modalCambiarContrasena')).hide();
-    alertify.success('Contraseña cambiada correctamente.');
+    mensajeSuccess('Contraseña cambiada correctamente.');
 }
 
 function configurarSideBar() {

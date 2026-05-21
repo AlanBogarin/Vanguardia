@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Vanguardia - Menu</title>
-    <link rel="icon" href="img/working.png">
+    <link rel="icon" href="img/logo_x16.jpg">
     <!-- ESTILOS DEL MENU -->
     <link href="menu/styles.css" rel="stylesheet"/>
     <!-- BOOTSTRAP -->
@@ -40,13 +40,14 @@
         <div id="layoutSidenav_content">
             <main>
                 <div class="container-fluid px-4">
-                    <!-- Fila título + botón Nuevo cliente -->
+                    <!-- BOTON NUEVO CLIENTE -->
                     <div class="d-flex justify-content-between align-items-center mt-2 mb-2">
                         <h1 class="mb-0">Clientes</h1>
-                        <button class="btn btn-sm btn-primary" onclick="$('#modalNuevoCliente').modal('show')">
+                        <button class="btn btn-sm btn-primary" type="button" onclick="ventanaNuevoCliente()">
                             <i class="bi bi-person-plus-fill me-1"></i> Nuevo cliente
                         </button>
                     </div>
+                    <!-- TABLA -->
                     <div class="row">
                         <table id="tabla_clientes" class="display compact" style="width:100%">
                         </table>
@@ -73,11 +74,11 @@
                 <div class="modal-body">
                     <div class="mb-2">
                         <label class="form-label">Razón Social</label>
-                        <input type="text" id="razonsocial" class="form-control text-uppercase" minlength="5" maxlength="50" pattern="^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\s']{5,50}$" required>
+                        <input type="text" id="razonsocial" class="form-control text-uppercase" minlength="5" maxlength="50" pattern="^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\s'\.,&\-]{5,50}$" required>
                     </div>
                     <div class="mb-2">
                         <label class="form-label">RUC/Cédula</label>
-                        <input type="number" id="ruc" class="form-control" pattern="^\d{5,8}[A-Z]?(-\d)?$" required>
+                        <input type="text" id="ruc" class="form-control text-uppercase" pattern="^\d{5,8}[A-Z]?(-\d)?$" required>
                     </div>
                     <div class="mb-2">
                         <label class="form-label">Teléfono</label>
@@ -94,7 +95,7 @@
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" type="reset" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
-                    <button class="btn btn-primary" onclick="btnNuevoCliente()"><i class="bi bi-floppy"></i> Guardar Cliente</button>
+                    <button class="btn btn-primary" type="button" onclick="btnNuevoCliente()"><i class="bi bi-floppy"></i> Guardar Cliente</button>
                 </div>
             </form>
         </div>
@@ -111,11 +112,11 @@
                     <input type="hidden" id="edit_id">
                     <div class="mb-2">
                         <label class="form-label">Razón Social</label>
-                        <input type="text" id="edit_razonsocial" class="form-control text-uppercase" minlength="5" maxlength="50" pattern="^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\s']{5,50}$" required>
+                        <input type="text" id="edit_razonsocial" class="form-control text-uppercase" minlength="5" maxlength="50" pattern="^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\s'\.,&\-]{5,50}$" required>
                     </div>
                     <div class="mb-2">
                         <label class="form-label">RUC/Cédula</label>
-                        <input type="number" id="edit_ruc" class="form-control" pattern="^\d{5,8}[A-Z]?(-\d)?$" required>
+                        <input type="text" id="edit_ruc" class="form-control text-uppercase" pattern="^\d{5,8}[A-Z]?(-\d)?$" required>
                     </div>
                     <div class="mb-2">
                         <label class="form-label">Teléfono</label>
@@ -132,7 +133,7 @@
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" type="reset" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
-                    <button class="btn btn-warning" onclick="btnEditarCliente()"><i class="bi bi-floppy"></i> Guardar Cambios</button>
+                    <button class="btn btn-warning" type="button" onclick="btnEditarCliente()"><i class="bi bi-floppy"></i> Guardar Cambios</button>
                 </div>
             </form>
         </div>
@@ -141,7 +142,7 @@
     <!-- Modal Eliminar Cliente -->
     <div class="modal fade" id="modalEliminarCliente" tabindex="-1" aria-labelledby="modalEliminarClienteLabel" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog">
-            <div class="modal-content">
+            <form class="modal-content">
                 <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title" id="modalEliminarClienteLabel"><i class="bi bi-exclamation-triangle-fill"></i> Eliminar Cliente</h5>
                 </div>
@@ -157,9 +158,9 @@
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" type="reset" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
-                    <button class="btn btn-danger" onclick="btnEliminarCliente()"><i class="bi bi-trash"></i> Eliminar</button>
+                    <button class="btn btn-danger" type="button" onclick="btnEliminarCliente()"><i class="bi bi-trash"></i> Eliminar</button>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
 

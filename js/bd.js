@@ -17,6 +17,7 @@
  * @property {string} ruc Cédula o RUC del usuario
  * @property {string} tel Teléfono
  * @property {string} email Correo electronico
+ * @property {string} address Dirección física del usuario
  * @property {number} rol_id Identificador del Rol
  * @property {boolean} active El usuario está activo
  * @property {Date} created_at Fecha de creacion del usuario
@@ -28,7 +29,7 @@
  * @property {string} ruc Cédula o RUC del cliente
  * @property {string} tel Telefono del cliente
  * @property {string?} email Correo electronico del cliente
- * @property {string} address Direccion fisica del cliente
+ * @property {string} address Direccion física del cliente
  * @property {boolean} active El cliente está activo
  * @property {Date} created_at Fecha de creacion del cliente
  * @property {Date?} updated_at Fecha de modificacion del cliente
@@ -174,6 +175,19 @@ const KEY_CUENTASPORCOBRAR = "cuentasporcobrar";
 const KEY_PAGOS = "pagos";
 const KEY_COBROS = "cobros";
 const KEY_SESION = "sesion";
+
+const REGEX_USUARIO = /^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚüÜ._\-]{5,20}$/;
+const REGEX_CONTRASENA = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[$@$!%*?&._\-])[A-Za-z\d$@$!%*?&._\-]{8,}$/;
+const REGEX_NOMBRE = /^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\s'.,&-]{5,50}$/;
+const REGEX_RUC = /^\d{5,8}[A-Z]?(-\d)?$/;
+const REGEX_TELEFONO = /^09\d{8}$/;
+const REGEX_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const REGEX_DIRECCION = /^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚüÜ\s,.:°#/-]{5,50}$/;
+const REGEX_CODIGO_BARRA = /^\d{8}$|^\d{12,13}$/;
+const REGEX_TEXTO = /^[A-Z0-9ÑÁÉÍÓÚÜ\s\-\.\,\/\(\)\%\+\*\&\#\[\]]+$/;
+const REGEX_PRECIO = /^\d+(\.\d{1,2})?$/;
+const REGEX_RAZON_SOCIAL = /^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\s'\.,&\-]{5,50}$/;
+const REGEX_MARCA = /^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ\s-.]{2,}$/;
 
 /**
  * Carga un elemento del Local Storage
@@ -388,6 +402,7 @@ function guardarUsuario(usuario) {
         ruc: usuario.ruc,
         tel: usuario.tel,
         email: usuario.email.toLowerCase(),
+        address: usuario.address.toUpperCase(),
         rol_id: usuario.rol_id,
         active: usuario.active,
         created_at: usuario.created_at,
@@ -927,11 +942,14 @@ function eliminarVentaDetalle(id) {
 /**
  * Recupera una cuenta a pagar mediante el ID
  * @param {number} id Identificador de la cuenta
+ * @param {number} compra_id Identificador de la compra
  * @returns {CuentaPorPagar?}
  */
-function cargarCuentaPorPagar(id) {
+function cargarCuentaPorPagar(id=null, compra_id=null) {
+    if (!id && !compra_id) return null;
     for (const cuenta of cargarCuentasPorPagar()) {
-        if (cuenta.id === id) return cuenta;
+        if (id && cuenta.id === id) return cuenta;
+        else if (compra_id && cuenta.purchase_id === compra_id) return cuenta;
     }
 }
 
@@ -985,11 +1003,14 @@ function eliminarCuentaPorPagar(id) {
 /**
  * Recupera una cuenta a cobrar mediante el ID
  * @param {number} id Identificador de la cuenta
+ * @param {number} venta_id Identificador de la venta
  * @returns {CuentaPorCobrar?}
  */
-function cargarCuentaPorCobrar(id) {
+function cargarCuentaPorCobrar(id=null, venta_id=null) {
+    if (!id && !venta_id) return null;
     for (const cuenta of cargarCuentasPorCobrar()) {
-        if (cuenta.id === id) return cuenta;
+        if (id && cuenta.id === id) return cuenta;
+        if (venta_id && cuenta.sale_id === venta_id) return cuenta;
     }
 }
 
@@ -1219,6 +1240,7 @@ function initDB() {
         ruc: "0000000",
         tel: "0971234567",
         email: "admin@vanguardia.com",
+        address: "AVDA. ESPAÑA 1420, ASUNCIÓN",
         rol_id: 1,
         active: true,
         created_at: new Date(),
@@ -1253,15 +1275,13 @@ function cargarDatosPrueba() {
     guardarRol({ id: 10, name: "AUDITOR", description: "Auditoria general", flags: agruparFlags([PERMISOS.PRODUCTOS_VER, PERMISOS.VENTAS_VER, PERMISOS.COMPRAS_VER, PERMISOS.CUENTAS_PAGAR_VER, PERMISOS.CUENTAS_COBRAR_VER, PERMISOS.PAGOS_VER, PERMISOS.COBROS_VER, PERMISOS.USUARIOS_VER, PERMISOS.ROLES_VER]), created_at: new Date(), updated_at: null });
 
     // 2. Usuarios (contraseña: {nombre}@123)
-    guardarUsuario({ id: 2, username: "cajero", password_hash: "b83e76bcbbde2bda5e2d3781c8b4ae3d9765e3353495f101450898fc038b1a9c", name: "LUCAS MEDINA", ruc: "3444111", tel: "0971456456", email: "cajero@vanguardia.com", rol_id: 2, active: true, created_at: new Date(), updated_at: null });
-    guardarUsuario({ id: 3, username: "vendedor", password_hash: "ac2ffb535559135abd405a030d939a7e19b76caabc3c9ea2446e94c81798d6fd", name: "SOFIA RECALDE", ruc: "5666222", tel: "0961789789", email: "ventas@vanguardia.com", rol_id: 3, active: true, created_at: new Date(), updated_at: null });
-    guardarUsuario({ id: 4, username: "compras", password_hash: "8c361ffeb68201251eb110f2516b4ab99f1060e5d71533b0d89b488879f89278", name: "MARCOS VERA", ruc: "2333444", tel: "0991112233", email: "compras@vanguardia.com", rol_id: 4, active: true, created_at: new Date(), updated_at: null });
-    guardarUsuario({ id: 5, username: "gerencia", password_hash: "c04f81358bb5b8b0197e4171e7d376e4ae93da7c5552c8fcedb6fe48dc0569a7", name: "DIANA GOMEZ", ruc: "1222333", tel: "0985556677", email: "gerencia@vanguardia.com", rol_id: 5, active: true, created_at: new Date(), updated_at: null });
-    guardarUsuario({ id: 6, username: "deposito", password_hash: "67ee7622ca365040fcf51d7e66060831cd19264d1d416374c2a43ca606e13c9d", name: "CARLOS RUIZ", ruc: "6777888", tel: "0972889900", email: "deposito@vanguardia.com", rol_id: 6, active: true, created_at: new Date(), updated_at: null });
-    guardarUsuario({ id: 7, username: "contador", password_hash: "678937af7c10fc15f32109935e0fb55686aa864baa8d97af287011827b019079", name: "ANA SILVA", ruc: "4888999", tel: "0962334455", email: "conta@vanguardia.com", rol_id: 7, active: true, created_at: new Date(), updated_at: null });
-    guardarUsuario({ id: 8, username: "supervisor", password_hash: "36918746c2ccb348d9650cc99bf3101f4a56412aa8bcf59cf55aa2a728583b57", name: "DIEGO MENDOZA", ruc: "3999000", tel: "0983112233", email: "super@vanguardia.com", rol_id: 8, active: true, created_at: new Date(), updated_at: null });
-    guardarUsuario({ id: 9, username: "atencion", password_hash: "b18fb4dc75a4fc08240a97f5d0e65c39d5fd8b5e03cdfa666f912ccdb296a97d", name: "LAURA FRANCO", ruc: "5111222", tel: "0973445566", email: "atencion@vanguardia.com", rol_id: 9, active: true, created_at: new Date(), updated_at: null });
-    guardarUsuario({ id: 10, username: "auditoria", password_hash: "d715074a9c2a596308a7e3ed5d41a0b51626b4a691551cd9ba4f6baca2cd1189", name: "JULIO BAEZ", ruc: "2888111", tel: "0992778899", email: "auditor@vanguardia.com", rol_id: 10, active: true, created_at: new Date(), updated_at: null });
+    guardarUsuario({ id: 2, username: "cajero", password_hash: "b83e76bcbbde2bda5e2d3781c8b4ae3d9765e3353495f101450898fc038b1a9c", name: "LUCAS MEDINA", ruc: "3444111", tel: "0971456456", email: "cajero@vanguardia.com", address: "AVDA. MARISCAL LÓPEZ 456, ASUNCIÓN", rol_id: 2, active: true, created_at: new Date(), updated_at: null });
+    guardarUsuario({ id: 3, username: "vendedor", password_hash: "ac2ffb535559135abd405a030d939a7e19b76caabc3c9ea2446e94c81798d6fd", name: "SOFIA RECALDE", ruc: "5666222", tel: "0961789789", email: "ventas@vanguardia.com", address: "CALLE PALMA 789, ASUNCIÓN", rol_id: 3, active: true, created_at: new Date(), updated_at: null });
+    guardarUsuario({ id: 4, username: "compras", password_hash: "8c361ffeb68201251eb110f2516b4ab99f1060e5d71533b0d89b488879f89278", name: "MARCOS VERA", ruc: "2333444", tel: "0991112233", email: "compras@vanguardia.com", address: "AVDA. AVIADORES DEL CHACO 1230, ASUNCIÓN", rol_id: 4, active: true, created_at: new Date(), updated_at: null });
+    guardarUsuario({ id: 5, username: "gerencia", password_hash: "c04f81358bb5b8b0197e4171e7d376e4ae93da7c5552c8fcedb6fe48dc0569a7", name: "DIANA GOMEZ", ruc: "1222333", tel: "0985556677", email: "gerencia@vanguardia.com", address: "AVDA. SANTA TERESA 2450, ASUNCIÓN", rol_id: 5, active: true, created_at: new Date(), updated_at: null });
+    guardarUsuario({ id: 6, username: "deposito", password_hash: "67ee7622ca365040fcf51d7e66060831cd19264d1d416374c2a43ca606e13c9d", name: "CARLOS RUIZ", ruc: "6777888", tel: "0972889900", email: "deposito@vanguardia.com", address: "RUTA TRANSCHACO KM 12, MARIANO ROQUE ALONSO", rol_id: 6, active: true, created_at: new Date(), updated_at: null });
+    guardarUsuario({ id: 7, username: "contador", password_hash: "678937af7c10fc15f32109935e0fb55686aa864baa8d97af287011827b019079", name: "ANA SILVA", ruc: "4888999", tel: "0962334455", email: "conta@vanguardia.com", address: "AVDA. CARLOS ANTONIO LÓPEZ 612, ASUNCIÓN", rol_id: 7, active: true, created_at: new Date(), updated_at: null });
+    guardarUsuario({ id: 8, username: "supervisor", password_hash: "36918746c2ccb348d9650cc99bf3101f4a56412aa8bcf59cf55aa2a72", name: "SUPERVISOR", ruc: "9999999", tel: "0950111222", email: "super@vanguardia.com", address: "AVDA. EUSEBIO AYALA 3340, ASUNCIÓN", rol_id: 8, active: true, created_at: new Date(), updated_at: null });
 
     // 3. Clientes
     guardarCliente({ id: 1, legal_name: "JUAN CARLOS LOPEZ", ruc: "1234567", tel: "0985111222", email: "juancarloslopez@gmail.com", address: "AV. BRASIL 123", active: true, created_at: new Date(), updated_at: null });

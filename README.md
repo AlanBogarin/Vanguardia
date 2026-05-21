@@ -9,7 +9,11 @@ Trabajo Grupal de Programacion III
 - Edgar Ibañez
 - Ivan Rodrigo Benitez
 
-# Librerias extras
+# Librerias externas
+- [BootsTrap](https://getbootstrap.com/)
+- [DataTables + buttons](https://datatables.net/)
+- [pdfmake](https://pdfmake.org)
+
 - jspdf.plugin.autotable.min.js
 - jspdf.umd.min.js
 - xlsx.full.min.js

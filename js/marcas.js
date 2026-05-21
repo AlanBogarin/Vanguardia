@@ -1,14 +1,13 @@
-/** @typedef {import('jquery')} */
-/** @typedef {import('./bd')} */
-/** @typedef {import('./alertas')} */
-/** @typedef {import('./tablas')} */
+/**
+ * @typedef {import('jquery')}
+ * @typedef {import('./bd')}
+ * @typedef {import('./alertas')}
+ * @typedef {import('./tablas')}
+ */
 
-const MARCA_MIN_LENGTH = 2;
-const MARCA_REGEX = /^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ\s-.]{2,}$/;
-
-const modalNMarca = new bootstrap.Modal(document.getElementById('modalNuevaMarca'));
-const modalEMarca = new bootstrap.Modal(document.getElementById('modalEditarMarca'));
-const modalDelMarca = new bootstrap.Modal(document.getElementById('modalEliminarMarca'));
+const modalNuevo = new bootstrap.Modal(document.getElementById('modalNuevaMarca'));
+const modalEditar = new bootstrap.Modal(document.getElementById('modalEditarMarca'));
+const modalEliminar = new bootstrap.Modal(document.getElementById('modalEliminarMarca'));
 
 const tablaMarcas = crearDataTable("tabla_marcas", [
     { data: 'id', title: "Id Marca" },
@@ -27,6 +26,10 @@ const tablaMarcas = crearDataTable("tabla_marcas", [
     }) : null
 });
 
+function ventanaNuevaMarca() {
+    modalNuevo.show();
+}
+
 function btnGuardarMarca() {
     const nombreElem = document.getElementById("nombre");
     const nombre = nombreElem.value.trim().toUpperCase();
@@ -34,18 +37,11 @@ function btnGuardarMarca() {
         mensajeError("El nombre de la marca es obligatorio");
         nombreElem.focus();
         return;
-    }
-    if (nombre.length < MARCA_MIN_LENGTH) {
-        mensajeError("El nombre debe tener 5 caracteres como mínimo");
+    } else if (!nombre.match(REGEX_MARCA)) {
+        mensajeError("El nombre es inválido o tiene insuficientes caracteres");
         nombreElem.focus();
         return;
-    }
-    if (!nombre.match(MARCA_REGEX)) {
-        mensajeError("El nombre es inválido");
-        nombreElem.focus();
-        return;
-    }
-    if (cargarMarcas().find(m => m.name.toUpperCase() === nombre)) {
+    } else if (cargarMarcas().find(m => m.name.toUpperCase() === nombre)) {
         mensajeError("Ya existe una marca con el mismo nombre");
         nombreElem.focus();
         return;
@@ -56,8 +52,8 @@ function btnGuardarMarca() {
         created_at: new Date(),
         updated_at: null
     });
-    cargarTablaMarcas();
-    modalNMarca.hide();
+    cargarDatos();
+    modalNuevo.hide();
     mensajeSuccess("Marca guardada exitosamente");
 }
 
@@ -73,7 +69,7 @@ function ventanaEditarMarca(id) {
     };
     document.getElementById('edit_id').value = marca.id;
     document.getElementById('edit_nombre').value = marca.name;
-    modalEMarca.show();
+    modalEditar.show();
 }
 
 function btnEditarMarca() {
@@ -85,18 +81,11 @@ function btnEditarMarca() {
         mensajeError("El nombre de la marca es obligatorio");
         nombreElem.focus();
         return;
-    }
-    if (nombre.length < MARCA_MIN_LENGTH) {
-        mensajeError(`El nombre debe tener ${MARCA_MIN_LENGTH} caracteres como mínimo`);
+    } else if (!nombre.match(REGEX_MARCA)) {
+        mensajeError("El nombre es inválido o tiene insuficientes caracteres");
         nombreElem.focus();
         return;
-    }
-    if (!nombre.match(MARCA_REGEX)) {
-        mensajeError("El nombre es inválido");
-        nombreElem.focus();
-        return;
-    }
-    if (cargarMarcas().some(m => m.name === nombre && m.id !== id)) {
+    } else if (cargarMarcas().some(m => m.name === nombre && m.id !== id)) {
         mensajeError("Ya existe otra marca con el mismo nombre");
         nombreElem.focus();
         return;
@@ -104,8 +93,8 @@ function btnEditarMarca() {
     marca.name = nombre;
     marca.updated_at = new Date();
     guardarMarca(marca);
-    cargarTablaMarcas();
-    modalEMarca.hide();
+    cargarDatos();
+    modalEditar.hide();
     mensajeSuccess("Marca actualizada");
 }
 
@@ -121,7 +110,7 @@ function ventanaEliminarMarca(id) {
     };
     document.getElementById('del_id').value = marca.id;
     document.getElementById('del_nombre').textContent = marca.name;
-    modalDelMarca.show();
+    modalEliminar.show();
 }
 
 function btnEliminarMarca() {
@@ -129,19 +118,19 @@ function btnEliminarMarca() {
     const marca = cargarMarca(id);
     if (cargarProductos().some(p => p.brand_id === id)) {
         mensajeError("No se puede eliminar la marca porque está asociada a uno o más productos.");
-        modalDelMarca.hide();
+        modalEliminar.hide();
         return;
     }
     eliminarMarca(id);
-    cargarTablaMarcas();
-    modalDelMarca.hide();
+    cargarDatos();
+    modalEliminar.hide();
     mensajeSuccess("Marca eliminada correctamente");
 }
 
-function cargarTablaMarcas() {
+function cargarDatos() {
     cargarDataTable(tablaMarcas, cargarMarcas());
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (validarPermiso(PERMISOS.MARCAS_VER)) cargarTablaMarcas();
+    if (validarPermiso(PERMISOS.MARCAS_VER)) cargarDatos();
 });

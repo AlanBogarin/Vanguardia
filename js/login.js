@@ -20,6 +20,7 @@ const tablaUsuarios = crearDataTable("tabla_usuarios", [
     { data: "ruc", title: "Cédula o RUC", render: renderString },
     { data: "tel", title: "Teléfono", render: renderString },
     { data: "email", title: "Correo Electrónico", render: data => renderString(data).toLowerCase() },
+    { data: "address", title: "Dirección", render: renderString },
     { data: "rol_id", title: "Rol", render: data => renderString(cargarRol(data).name) },
     { data: "active", title: "Activo", render: renderBoolean },
     { data: "created_at", title: "Fecha de Creación", render: renderFecha },
