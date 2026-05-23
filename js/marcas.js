@@ -18,6 +18,7 @@ const tablaMarcas = crearDataTable("tabla_marcas", [
     buttons: true,
     pageLength: 10,
     searching: true,
+    exportTitle: "LISTADO DE MARCAS",
     actions: tienePermisoSesion(PERMISOS.MARCAS_EDITAR) ? (marca) => ({
         edit: `ventanaEditarMarca(${marca.id})`,
         delete: `ventanaEliminarMarca(${marca.id})`,

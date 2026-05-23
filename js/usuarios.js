@@ -21,10 +21,10 @@ const tablaUsuarios = crearDataTable("tabla_usuarios", [
     { data: "created_at", title: "Fecha de creación", render: renderFecha },
     { data: "updated_at", title: "Fecha de modificación", render: renderFecha }
 ], {
-    buttons: true,
-    exportTitle: "LISTADO DE USUARIOS",
+    buttons: true, 
     pageLength: 10,
     searching: true,
+    exportTitle: "LISTADO DE USUARIOS",
     actions: tienePermisoSesion(PERMISOS.USUARIOS_EDITAR) ? (usuario) => {
         const anulable = cargarCompras().some(c => c.user_id === usuario.id) ||
             cargarVentas().some(v => v.user_id === usuario.id);

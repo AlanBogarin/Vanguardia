@@ -23,6 +23,7 @@ const tablaClientes = crearDataTable("tabla_clientes", [
     buttons: true,
     pageLength: 10,
     searching: true,
+    exportTitle: "LISTADO DE CLIENTES",
     actions: tienePermisoSesion(PERMISOS.CLIENTES_EDITAR) ? (cliente) => {
         const anulable = cargarVentas().some(v => v.client_id === cliente.id);
         return {

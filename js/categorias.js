@@ -19,6 +19,7 @@ const tablaCategorias = crearDataTable("tabla_categorias", [
     buttons: true,
     pageLength: 10,
     searching: true,
+    exportTitle: "LISTADO DE CATEGORIAS",
     actions: tienePermisoSesion(PERMISOS.CATEGORIAS_EDITAR) ? (categoria) => ({
         edit: `ventanaEditarCategoria(${categoria.id})`,
         delete: `ventanaEliminarCategoria(${categoria.id})`,

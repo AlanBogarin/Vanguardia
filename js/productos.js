@@ -21,6 +21,7 @@ const tablaProductos = crearDataTable("tabla_productos", [
     buttons: true,
     pageLength: 10,
     searching: true,
+    exportTitle: "LISTADO DE PRODUCTOS",
     actions: tienePermisoSesion(PERMISOS.PRODUCTOS_EDITAR) ? (producto) => {
         const anulable = cargarCompraDetalles().some(d => d.product_id === producto.id) ||
             cargarVentaDetalles().some(d => d.product_id === producto.id);
