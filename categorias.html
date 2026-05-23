@@ -1,146 +1,161 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vanguardia - Categorías</title>
-
-    <!-- Bootstrap -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>Vanguardia - Categorias</title>
+    <link rel="icon" href="img/logo_x16.jpg">
+    <!-- ESTILOS DEL MENU -->
+    <link href="menu/styles.css" rel="stylesheet"/>
+    <!-- BOOTSTRAP -->
     <link rel="stylesheet" href="bt/bootstrap.min.css">
-
-    <!-- Bootstrap Icons -->
+    <!-- BOOTSTRAP ICONS -->
     <link rel="stylesheet" href="bt-icons/bootstrap-icons.min.css">
-
-    <link rel="stylesheet" href="css/categorias.css">
+    <!-- ALERTIFY -->
+    <link rel="stylesheet" href="alert/alertify.min.css">
+    <link rel="stylesheet" href="alert/themes/default.min.css">
+    <!-- DATATABLES -->
+    <link rel="stylesheet" href="dt/datatables.min.css">
+    <link rel="stylesheet" href="dt/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="dt/buttons.dataTables.min.css">
+    <!-- TEMA VANGUARDIA -->
+    <link rel="stylesheet" href="css/vanguardia.css">
 </head>
-<body>
-
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">
-                <i class="bi bi-tags-fill"></i>
-                Sistema Categorías
-            </a>
+<body class="sb-nav-fixed">
+    <div id="contenedor-navbar">
+        <!-- ========================================================= -->
+        <!-- 1. CONTENEDOR DINÁMICO PARA LA BARRA SUPERIOR (NAVBAR)    -->
+        <!-- Este div vacío será llenado por JavaScript usando fetch() -->
+        <!-- con el contenido del archivo 'navbar.html'.               -->
+        <!-- ========================================================= -->
+    </div>
+    <div id="layoutSidenav">
+        <div id="contenedor-sidebar">
+            <!-- ========================================================= -->
+            <!-- 2. CONTENEDOR DINÁMICO PARA EL MENÚ LATERAL (SIDEBAR)     -->
+            <!-- Este div vacío será llenado por JavaScript usando fetch() -->
+            <!-- con el contenido del archivo 'sidebar.html'.              -->
+            <!-- ========================================================= -->
         </div>
-    </nav>
-
-    <div class="container mt-4">
-
-        <div class="card shadow">
-
-            <div class="card-header bg-success text-white">
-                <h3>
-                    <i class="bi bi-tags-fill"></i>
-                    Gestión de Categorías
-                </h3>
-            </div>
-
-            <div class="card-body">
-
-                <!-- FORMULARIO -->
-                <div class="row g-3">
-
-                    <div class="col-md-2">
-                        <label class="form-label">ID</label>
-                        <input class="form-control" type="number" id="txtId">
+        <div id="layoutSidenav_content">
+            <main>
+                <div class="container-fluid px-4">
+                    <div class="d-flex justify-content-between align-items-center mt-2 mb-2">
+                        <h1 class="mb-0">Categorias</h1>
+                        <button class="btn btn-sm btn-primary" id="btnModalNuevo" type="button" onclick="ventanaNuevaCategoria()">
+                            <i class="bi bi-tag-fill me-1"></i> Nueva Categoria
+                        </button>
                     </div>
+                    <div class="row">
+                        <table id="tabla_categorias" class="display compact" style="width:100%">
+                        </table>
+                    </div>
+                </div>
+            </main>
+            <footer class="py-4 bg-light mt-auto" id="contenedor-footer">
+                <!-- ========================================================= -->
+                <!-- 3. CONTENEDOR DINÁMICO PARA EL PIE DE PAGINA (FOOTER)     -->
+                <!-- Este div vacío será llenado por JavaScript usando fetch() -->
+                <!-- con el contenido del archivo 'footer.html'.               -->
+                <!-- ========================================================= -->
+            </footer>
+        </div>
+    </div>
 
-                    <div class="col-md-5">
+    <!-- Modal Nueva Categoria -->
+    <div class="modal fade" id="modalNuevaCategoria" tabindex="-1" aria-labelledby="modalNuevaCategoriaLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <form id="formNuevaCategoria" class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalNuevaCategoriaLabel"><i class="bi bi-tag-fill"></i> Agregar Nueva Categoria</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
                         <label class="form-label">Nombre</label>
-                        <input class="form-control" type="text" id="txtCategoria">
+                        <input type="text" id="nombre" class="form-control text-uppercase" minlength="3" maxlength="50" required>
                     </div>
-
-                    <div class="col-md-5">
+                    <div class="mb-2">
                         <label class="form-label">Descripción</label>
-                        <input class="form-control" type="text" id="txtDescripcion">
+                        <input type="text" id="descripcion" class="form-control text-uppercase" minlength="5" maxlength="50" required>
                     </div>
                 </div>
-
-
-                <!-- BOTONES -->
-                <div class="mt-4 d-flex flex-wrap gap-2">
-
-                    <button class="btn btn-primary" onclick="nuevo()">
-                        <i class="bi bi-plus-circle"></i>
-                        Nuevo
-                    </button>
-
-                    <button class="btn btn-success" onclick="guardar()">
-                        <i class="bi bi-save"></i>
-                        Guardar
-                    </button>
-
-                    <button class="btn btn-warning text-white" onclick="modificar()">
-                        <i class="bi bi-pencil-square"></i>
-                        Modificar
-                    </button>
-
-                    <button class="btn btn-danger" onclick="eliminarFila()">
-                        <i class="bi bi-trash"></i>
-                        Eliminar
-                    </button>
-
-                    <button class="btn btn-dark" onclick="vaciarTabla()">
-                        <i class="bi bi-x-circle"></i>
-                        Vaciar
-                    </button>
-
-                    <button class="btn btn-secondary" onclick="window.print()">
-                        <i class="bi bi-printer"></i>
-                        Imprimir
-                    </button>
-
-                    <button class="btn btn-success" onclick="exportarExcel()">
-                        <i class="bi bi-file-earmark-excel"></i>
-                        Excel
-                    </button>
-
-                    <button class="btn btn-danger" onclick="exportarPDF()">
-                        <i class="bi bi-file-earmark-pdf"></i>
-                        PDF
-                    </button>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="reset" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                    <button class="btn btn-primary" type="button" onclick="btnGuardarCategoria()"><i class="bi bi-floppy"></i> Guardar Categoria</button>
                 </div>
+            </form>
+        </div>
+    </div>
 
+    <!-- Modal Editar Categoria -->
+    <div class="modal fade" id="modalEditarCategoria" tabindex="-1" aria-labelledby="modalEditarCategoriaLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <form id="formEditarCategoria" class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title" id="modalEditarCategoriaLabel"><i class="bi bi-pencil-square"></i> Editar Categoria</h5>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="edit_id">
+                    <div class="mb-2">
+                        <label class="form-label">Nombre</label>
+                        <input type="text" id="edit_nombre" class="form-control text-uppercase" minlength="3" maxlength="50" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Descripción</label>
+                        <input type="text" id="edit_descripcion" class="form-control text-uppercase" minlength="5" maxlength="50" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="reset" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                    <button class="btn btn-warning" type="button" onclick="btnEditarCategoria()"><i class="bi bi-floppy"></i> Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-                <!-- TABLA -->
-                <div class="table-responsive mt-4">
-
-                    <table class="table table-bordered table-hover" id="tablaCategorias">
-
-                        <thead class="table-dark">
-                            <tr>
-                                <th>ID Categoría</th>
-                                <th>Nombre</th>
-                                <th>Descripción</th>
-                                <th>Fecha de creación</th>
-                                <th>Fecha de modificación</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                        </tbody>
-
-                    </table>
+    <!-- Modal Eliminar Categoria -->
+    <div class="modal fade" id="modalEliminarCategoria" tabindex="-1" aria-labelledby="modalEliminarCategoriaLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="modalEliminarCategoriaLabel"><i class="bi bi-exclamation-triangle-fill"></i> Eliminar Categoria</h5>
+                </div>
+                <div class="modal-body">
+                    <p class="text-center fw-bold">¿Deseas proceder con la eliminación?</p>
+                    <input type="hidden" id="del_id">
+                    <ul class="list-group mb-3">
+                        <li class="list-group-item"><strong>Nombre:</strong> <span id="del_nombre"></span></li>
+                        <li class="list-group-item"><strong>Descripción:</strong> <span id="del_descripcion"></span></li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                    <button class="btn btn-danger" type="button" onclick="btnEliminarCategoria()"><i class="bi bi-trash"></i> Eliminar</button>
                 </div>
             </div>
         </div>
     </div>
 
-
-    <!-- Bootstrap -->
+    <script src="menu/scripts.js"></script>
     <script src="bt/bootstrap.bundle.min.js"></script>
-
-    <!-- Excel -->
-    <script src="dt/xlsx.full.min.js"></script>
-
-    <!-- PDF -->
-    <script src="dt/jspdf.umd.min.js"></script>
-    <script src="dt/jspdf.plugin.autotable.min.js"></script>
-
-    <!-- JS -->
+    <script src="alert/alertify.min.js"></script>
+    <!-- DATATABLES -->
+    <script src="dt/jquery-3.7.1.js"></script>
+    <script src="dt/datatables.min.js"></script>
+    <script src="dt/jquery.dataTables.min.js"></script>
+    <script src="dt/es-ES.js"></script>
+    <!-- DATATABLES Buttons extension -->
+    <script src="dt/dataTables.buttons.min.js"></script>
+    <script src="dt/buttons.print.min.js"></script>
+    <script src="dt/buttons.html5.min.js"></script>
+    <!-- DATATABLES JSZip y pdfmake para exportar -->
+    <script src="dt/jszip.min.js"></script>
+    <script src="dt/pdfmake.min.js"></script>
+    <script src="dt/vfs_fonts.js"></script>
+    <!-- SCRIPTS -->
+    <script src="js/bd.js"></script>
+    <script src="js/alertas.js"></script>
+    <script src="js/tablas.js"></script>
     <script src="js/categorias.js"></script>
-
 </body>
 </html>
-

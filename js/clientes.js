@@ -35,6 +35,10 @@ const tablaClientes = crearDataTable("tabla_clientes", [
 });
 
 function ventanaNuevoCliente() {
+    if (!tienePermisoSesion(PERMISOS.CLIENTES_CREAR)) {
+        mensajeError("No tienes permiso para crear clientes");
+        return;
+    }
     modalNuevo.show();
 }
 
@@ -334,6 +338,8 @@ function cargarDatos() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    if (validarPermiso(PERMISOS.CLIENTES_VER)) cargarDatos();
+    if (!validarPermiso(PERMISOS.CLIENTES_VER)) return;
+    if (!tienePermisoSesion(PERMISOS.CLIENTES_CREAR)) document.getElementById("btnModalNuevo").style.display = "none";
+    cargarDatos();
 });
 

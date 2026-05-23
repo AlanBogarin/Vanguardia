@@ -44,7 +44,11 @@ function renderStock(producto) {
     return `<span class="badge ${clase}">${producto.stock}</span>`;
 }
 
-function ventanaGuardarProducto() {
+function ventanaNuevoProducto() {
+    if (!tienePermisoSesion(PERMISOS.PRODUCTOS_CREAR)) {
+        mensajeError("No tienes permiso para crear productos");
+        return;
+    }
     const categoriaElem = document.getElementById("new_category_id");
     const marcaElem = document.getElementById("new_brand_id");
     if (categoriaElem) categoriaElem.innerHTML = '<option value="">Seleccione Categoría</option>'
@@ -93,7 +97,7 @@ function btnGuardarProducto() {
         mensajeError("El nombre debe tener entre 3 y 100 caracteres");
         nombreElem.focus();
         return;
-    } else if (!nombre.match(REGEX_TEXTO)) {
+    } else if (!nombre.match(REGEX_PRODUCTO)) {
         mensajeError("El nombre contiene caracteres no válidos");
         nombreElem.focus();
         return;
@@ -101,12 +105,8 @@ function btnGuardarProducto() {
         mensajeError("La descripción es obligatoria");
         descripcionElem.focus();
         return;
-    } else if (descripcion.length < 3 || descripcion.length > 200) {
-        mensajeError("La descripción debe tener entre 3 y 200 caracteres");
-        descripcionElem.focus();
-        return;
     } else if (!descripcion.match(REGEX_TEXTO)) {
-        mensajeError("La descripción contiene caracteres no válidos");
+        mensajeError("La descripción es inválidos o no tiene entre 3 y 50 caracteres");
         descripcionElem.focus();
         return;
     } else if (!precioCompra) {
@@ -261,7 +261,7 @@ function btnEditarProducto() {
         mensajeError("El nombre debe tener entre 3 y 100 caracteres");
         nombreElem.focus();
         return;
-    } else if (!nombre.match(REGEX_TEXTO)) {
+    } else if (!nombre.match(REGEX_PRODUCTO)) {
         mensajeError("El nombre contiene caracteres no válidos");
         nombreElem.focus();
         return;
@@ -269,12 +269,8 @@ function btnEditarProducto() {
         mensajeError("La descripción es obligatoria");
         descripcionElem.focus();
         return;
-    } else if (descripcion.length < 3 || descripcion.length > 200) {
-        mensajeError("La descripción debe tener entre 3 y 200 caracteres");
-        descripcionElem.focus();
-        return;
     } else if (!descripcion.match(REGEX_TEXTO)) {
-        mensajeError("La descripción contiene caracteres no válidos");
+        mensajeError("La descripción es inválidos o no tiene entre 3 y 50 caracteres");
         descripcionElem.focus();
         return;
     } else if (!precioCompra) {
@@ -458,5 +454,7 @@ function cargarDatos() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    if (validarPermiso(PERMISOS.PRODUCTOS_VER)) cargarDatos();
+    if (!validarPermiso(PERMISOS.PRODUCTOS_VER)) return;
+    if (!tienePermisoSesion(PERMISOS.PRODUCTOS_CREAR)) document.getElementById("btnModalNuevo").style.display = "none";
+    cargarDatos();
 });

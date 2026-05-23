@@ -184,10 +184,12 @@ const REGEX_TELEFONO = /^09\d{8}$/;
 const REGEX_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const REGEX_DIRECCION = /^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚüÜ\s,.:°#/-]{5,50}$/;
 const REGEX_CODIGO_BARRA = /^\d{8}$|^\d{12,13}$/;
-const REGEX_TEXTO = /^[A-Z0-9ÑÁÉÍÓÚÜ\s\-\.\,\/\(\)\%\+\*\&\#\[\]]+$/;
 const REGEX_PRECIO = /^\d+(\.\d{1,2})?$/;
 const REGEX_RAZON_SOCIAL = /^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\s'\.,&\-]{5,50}$/;
-const REGEX_MARCA = /^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ\s-.]{2,}$/;
+const REGEX_MARCA = /^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ\s-.]{2,50}$/;
+const REGEX_CATEGORIA = /^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ\s-.]{3,}$/;
+const REGEX_PRODUCTO = /^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ\s-.]{5,}$/;
+const REGEX_TEXTO = /^[A-Z0-9ÑÁÉÍÓÚÜ\s\-\.\,\/\(\)\%\+\*\&\#\[\]]{5,50}$/;
 
 /**
  * Carga un elemento del Local Storage
@@ -277,7 +279,7 @@ function agruparFlags(permisos) {
  * @returns {number[]} Lista de permisos individuales (ej: [4, 64])
  */
 function desagruparFlags(flags) {
-    return Object.values(PERMISOS).filter(permiso => (flags & permiso) !== 0);
+    return Object.values(PERMISOS).filter(permiso => (flags & permiso) !== 0n);
 }
 
 /**
@@ -287,7 +289,7 @@ function desagruparFlags(flags) {
  * @returns {boolean}
  */
 function tienePermiso(flags, permiso) {
-    return (flags & permiso) !== 0;
+    return (flags & permiso) !== 0n;
 }
 
 /**

@@ -42,6 +42,10 @@ function ventanaNuevoUsuario() {
 }
 
 async function btnNuevoUsuario() {
+    if (!tienePermisoSesion(PERMISOS.USUARIOS_CREAR)) {
+        mensajeError("No tienes permiso para crear usuarios");
+        return;
+    }
     const usernameElem = document.getElementById("new_username");
     const username = usernameElem.value.trim().toLowerCase();
     const contraElem = document.getElementById("new_password");
@@ -411,5 +415,7 @@ function cargarDatos() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (validarPermiso(PERMISOS.USUARIOS_VER)) cargarDatos();
+    if (!validarPermiso(PERMISOS.USUARIOS_VER)) return;
+    if (!tienePermisoSesion(PERMISOS.USUARIOS_CREAR)) document.getElementById("btnModalNuevo").style.display = "none";
+    cargarDatos();
 });

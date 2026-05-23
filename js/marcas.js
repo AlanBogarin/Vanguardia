@@ -27,6 +27,10 @@ const tablaMarcas = crearDataTable("tabla_marcas", [
 });
 
 function ventanaNuevaMarca() {
+    if (!tienePermisoSesion) {
+        mensajeError("No tienes permiso para crear marcas");
+        return;
+    }
     modalNuevo.show();
 }
 
@@ -132,5 +136,7 @@ function cargarDatos() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (validarPermiso(PERMISOS.MARCAS_VER)) cargarDatos();
+    if (!validarPermiso(PERMISOS.MARCAS_VER)) return;
+    if (!tienePermisoSesion(PERMISOS.MARCAS_CREAR)) document.getElementById("btnModalNuevo").style.display = "none";
+    cargarDatos();
 });

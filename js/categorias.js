@@ -1,338 +1,156 @@
-let filaSeleccionada = null;
+/**
+ * @typedef {import('jquery')}
+ * @typedef {import('./bd')}
+ * @typedef {import('./alertas')}
+ * @typedef {import('./tablas')}
+ */
 
+const modalNuevo = new bootstrap.Modal(document.getElementById('modalNuevaCategoria'));
+const modalEditar = new bootstrap.Modal(document.getElementById('modalEditarCategoria'));
+const modalEliminar = new bootstrap.Modal(document.getElementById('modalEliminarCategoria'));
 
-// ======================
-// OBTENER FECHA ACTUAL
-// ======================
+const tablaCategorias = crearDataTable("tabla_categorias", [
+    { data: "id", title: "Id Categoria", render: renderRaw },
+    { data: "name", title: "Nombre", render: renderString },
+    { data: "description", title: "Descripción", render: renderString },
+    { data: "created_at", title: "Fecha de Creación", render: renderFecha },
+    { data: "updated_at", title: "Fecha de Modificación", render: renderFecha }
+], {
+    buttons: true,
+    pageLength: 10,
+    searching: true,
+    actions: tienePermisoSesion(PERMISOS.CATEGORIAS_EDITAR) ? (categoria) => ({
+        edit: `ventanaEditarCategoria(${categoria.id})`,
+        delete: `ventanaEliminarCategoria(${categoria.id})`,
+        enable: null,
+        disable: null
+    }) : null
+});
 
-function obtenerFechaActual() {
-
-    let fecha = new Date();
-
-    let anio = fecha.getFullYear();
-    let mes = String(fecha.getMonth() + 1).padStart(2, '0');
-    let dia = String(fecha.getDate()).padStart(2, '0');
-
-    return `${anio}-${mes}-${dia}`;
+function ventanaNuevaCategoria() {
+    modalNuevo.show();
 }
 
-
-// ======================
-// NUEVO
-// ======================
-
-function nuevo() {
-
-    document.getElementById("txtId").value = "";
-    document.getElementById("txtCategoria").value = "";
-    document.getElementById("txtDescripcion").value = "";
-
-    filaSeleccionada = null;
-}
-
-
-// ======================
-// GUARDAR
-// ======================
-
-function guardar() {
-
-    let id = document.getElementById("txtId").value;
-    let categoria = document.getElementById("txtCategoria").value;
-    let descripcion = document.getElementById("txtDescripcion").value;
-
-
-    if (id == "" || categoria == "" || descripcion == "") {
-
-        alert("Complete todos los campos");
+function btnGuardarCategoria() {
+    const nombreElem = document.getElementById("nombre");
+    const nombre = nombreElem.value.trim().toUpperCase();
+    const descripcionElem = document.getElementById("descripcion");
+    const descripcion = descripcionElem.value.trim().toUpperCase();
+    if (!nombre) {
+        mensajeError("El nombre de la categoria es obligatorio");
+        nombreElem.focus();
+        return;
+    } else if (!nombre.match(REGEX_CATEGORIA)) {
+        mensajeError("El nombre es inválido o tiene insuficientes caracteres");
+        nombreElem.focus();
+        return;
+    } else if (cargarCategorias().find(c => c.name.toUpperCase() === nombre)) {
+        mensajeError("Ya existe una categoria con el mismo nombre");
+        nombreElem.focus();
+        return;
+    } else if (!descripcion) {
+        mensajeError("La descripción de la categoria es obligatorio");
+        descripcionElem.focus();
+        return;
+    } else if (!descripcion.match(REGEX_TEXTO)) {
+        mensajeError("La descripción es inválida o no tiene entre 5 a 50 caracteres");
+        descripcionElem.focus();
         return;
     }
-
-
-    let tabla = document.querySelector("#tablaCategorias tbody");
-
-
-    // VALIDAR ID REPETIDO
-    for (let i = 0; i < tabla.rows.length; i++) {
-
-        if (tabla.rows[i].cells[0].innerHTML == id) {
-
-            alert("El ID ya existe");
-            return;
-        }
-    }
-
-
-    let fechaActual = obtenerFechaActual();
-
-    let fila = tabla.insertRow();
-
-    fila.insertCell(0).innerHTML = id;
-    fila.insertCell(1).innerHTML = categoria;
-    fila.insertCell(2).innerHTML = descripcion;
-    fila.insertCell(3).innerHTML = fechaActual;
-    fila.insertCell(4).innerHTML = fechaActual;
-
-
-    fila.onclick = function () {
-        seleccionarFila(this);
-    }
-
-    nuevo();
-}
-
-
-// ======================
-// SELECCIONAR FILA
-// ======================
-
-function seleccionarFila(fila) {
-
-    filaSeleccionada = fila;
-
-    document.getElementById("txtId").value = fila.cells[0].innerHTML;
-    document.getElementById("txtCategoria").value = fila.cells[1].innerHTML;
-    document.getElementById("txtDescripcion").value = fila.cells[2].innerHTML;
-}
-
-
-// ======================
-// MODIFICAR
-// ======================
-
-function modificar() {
-
-    if (filaSeleccionada == null) {
-
-        alert("Seleccione una fila");
-        return;
-    }
-
-
-    let id = document.getElementById("txtId").value;
-    let categoria = document.getElementById("txtCategoria").value;
-    let descripcion = document.getElementById("txtDescripcion").value;
-
-
-    if (id == "" || categoria == "" || descripcion == "") {
-
-        alert("Complete todos los campos");
-        return;
-    }
-
-
-    filaSeleccionada.cells[0].innerHTML = id;
-    filaSeleccionada.cells[1].innerHTML = categoria;
-    filaSeleccionada.cells[2].innerHTML = descripcion;
-
-    filaSeleccionada.cells[4].innerHTML = obtenerFechaActual();
-
-    alert("Registro modificado correctamente");
-
-    nuevo();
-}
-
-
-// ======================
-// ELIMINAR
-// ======================
-
-function eliminarFila() {
-
-    if (filaSeleccionada == null) {
-
-        alert("Seleccione una fila");
-        return;
-    }
-
-
-    let confirmar = confirm("¿Desea eliminar el registro?");
-
-    if (confirmar) {
-
-        filaSeleccionada.remove();
-
-        alert("Registro eliminado");
-
-        nuevo();
-    }
-}
-
-
-// ======================
-// VACIAR TABLA
-// ======================
-
-function vaciarTabla() {
-
-    let confirmar = confirm("¿Desea vaciar todos los registros?");
-
-    if (confirmar) {
-
-        let tbody = document.querySelector("#tablaCategorias tbody");
-
-        tbody.innerHTML = "";
-
-        nuevo();
-
-        alert("Todos los registros fueron eliminados");
-    }
-}
-
-
-// ======================
-// EXPORTAR EXCEL
-// ======================
-
-function exportarExcel() {
-
-    let tabla = document.getElementById("tablaCategorias");
-
-    let libro = XLSX.utils.table_to_book(tabla, {
-        sheet: "Categorias"
+    guardarCategoria({
+        id: obtenerSiguienteId(cargarCategorias()),
+        name: nombre,
+        description: descripcion,
+        created_at: new Date(),
+        updated_at: null
     });
-
-    XLSX.writeFile(libro, "categorias.xlsx");
+    cargarDatos();
+    modalNuevo.hide();
+    mensajeSuccess("Categoria guardada exitosamente");
 }
 
-
-// ======================
-// EXPORTAR PDF
-// ======================
-
-async function exportarPDF() {
-
-    const { jsPDF } = window.jspdf;
-
-    let doc = new jsPDF();
-
-
-    // FECHA Y HORA
-    let fechaHora = new Date();
-
-    let fechaTexto =
-        fechaHora.toLocaleDateString() + " " +
-        fechaHora.toLocaleTimeString();
-
-
-    // LOGO
-    try {
-
-        let logo = new Image();
-
-        logo.src = "./img/logo_x64.jpg";
-
-        await new Promise((resolve) => {
-
-            logo.onload = () => {
-
-                doc.addImage(logo, 'PNG', 10, 5, 30, 30);
-
-                resolve();
-            };
-
-            logo.onerror = () => {
-                resolve();
-            };
-        });
-
-    } catch (error) {
-
-        console.log("No se pudo cargar el logo");
+function ventanaEditarCategoria(id) {
+    const categoria = cargarCategoria(id);
+    if (!categoria) {
+        mensajeError(`La categoria con ID ${id} no existe`);
+        return;
     }
-
-
-    // TITULO
-    doc.setFontSize(18);
-
-    doc.text("LISTADO DE CATEGORÍAS", 60, 20);
-
-
-    // TABLA
-    doc.autoTable({
-
-        html: '#tablaCategorias',
-
-        startY: 35,
-
-        theme: 'grid',
-
-        headStyles: {
-            fillColor: [0, 0, 0]
-        },
-
-
-        didDrawPage: function (data) {
-
-            let paginaActual =
-                doc.internal.getCurrentPageInfo().pageNumber;
-
-            let totalPaginas =
-                doc.internal.getNumberOfPages();
-
-
-            // FECHA ABAJO IZQUIERDA
-            doc.setFontSize(10);
-
-            doc.text(
-                fechaTexto,
-                10,
-                doc.internal.pageSize.height - 10
-            );
-
-
-            // PAGINA ABAJO DERECHA
-            doc.text(
-                "Pág. " + paginaActual + "/" + totalPaginas,
-                170,
-                doc.internal.pageSize.height - 10
-            );
-        }
-    });
-
-
-    // GUARDAR PDF
-    doc.save("Nombre del Sistema.pdf");
+    document.getElementById("edit_id").value = categoria.id;
+    document.getElementById("edit_nombre").value = categoria.name;
+    document.getElementById("edit_descripcion").value = categoria.description;
+    modalEditar.show();
 }
 
-
-// ======================
-// CARGAR 10 REGISTROS
-// ======================
-
-window.onload = function () {
-
-    let datos = [
-
-        [1, "Electrónica", "Productos electrónicos"],
-        [2, "Computación", "Equipos informáticos"],
-        [3, "Celulares", "Smartphones y accesorios"],
-        [4, "Impresoras", "Impresoras y tintas"],
-        [5, "Audio", "Parlantes y auriculares"],
-        [6, "Gaming", "Consolas y videojuegos"],
-        [7, "Redes", "Routers y cables"],
-        [8, "Oficina", "Artículos de oficina"],
-        [9, "Monitores", "Pantallas y monitores"],
-        [10, "Seguridad", "Cámaras y alarmas"]
-    ];
-
-
-    let tabla = document.querySelector("#tablaCategorias tbody");
-
-
-    datos.forEach(function (item) {
-
-        let fila = tabla.insertRow();
-
-        fila.insertCell(0).innerHTML = item[0];
-        fila.insertCell(1).innerHTML = item[1];
-        fila.insertCell(2).innerHTML = item[2];
-        fila.insertCell(3).innerHTML = obtenerFechaActual();
-        fila.insertCell(4).innerHTML = obtenerFechaActual();
-
-
-        fila.onclick = function () {
-            seleccionarFila(this);
-        }
-    });
+function btnEditarCategoria() {
+    const id = parseInt(document.getElementById("edit_id").value.trim());
+    const categoria = cargarCategoria(id);
+    const nombreElem = document.getElementById("edit_nombre");
+    const nombre = nombreElem.value.trim().toUpperCase();
+    const descripcionElem = document.getElementById("edit_descripcion");
+    const descripcion = descripcionElem.value.trim().toUpperCase();
+    if (!nombre) {
+        mensajeError("El nombre de la categoria es obligatorio");
+        nombreElem.focus();
+        return;
+    } else if (!nombre.match(REGEX_CATEGORIA)) {
+        mensajeError("El nombre es inválido o tiene insuficientes caracteres");
+        nombreElem.focus();
+        return;
+    } else if (cargarCategorias().find(c => c.name.toUpperCase() === nombre && c.id !== id)) {
+        mensajeError("Ya existe una categoria con el mismo nombre");
+        nombreElem.focus();
+        return;
+    } else if (!descripcion) {
+        mensajeError("La descripción de la categoria es obligatorio");
+        descripcionElem.focus();
+        return;
+    } else if (!descripcion.match(REGEX_TEXTO)) {
+        mensajeError("La descripción es inválida o no tiene entre 5 a 50 caracteres");
+        descripcionElem.focus();
+        return;
+    }
+    categoria.name = nombre;
+    categoria.description = descripcion;
+    guardarCategoria(categoria);
+    cargarDatos();
+    modalEditar.hide();
+    mensajeSuccess("Categoria actualizada");
 }
+
+function ventanaEliminarCategoria(id) {
+    const categoria = cargarCategoria(id);
+    if (!categoria) {
+        mensajeError(`La categoria con ID ${id} no existe`);
+        return;
+    }
+    document.getElementById("del_id").value = categoria.id;
+    document.getElementById("del_nombre").textContent = categoria.name;
+    document.getElementById("del_descripcion").textContent = categoria.description;
+    modalEliminar.show();
+}
+
+function btnEliminarCategoria() {
+    const id = parseInt(document.getElementById('del_id').value);
+    const categoria = cargarCategoria(id);
+    if (!categoria) return;
+    if (cargarProductos().some(p => p.category_id === id)) {
+        mensajeError("No se puede eliminar la categoria porque está asociada a uno o más productos.");
+        modalEliminar.hide();
+        return;
+    }
+    eliminarCategoria(id);
+    cargarDatos();
+    modalEliminar.hide();
+    mensajeSuccess("Categoria eliminada correctamente");
+}
+
+function cargarDatos() {
+    cargarDataTable(tablaCategorias, cargarCategorias());
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (!validarPermiso(PERMISOS.CATEGORIAS_VER)) return;
+    if (!tienePermisoSesion(PERMISOS.CATEGORIAS_CREAR)) document.getElementById("btnModalNuevo").style.display = "none";
+    cargarDatos();
+});
+
