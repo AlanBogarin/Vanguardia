@@ -5,50 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Vanguardia - Pagos</title>
     <link rel="icon" href="img/logo_x16.jpg">
+    <!-- ESTILOS DEL MENU -->
     <link href="menu/styles.css" rel="stylesheet"/>
+    <!-- BOOTSTRAP -->
     <link rel="stylesheet" href="bt/bootstrap.min.css">
+    <!-- BOOTSTRAP ICONS -->
     <link rel="stylesheet" href="bt-icons/bootstrap-icons.min.css">
+    <!-- ALERTIFY -->
     <link rel="stylesheet" href="alert/alertify.min.css">
     <link rel="stylesheet" href="alert/themes/default.min.css">
+    <!-- DATATABLES -->
     <link rel="stylesheet" href="dt/datatables.min.css">
     <link rel="stylesheet" href="dt/jquery.dataTables.min.css">
     <link rel="stylesheet" href="dt/buttons.dataTables.min.css">
+    <!-- TEMA VANGUARDIA -->
     <link rel="stylesheet" href="css/vanguardia.css">
 </head>
 <body class="sb-nav-fixed">
-    <div id="contenedor-navbar"></div>
+    <div id="contenedor-navbar">
+        <!-- ========================================================= -->
+        <!-- 1. CONTENEDOR DINÁMICO PARA LA BARRA SUPERIOR (NAVBAR)    -->
+        <!-- Este div vacío será llenado por JavaScript usando fetch() -->
+        <!-- con el contenido del archivo 'navbar.html'.               -->
+        <!-- ========================================================= -->
+    </div>
     <div id="layoutSidenav">
-        <div id="contenedor-sidebar"></div>
+        <div id="contenedor-sidebar">
+            <!-- ========================================================= -->
+            <!-- 2. CONTENEDOR DINÁMICO PARA EL MENÚ LATERAL (SIDEBAR)     -->
+            <!-- Este div vacío será llenado por JavaScript usando fetch() -->
+            <!-- con el contenido del archivo 'sidebar.html'.              -->
+            <!-- ========================================================= -->
+        </div>
         <div id="layoutSidenav_content">
             <main>
                 <div class="container-fluid px-4">
                     <div class="d-flex justify-content-between align-items-center mt-2 mb-2">
-                        <div>
-                            <h1 class="mb-0 d-inline-block me-3">Pagos a Proveedores</h1>
-                            <a href="cuentasporpagar.html" class="btn btn-sm btn-secondary"><i class="bi bi-arrow-left"></i> Volver a Cuentas por Pagar</a>
-                        </div>
-                        <button class="btn btn-sm btn-primary" onclick="$('#modalNuevoPago').modal('show')">
+                        <h1 class="mb-0">Pagos a Proveedores</h1>
+                        <button class="btn btn-sm btn-primary" id="btnModalNuevo" type="button" onclick="ventanaNuevoPago()">
                             <i class="bi bi-cash-coin me-1"></i> Registrar Nuevo Pago
                         </button>
                     </div>
                     <div class="row">
                         <table id="tabla_pagos" class="display compact" style="width:100%">
-                            <thead>
-                                <tr>
-                                    <th>Id Pago</th>
-                                    <th>Id Cuenta</th>
-                                    <th>Proveedor</th>
-                                    <th>Monto Pagado</th>
-                                    <th>Método</th>
-                                    <th>Referencia</th>
-                                    <th>Fecha de Pago</th>
-                                </tr>
-                            </thead>
                         </table>
                     </div>
                 </div>
             </main>
-            <footer class="py-4 bg-light mt-auto" id="contenedor-footer"></footer>
+            <footer class="py-4 bg-light mt-auto" id="contenedor-footer">
+                <!-- ========================================================= -->
+                <!-- 3. CONTENEDOR DINÁMICO PARA EL PIE DE PAGINA (FOOTER)     -->
+                <!-- Este div vacío será llenado por JavaScript usando fetch() -->
+                <!-- con el contenido del archivo 'footer.html'.               -->
+                <!-- ========================================================= -->
+            </footer>
         </div>
     </div>
 
@@ -62,7 +72,7 @@
                 <div class="modal-body">
                     <div class="mb-2">
                         <label class="form-label">Cuenta por Pagar (Pendientes)</label>
-                        <select id="account_payable_id" class="form-select" required></select>
+                        <select id="cuenta_id" class="form-select" onchange="onchangeCuenta()" required></select>
                     </div>
                     <div class="mb-2">
                         <label class="form-label">Saldo Pendiente</label>
@@ -70,27 +80,28 @@
                     </div>
                     <div class="mb-2">
                         <label class="form-label">Monto a Pagar</label>
-                        <input type="number" id="monto" class="form-control" required min="1">
+                        <input type="number" id="monto" class="form-control" min="1" required>
                     </div>
                     <div class="mb-2">
                         <label class="form-label">Método de Pago</label>
-                        <select id="metodo" class="form-select" required>
+                        <select id="metodo" class="form-select" onchange="onchangeMetodoPago()" required>
                             <option value="">Seleccione...</option>
-                            <option value="Efectivo">Efectivo</option>
-                            <option value="Transferencia Bancaria">Transferencia Bancaria</option>
-                            <option value="Tarjeta de Crédito">Tarjeta de Crédito</option>
-                            <option value="Tarjeta de Débito">Tarjeta de Débito</option>
-                            <option value="Cheque">Cheque</option>
+                            <option value="EFECTIVO">Efectivo</option>
+                            <option value="TRANSFERENCIA">Transferencia Bancaria</option>
+                            <option value="TARJETA_CREDITO">Tarjeta de Crédito</option>
+                            <option value="TARJETA_DEBITO">Tarjeta de Débito</option>
+                            <option value="CHEQUE">Cheque</option>
+                            <option value="CREDITO">Crédito Comercial / Cuenta Corriente</option>
                         </select>
                     </div>
                     <div class="mb-2">
-                        <label class="form-label">Nro. Referencia / Comprobante (Opcional)</label>
-                        <input type="text" id="referencia" class="form-control" maxlength="50">
+                        <label class="form-label">Nro. Referencia / Comprobante / Observaciones</label>
+                        <input type="text" id="obs" class="form-control" maxlength="50">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
-                    <button type="submit" class="btn btn-success"><i class="bi bi-floppy"></i> Guardar Pago</button>
+                    <button class="btn btn-secondary" type="reset" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                    <button class="btn btn-success" type="button" onclick="btnGuardarPago()"><i class="bi bi-floppy"></i> Guardar Pago</button>
                 </div>
             </form>
         </div>
@@ -99,18 +110,23 @@
     <script src="menu/scripts.js"></script>
     <script src="bt/bootstrap.bundle.min.js"></script>
     <script src="alert/alertify.min.js"></script>
+    <!-- DATATABLES -->
     <script src="dt/jquery-3.7.1.js"></script>
     <script src="dt/datatables.min.js"></script>
     <script src="dt/jquery.dataTables.min.js"></script>
+    <script src="dt/es-ES.js"></script>
+    <!-- DATATABLES Buttons extension -->
     <script src="dt/dataTables.buttons.min.js"></script>
     <script src="dt/buttons.print.min.js"></script>
     <script src="dt/buttons.html5.min.js"></script>
+    <!-- DATATABLES JSZip y pdfmake para exportar -->
     <script src="dt/jszip.min.js"></script>
     <script src="dt/pdfmake.min.js"></script>
     <script src="dt/vfs_fonts.js"></script>
-    <script src="dt/es-ES.js"></script>
+    <!-- SCRIPTS -->
     <script src="js/bd.js"></script>
     <script src="js/alertas.js"></script>
+    <script src="js/tablas.js"></script>
     <script src="js/pagos.js"></script>
 </body>
 </html>

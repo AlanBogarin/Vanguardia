@@ -78,9 +78,9 @@
  * @property {number} id Identificador unico de la compra
  * @property {number} provider_id Identificador del proveedor
  * @property {number} user_id Identificador del usuario que compra
- * @property {"CONTADO" | "CREDITO"} payment_type Tipo de pago
+ * @property {MetodoPago} payment_type Tipo de pago
  * @property {number} amount Total de pago
- * @property {string} obs Observaciones de la compra
+ * @property {string} obs Nro. Referencia / Comprobante / Observaciones de la compra
  * @property {Date} created_at Fecha de creacion de la compra
  * @property {Date?} updated_at Fecha de modificacion de la compra
  * 
@@ -97,9 +97,9 @@
  * @property {number} id Identificador unico de la venta
  * @property {number} client_id Identificador del cliente
  * @property {number} user_id Identificador del usuario que vendió
- * @property {"CONTADO" | "CREDITO"} payment_type Tipo de pago
+ * @property {MetodoPago} payment_type Tipo de pago
  * @property {number} amount Total de pago
- * @property {string} obs Observaciones de la venta
+ * @property {string} obs Nro. Referencia / Comprobante / Observaciones de la venta
  * @property {Date} created_at Fecha de creacion de la compra
  * @property {Date?} updated_at Fecha de modificacion de la compra
  * 
@@ -119,7 +119,7 @@
  * @property {number} amount_total Cantidad total a pagar
  * @property {number} amount_paid Cantidad pagada
  * @property {number} amount_due Cantidad pendiente a pagar (amount_total - amount_paid)
- * @property {"PENDIENTE" | "PARCIAL" | "PAGADA"} status Estado de la cuenta
+ * @property {EstadoPago} status Estado de la cuenta
  * @property {Date} expire_at Fecha de vencimiento del pago
  * @property {Date} created_at Fecha de creacion de la compra
  * @property {Date?} updated_at Fecha de modificacion de la compra
@@ -131,7 +131,7 @@
  * @property {number} amount_total Cantidad total a cobrar
  * @property {number} amount_paid Cantidad pagada
  * @property {number} amount_due Cantidad pendiente a cobrar (amount_total - amount_paid)
- * @property {"PENDIENTE" | "PARCIAL" | "COBRADA"} status Estado de la cuenta
+ * @property {EstadoPago} status Estado de la cuenta
  * @property {Date} expire_at Fecha de vencimiento del cobro
  * @property {Date} created_at Fecha de creacion de la compra
  * @property {Date?} updated_at Fecha de modificacion de la compra
@@ -140,22 +140,25 @@
  * @property {number} id Identificador unico del pago
  * @property {number} account_payable_id Identificador de la cuenta por pagar
  * @property {number} amount Cantidad pagada
- * @property {"EFECTIVO"} payment_method Método de pago
- * @property {string} obs Observaciones del pago
+ * @property {MetodoPago} payment_method Método de pago
+ * @property {string} obs Nro. Referencia / Comprobante / Observaciones del pago
  * @property {Date} created_at Fecha de creacion del pago
  * 
  * @typedef {Object} Cobro
  * @property {number} id Identificador unico del cobro
  * @property {number} account_receivable_id Identificador de la cuenta por cobrar
  * @property {number} amount Cantidad cobrada
- * @property {"EFECTIVO"} payment_method Método de pago
- * @property {string} obs Observaciones del cobro
+ * @property {MetodoPago} payment_method Método de pago
+ * @property {string} obs Nro. Referencia / Comprobante / Observaciones del cobro
  * @property {Date} created_at Fecha de creacion del cobro
  * 
  * @typedef {Object} Sesion
  * @property {number} user_id Identificador del usuario
  * @property {Date} expire_at Fecha de expiración de la sesión
  * @property {Date} created_at Fecha de creacion de la sesión
+ * 
+ * @typedef {"TRANSFERENCIA" | "TARJETA_CREDITO" | "TARJETA_DEBITO" | "EFECTIVO" | "CREDITO" | "CHEQUE"} MetodoPago
+ * @typedef {"PENDIENTE" | "PARCIAL" | "PAGADA"} EstadoPago
  */
 
 // BD
@@ -191,31 +194,29 @@ const REGEX_CATEGORIA = /^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ\s-.]{3,}$/;
 const REGEX_PRODUCTO = /^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ\s-.]{5,}$/;
 const REGEX_TEXTO = /^[A-Z0-9ÑÁÉÍÓÚÜ\s\-\.\,\/\(\)\%\+\*\&\#\[\]]{5,50}$/;
 
-/**
- * Carga un elemento del Local Storage
- * @param {string} key 
- * @returns {any}
- */
-function cargarBD(key) {
-    return JSON.parse(localStorage.getItem(key) || "null");
-}
+/** @type {MetodoPago} */
+const METODO_TRANSFERENCIA = "TRANSFERENCIA";
+/** @type {MetodoPago} */
+const TARJETA_CREDITO = "TARJETA_CREDITO";
+/** @type {MetodoPago} */
+const TARJETA_DEBITO = "TARJETA_DEBITO";
+/** @type {MetodoPago} */
+const METODO_EFECTIVO = "EFECTIVO";
+/** @type {MetodoPago} */
+const METODO_CREDITO = "CREDITO";
+/** @type {MetodoPago} */
+const METODO_CHEQUE = "CHEQUE";
+/** @type {MetodoPago[]} */
+const METODO_PAGO = [METODO_TRANSFERENCIA, TARJETA_CREDITO, TARJETA_DEBITO, METODO_EFECTIVO, METODO_CREDITO, METODO_CHEQUE]
 
-/**
- * Guarda un objeto JS en Local Storage en JSON
- * @param {string} key 
- * @param {object} value 
- */
-function guardarBD(key, value) {
-    localStorage.setItem(key, JSON.stringify(value, (k, v) => typeof v === 'bigint' ? v.toString() : v));
-}
-
-/**
- * Elimina una elemento del Local Storage
- * @param {string} key 
- */
-function eliminarBD(key) {
-    localStorage.removeItem(key);
-}
+/** @type {EstadoPago} */
+const ESTADO_PENDIENTE = "PENDIENTE";
+/** @type {EstadoPago} */
+const ESTADO_PARCIAL = "PARCIAL";
+/** @type {EstadoPago} */
+const ESTADO_PAGADA = "PAGADA";
+/** @type {EstadoPago[]} */
+const ESTADO_PAGO = [ESTADO_PENDIENTE, ESTADO_PARCIAL, ESTADO_PAGADA];
 
 const PERMISOS = {
     // MODULO USUARIOS (Bits 1-6)
@@ -263,6 +264,32 @@ const PERMISOS = {
     COBROS_CREAR: 1n << 37n,
     COBROS_EDITAR: 1n << 38n
 };
+
+/**
+ * Carga un elemento del Local Storage
+ * @param {string} key 
+ * @returns {any}
+ */
+function cargarBD(key) {
+    return JSON.parse(localStorage.getItem(key) || "null");
+}
+
+/**
+ * Guarda un objeto JS en Local Storage en JSON
+ * @param {string} key 
+ * @param {object} value 
+ */
+function guardarBD(key, value) {
+    localStorage.setItem(key, JSON.stringify(value, (k, v) => typeof v === 'bigint' ? v.toString() : v));
+}
+
+/**
+ * Elimina una elemento del Local Storage
+ * @param {string} key 
+ */
+function eliminarBD(key) {
+    localStorage.removeItem(key);
+}
 
 /**
  * Crea un número de flags a partir de un array de permisos
@@ -1405,11 +1432,13 @@ function cargarDatosPrueba() {
     guardarCuentaPorPagar({ id: 5, purchase_id: 10, provider_id: 4, amount_total: 12000000, amount_paid: 5000000, amount_due: 7000000, status: "PARCIAL", expire_at: new Date(Date.now() + 86400000 * 30), created_at: new Date(), updated_at: null });
 
     // 13. Pagos
-    guardarPago({ id: 1, account_payable_id: 1, amount: 15000000, payment_method: "TRANSFERENCIA", obs: "Trf. Banco A", created_at: new Date(Date.now() - 86400000 * 3) });
-    guardarPago({ id: 2, account_payable_id: 1, amount: 20000000, payment_method: "EFECTIVO", obs: "Recibo 001", created_at: new Date(Date.now() - 86400000 * 1) });
-    guardarPago({ id: 3, account_payable_id: 2, amount: 20000000, payment_method: "CHEQUE", obs: "Chq. Basa", created_at: new Date(Date.now() - 86400000 * 1) });
-    guardarPago({ id: 4, account_payable_id: 2, amount: 34000000, payment_method: "EFECTIVO", obs: "Recibo 005", created_at: new Date() });
-    guardarPago({ id: 5, account_payable_id: 5, amount: 5000000, payment_method: "TRANSFERENCIA", obs: "Trf. Itau", created_at: new Date() });
+    guardarPago({ id: 1, account_payable_id: 1, amount: 15000000, payment_method: "TRANSFERENCIA", obs: "TRF. BANCO ATLAS NRO 54321", created_at: new Date(Date.now() - 86400000 * 3) });
+    guardarPago({ id: 2, account_payable_id: 1, amount: 20000000, payment_method: "EFECTIVO", obs: "RECIBO OFICIAL NRO 001-001", created_at: new Date(Date.now() - 86400000 * 1) });
+    guardarPago({ id: 3, account_payable_id: 2, amount: 20000000, payment_method: "CHEQUE", obs: "CHQ. BASA NRO 987654 AL DIA", created_at: new Date(Date.now() - 86400000 * 1) });
+    guardarPago({ id: 4, account_payable_id: 2, amount: 34000000, payment_method: "EFECTIVO", obs: "RECIBO OFICIAL NRO 005-001", created_at: new Date() });
+    guardarPago({ id: 5, account_payable_id: 5, amount: 5000000, payment_method: "TRANSFERENCIA", obs: "TRF. ITAU NRO TRANS 10293", created_at: new Date() });
+    guardarPago({ id: 6, account_payable_id: 3, amount: 1200000, payment_method: "TARJETA_CREDITO", obs: "TARJETA VISA - AUT: 456789", created_at: new Date() });
+    guardarPago({ id: 7, account_payable_id: 4, amount: 850000, payment_method: "TARJETA_DEBITO", obs: "MASTERCARD DEB - AUT: 123456", created_at: new Date() });
 
     // 14. CuentasPorCobrar (ventas a credito fueron id 2, 4, 7, 9)
     guardarCuentaPorCobrar({ id: 1, sale_id: 2, client_id: 3, amount_total: 6500000, amount_paid: 3500000, amount_due: 3000000, status: "PARCIAL", expire_at: new Date(Date.now() + 86400000 * 28), created_at: new Date(Date.now() - 86400000 * 2), updated_at: null });
