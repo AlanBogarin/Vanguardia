@@ -14,11 +14,19 @@
  * @property {string} title
  * @property {(function(any): any) | undefined} render
  * 
+ * @typedef {Object} AccionCustom
+ * @property {string} color Clase de Bootstrap para el botón (ej: 'btn-success')
+ * @property {string} content Contenido HTML interno (ej: '<i class="bi bi-eye"></i>')
+ * @property {string} title Texto descriptivo para el atributo title (tooltip)
+ * @property {string?} href URL opcional para redirección. Si existe, renderiza un tag <a> en lugar de <button>
+ * @property {string?} properties Atributos HTML adicionales opcionales (ej: 'onclick="..."')
+ * 
  * @typedef {Object} Acciones
  * @property {string?} edit Valor para onclick del botón
  * @property {string?} delete Valor para onclick del botón
  * @property {string?} enable Valor para onclick del botón
  * @property {string?} disable Valor para onclick del botón
+ * @property {AccionCustom[]?} customs Valor para onclick del botón
  * 
  * @typedef {Object} DataTableConfig
  * @property {boolean} searching Mostrar el buscador
@@ -112,7 +120,6 @@ function renderRaw(data) {
  * @param {DataTableConfig} config
  * @returns {any}
  */
-// 
 function crearDataTable(elementId, columns, config={}) {
     const searching = config?.searching ?? false;
     const buttons = config?.buttons ?? false;
@@ -132,6 +139,7 @@ function crearDataTable(elementId, columns, config={}) {
     if (actions) {
         columns.push({
             data: null,
+            title: "Acciones",
             render: data => {
                 const actionButtons = [];
                 const actionCallbacks = actions(data);
@@ -155,6 +163,19 @@ function crearDataTable(elementId, columns, config={}) {
                                 title="${action.title}">
                             <i class="bi ${action.icon}"></i>
                         </button>
+                    ` + actionsHtml;
+                }
+                for (const custom of actionCallbacks.customs || []) {
+                    const tag = custom.href ? 'a' : 'button';
+                    const hrefAttr = custom.href ? `href="${custom.href}"` : '';
+                    const propiedades = custom.properties ? custom.properties.trim() : '';
+                    actionsHtml = `
+                        <${tag} class="btn btn-sm ${custom.color.trim()} me-1"
+                                ${hrefAttr}
+                                ${propiedades}
+                                title="${custom.title.trim()}">
+                            ${custom.content.trim()}
+                        </${tag}>
                     ` + actionsHtml;
                 }
                 return `<div class="d-flex align-items-center">${actionsHtml}</div>`;
@@ -182,13 +203,6 @@ function crearDataTable(elementId, columns, config={}) {
                     className: "btn btn-sm btn-success",
                     exportOptions: { columns: exportColumns },
                     customize: xlsx => estilizarExcel(xlsx, exportTitle),
-                    // messageTop:
-                    //     'VANGUARDIA\n' +
-                    //     'Comercialización de Productos Informáticos y Tecnológicos\n' +
-                    //     'Dir.: Previstero Juan Carlos García / Madrinas de Guerra – Bo. Villa Armando – Concepción\n' +
-                    //     'Tel.: 0985-495-253\n\n' +
-                    //     exportTitle,
-                    // messageBottom: '\nReporte generado: ' + renderFecha(new Date())
                 },
                 {
                     extend: "pdfHtml5",

@@ -1,159 +1,169 @@
 /* ============================================================
-   VANGUARDIA - Tema Azul Marino Transparente
+   VANGUARDIA - Tema Azul Claro
    Archivo: vanguardia.css
    ============================================================ */
 
 /* ── Fondo general ── */
 body {
-     background: linear-gradient(135deg, #0a1628 0%, #0d2149 50%, #0a1628 100%);
+     background: linear-gradient(135deg, #dceeff 0%, #eaf4ff 50%, #d4eaff 100%);
      background-attachment: fixed;
      min-height: 100vh;
+     color: #0d2149;
 }
 
 /* ── Navbar ── */
 .sb-topnav {
-     background-color: rgba(10, 22, 60, 0.92) !important;
+     background-color: rgba(13, 33, 73, 0.95) !important;
      backdrop-filter: blur(8px);
-     border-bottom: 1px solid rgba(100, 160, 255, 0.2);
+     border-bottom: 1px solid rgba(100, 160, 255, 0.3);
 }
 
 /* ── Sidebar ── */
 .sb-sidenav {
-     background-color: rgba(10, 22, 60, 0.95) !important;
+     background-color: rgba(20, 50, 110, 0.96) !important;
      backdrop-filter: blur(8px);
-     border-right: 1px solid rgba(100, 160, 255, 0.15);
+     border-right: 1px solid rgba(100, 160, 255, 0.2);
 }
 .sb-sidenav-dark .sb-sidenav-menu .nav-link {
-     color: rgba(180, 210, 255, 0.85) !important;
+     color: rgba(210, 230, 255, 0.9) !important;
 }
 .sb-sidenav-dark .sb-sidenav-menu .nav-link:hover {
      color: #ffffff !important;
-     background-color: rgba(100, 160, 255, 0.15);
+     background-color: rgba(100, 160, 255, 0.2);
      border-radius: 6px;
 }
 .sb-sidenav-footer {
-     background-color: rgba(5, 15, 45, 0.95) !important;
-     border-top: 1px solid rgba(100, 160, 255, 0.2);
+     background-color: rgba(10, 28, 70, 0.97) !important;
+     border-top: 1px solid rgba(100, 160, 255, 0.25);
 }
 
 /* ── Título de página ── */
-h1{
-     color: #c8dcff;
+h1 {
+     color: #0d2149;
      font-weight: 700;
      letter-spacing: 1px;
-     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+     text-shadow: 0 1px 4px rgba(100, 160, 255, 0.2);
 }
 
 /* ── Tabla DataTables ── */
 table.dataTable thead th {
-     background-color: rgba(15, 40, 100, 0.85) !important;
-     color: #a8cbff !important;
-     border-color: rgba(100, 160, 255, 0.25) !important;
+     background-color: rgba(30, 80, 180, 0.9) !important;
+     color: #ffffff !important;
+     border-color: rgba(100, 160, 255, 0.35) !important;
      font-weight: 600;
 }
 table.dataTable tbody tr {
-     background-color: rgba(10, 25, 70, 0.55) !important;
-     color: #ddeeff;
+     background-color: rgba(255, 255, 255, 0.75) !important;
+     color: #0d2149;
 }
 table.dataTable tbody tr:nth-child(even) {
-     background-color: rgba(15, 35, 90, 0.65) !important;
+     background-color: rgba(220, 235, 255, 0.7) !important;
 }
 table.dataTable tbody tr:hover {
-     background-color: rgba(50, 100, 200, 0.4) !important;
-     color: #ffffff;
+     background-color: rgba(100, 160, 255, 0.25) !important;
+     color: #071530 !important;
 }
 table.dataTable tbody td {
-     border-color: rgba(100, 160, 255, 0.15) !important;
+     border-color: rgba(100, 160, 255, 0.2) !important;
+     color: #0d2149;
 }
 
 /* ── Contenedor de la tabla ── */
 .dataTables_wrapper {
-     background: rgba(8, 20, 60, 0.6);
+     background: rgba(255, 255, 255, 0.65);
      border-radius: 12px;
      padding: 16px;
      backdrop-filter: blur(6px);
-     border: 1px solid rgba(100, 160, 255, 0.18);
-     box-shadow: 0 8px 32px rgba(0, 0, 30, 0.5);
+     border: 1px solid rgba(100, 160, 255, 0.3);
+     box-shadow: 0 8px 32px rgba(30, 80, 180, 0.12);
 }
 
 /* ── Buscador y selector de cantidad ── */
 .dataTables_filter label,
 .dataTables_info,
 .dataTables_length label {
-     color: #a8cbff !important;
+     color: #0d2149 !important;
 }
 .dataTables_filter input,
 .dataTables_length select {
-     background-color: rgba(15, 40, 110, 0.7) !important;
-     border: 1px solid rgba(100, 160, 255, 0.3) !important;
-     color: #ddeeff !important;
+     background-color: rgba(255, 255, 255, 0.85) !important;
+     border: 1px solid rgba(30, 80, 180, 0.35) !important;
+     color: #0d2149 !important;
      border-radius: 6px;
 }
 
 /* ── Paginación ── */
 .paginate_button {
-     background: rgba(15, 40, 110, 0.7) !important;
-     border: 1px solid rgba(100, 160, 255, 0.25) !important;
-     color: #a8cbff !important;
+     background: rgba(255, 255, 255, 0.8) !important;
+     border: 1px solid rgba(30, 80, 180, 0.3) !important;
+     color: #1a4db5 !important;
      border-radius: 6px !important;
 }
 .paginate_button.current,
 .paginate_button.current:hover {
-     background: rgba(50, 100, 220, 0.85) !important;
+     background: rgba(30, 80, 200, 0.9) !important;
      color: #ffffff !important;
-     border-color: rgba(100, 160, 255, 0.5) !important;
+     border-color: rgba(30, 80, 200, 0.6) !important;
 }
 .paginate_button:hover {
-     background: rgba(50, 100, 200, 0.5) !important;
-     color: #ffffff !important;
+     background: rgba(100, 160, 255, 0.3) !important;
+     color: #071530 !important;
 }
 
 /* ── Footer ── */
 footer.bg-light {
-     background-color: rgba(8, 18, 50, 0.85) !important;
-     border-top: 1px solid rgba(100, 160, 255, 0.15);
-     color: #7aa8e0 !important;
+     background-color: rgba(220, 235, 255, 0.9) !important;
+     border-top: 1px solid rgba(30, 80, 180, 0.2);
+     color: #1a4db5 !important;
 }
 footer a {
-     color: #7aa8e0 !important;
+     color: #1a4db5 !important;
 }
 
 /* ── Modales ── */
 .modal-content {
-     background: rgba(10, 22, 65, 0.97);
-     border: 1px solid rgba(100, 160, 255, 0.25);
+     background: rgba(240, 248, 255, 0.98);
+     border: 1px solid rgba(30, 80, 180, 0.3);
      backdrop-filter: blur(12px);
-     box-shadow: 0 16px 48px rgba(0, 0, 30, 0.7);
+     box-shadow: 0 16px 48px rgba(30, 80, 180, 0.2);
+     color: #0d2149;
+}
+.modal-header {
+     border-bottom: 1px solid rgba(30, 80, 180, 0.2);
+}
+.modal-title {
+     color: #0d2149;
 }
 .modal-body label.form-label {
-     color: #a8cbff;
+     color: #0d2149;
+     font-weight: 500;
 }
 .modal-body .form-control,
 .modal-body .form-select {
-     background-color: rgba(15, 40, 110, 0.6);
-     border: 1px solid rgba(100, 160, 255, 0.3);
-     color: #ddeeff;
+     background-color: rgba(255, 255, 255, 0.9);
+     border: 1px solid rgba(30, 80, 180, 0.3);
+     color: #0d2149;
      border-radius: 6px;
 }
 .modal-body .form-control:focus,
 .modal-body .form-select:focus {
-     background-color: rgba(20, 55, 140, 0.7);
-     border-color: rgba(100, 160, 255, 0.7);
+     background-color: #ffffff;
+     border-color: rgba(30, 80, 200, 0.7);
      box-shadow: 0 0 0 3px rgba(80, 140, 255, 0.2);
-     color: #ffffff;
+     color: #0d2149;
 }
 .modal-body .form-control::placeholder {
-     color: rgba(150, 190, 255, 0.45);
+     color: rgba(13, 33, 73, 0.45);
 }
 .modal-footer {
-     border-top: 1px solid rgba(100, 160, 255, 0.2);
+     border-top: 1px solid rgba(30, 80, 180, 0.2);
 }
 
 /* ── Lista en modal eliminar ── */
 .list-group-item {
-     background-color: rgba(15, 40, 100, 0.6);
-     border-color: rgba(100, 160, 255, 0.2);
-     color: #ddeeff;
+     background-color: rgba(220, 235, 255, 0.8);
+     border-color: rgba(30, 80, 180, 0.25);
+     color: #0d2149;
 }
 
 /* ── Botón Nuevo (encima del buscador) ── */

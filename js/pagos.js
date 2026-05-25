@@ -63,11 +63,6 @@ function ventanaNuevoPago() {
     const cuentaElem = document.getElementById("cuenta_id");
     const saldoElem = document.getElementById("saldo_pendiente");
     const montoElem = document.getElementById("monto");
-    
-    cuentaElem.innerHTML = '<option value="">Seleccione una cuenta pendiente...</option>'
-        + cargarCuentasPorPagar().filter(c => c.status !== "PAGADA").map(c => `<option value="${c.id}">
-            ID: ${c.id} - ${cargarProveedor(c.provider_id).legal_name} (Pendiente: ${renderMoneda(c.amount_due)})
-        </option>`).join('');
     saldoElem.value = "";
     montoElem.value = "";
     modalNuevo.show();
@@ -164,10 +159,25 @@ function btnGuardarPago() {
 
 function cargarDatos() {
     cargarDataTable(tablaPagos, cargarPagos());
+    // Cargar Select
+    const cuentaElem = document.getElementById("cuenta_id");
+    cuentaElem.innerHTML = '<option value="">Seleccione una cuenta pendiente...</option>'
+        + cargarCuentasPorPagar().filter(c => c.status !== "PAGADA").map(c => `<option value="${c.id}">
+            ID: ${c.id} - ${cargarProveedor(c.provider_id).legal_name} (Pendiente: ${renderMoneda(c.amount_due)})
+        </option>`).join('');
+    // Precargar desde url
+    const cuenta_id = parseInt(new URLSearchParams(window.location.search).get('cuenta_id'));
+    if (!cuenta_id) return;
+    const cuenta = cargarCuentaPorPagar(cuenta_id);
+    if (!cuenta) return;
+    ventanaNuevoPago();
+    window.history.replaceState({}, document.title, window.location.pathname);
+    cuentaElem.value = cuenta_id;
+    onchangeCuenta();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (!validarPermiso(PERMISOS.PAGOS_EDITAR)) return;
+    if (!validarPermiso(PERMISOS.PAGOS_VER)) return;
     if (!tienePermisoSesion(PERMISOS.PAGOS_CREAR)) document.getElementById("btnModalNuevo").style.display = "none";
     cargarDatos();
 });

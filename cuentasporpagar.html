@@ -24,25 +24,12 @@
                 <div class="container-fluid px-4">
                     <div class="d-flex justify-content-between align-items-center mt-2 mb-2">
                         <h1 class="mb-0">Cuentas por Pagar</h1>
-                        <a href="pagos.html" class="btn btn-sm btn-success">
+                        <a class="btn btn-sm btn-success" id="verPagos" href="pagos.html">
                             <i class="bi bi-cash-coin me-1"></i> Ver Pagos
                         </a>
                     </div>
                     <div class="row">
                         <table id="tabla_cuentas_pagar" class="display compact" style="width:100%">
-                            <thead>
-                                <tr>
-                                    <th>Id Cuenta</th>
-                                    <th>Id Compra</th>
-                                    <th>Proveedor</th>
-                                    <th>Total a Pagar</th>
-                                    <th>Monto Pagado</th>
-                                    <th>Saldo Pendiente</th>
-                                    <th>Estado</th>
-                                    <th>Vencimiento</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
                         </table>
                     </div>
                 </div>
@@ -51,7 +38,7 @@
         </div>
     </div>
 
-    <!-- Modal Detalle Cuenta (Opcional, para ver historial si existiera, pero por ahora solo informativo) -->
+    <!-- Modal Detalle Cuenta -->
     <div class="modal fade" id="modalDetalleCuenta" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -61,10 +48,10 @@
                 </div>
                 <div class="modal-body">
                     <ul class="list-group mb-3">
-                        <li class="list-group-item"><strong>Proveedor:</strong> <span id="det_proveedor"></span></li>
-                        <li class="list-group-item"><strong>ID Compra:</strong> <span id="det_compra"></span></li>
-                        <li class="list-group-item"><strong>Fecha Emisión:</strong> <span id="det_emision"></span></li>
-                        <li class="list-group-item"><strong>Vencimiento:</strong> <span id="det_vencimiento"></span></li>
+                        <li class="list-group-item"><strong>Proveedor:</strong> <span id="detalle_proveedor"></span></li>
+                        <li class="list-group-item"><strong>ID Compra:</strong> <span id="detalle_compra"></span></li>
+                        <li class="list-group-item"><strong>Fecha Emisión:</strong> <span id="detalle_emision"></span></li>
+                        <li class="list-group-item"><strong>Vencimiento:</strong> <span id="detalle_vencimiento"></span></li>
                     </ul>
                 </div>
                 <div class="modal-footer">
@@ -89,6 +76,7 @@
     <script src="dt/es-ES.js"></script>
     <script src="js/bd.js"></script>
     <script src="js/alertas.js"></script>
+    <script src="js/tablas.js"></script>
     <script src="js/cuentasporpagar.js"></script>
 </body>
 </html>
