@@ -21,7 +21,7 @@ const tablaCuentas = crearDataTable("tabla_cuentas_pagar", [
     })[data] ?? "bg-secondary"}">${data}</span>`},
     { data: "expire_at", title: "Fecha de Vencimiento", render: renderFecha },
     { data: "created_at", title: "Fecha de Creación", render: renderFecha },
-    // { data: "updated_at", title: "Fecha de Modificación", render: renderFecha }
+    { data: "updated_at", title: "Fecha de Modificación", render: renderFecha }
 ], {
     buttons: true,
     pageLength: 10,

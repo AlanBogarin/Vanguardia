@@ -9,6 +9,11 @@
  *   alertas.js → validarSesion, mensajeSuccess, mensajeError, mensajeWarn,
  *                confirmar, alertar
  *   tablas.js  → crearDataTable, renderRaw, renderString, renderMoneda, renderFecha
+ * 
+ * @typedef {import('jquery')}
+ * @typedef {import('./bd')}
+ * @typedef {import('./alertas')}
+ * @typedef {import('./tablas')}
  */
 
 // ─────────────────────────────────────────────────────────────
@@ -28,22 +33,32 @@ let _uidCounter  = 0;
 // ─────────────────────────────────────────────────────────────
 const tablaVentas = crearDataTable("tabla_ventas", [
     { data: "id",           title: "Id Venta",     render: renderRaw    },
-    { data: "client_id",    title: "Cliente",       render: data => renderString(cargarCliente(data)?.legal_name ?? "—") },
-    { data: "user_id",      title: "Usuario",       render: data => renderString(cargarUsuario(data)?.username  ?? "—").toLowerCase() },
+    { data: "client_id",    title: "Cliente",       render: data => renderString(cargarCliente(data).legal_name) },
+    { data: "user_id",      title: "Usuario",       render: data => renderString(cargarUsuario(data).username).toLowerCase() },
     { data: "payment_type", title: "Tipo Pago",     render: renderString },
     { data: "amount",       title: "Total",         render: renderMoneda },
     { data: "obs",          title: "Observaciones", render: renderString },
-    { data: "created_at",   title: "Fecha",         render: renderFecha  },
-    {
-        data: null,
-        title: "Acciones",
-        orderable: false,
-        render: (data, type, row) =>
-            `<button class="btn btn-sm btn-info" onclick="abrirDetallesVenta(${row.id})" title="Ver detalles">
-                <i class="bi bi-eye"></i>
-             </button>`
-    }
-]);
+    { data: "created_at",   title: "Fecha",         render: renderFecha  }
+], {
+    buttons: true, 
+    pageLength: 10,
+    searching: true,
+    exportTitle: "LISTADO DE USUARIOS",
+    actions: (venta) => ({
+        edit: null,
+        delete: null,
+        enable: null,
+        disable: null,
+        customs: [
+            {
+                color: "btn-info",
+                content: '<i class="bi bi-eye"></i>',
+                properties: `onclick="abrirDetallesVenta(${venta.id})"`,
+                title: "Ver detalles"
+            }
+        ]
+    })
+});
 
 // ─────────────────────────────────────────────────────────────
 // 4. INICIALIZACIÓN
@@ -59,7 +74,7 @@ $(document).ready(function () {
 // 5. REFRESCO DE TABLA
 // ─────────────────────────────────────────────────────────────
 function refrescarTablaVentas() {
-    tablaVentas.clear().rows.add(cargarVentas()).draw();
+    cargarDataTable(tablaVentas, cargarVentas());
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -91,7 +106,7 @@ function bindEventos() {
     $("#producto_select").on("change", function () {
         const opt = $(this).find(":selected");
         $("#precio_input").val(opt.data("precio") || "");
-        $("#cantidad_input").val("").focus();
+        $("#cantidad_input").val("1").focus();
     });
 
     // Botón agregar producto al detalle
