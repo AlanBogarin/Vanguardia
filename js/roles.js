@@ -3,28 +3,10 @@
 // =============================================
 
 // Verificar sesión activa al cargar la página
-window.addEventListener("DOMContentLoaded", () => {
-    verificarSesion();
-    inicializarTabla();
-    cargarTablaRoles();
+document.addEventListener("DOMContentLoaded", () => {
+    if (!validarPermiso(PERMISOS.ROLES_VER)) return;
+    cargarDatos();
 });
-
-/**
- * Redirige al login si no hay sesión activa o si expiró
- */
-function verificarSesion() {
-    const sesion = cargarSesion();
-    if (!sesion) {
-        window.location.href = "login.html";
-        return;
-    }
-    const ahora = new Date();
-    const expira = new Date(sesion.expire_at);
-    if (ahora > expira) {
-        eliminarSesion();
-        window.location.href = "login.html";
-    }
-}
 
 /**
  * Cierra la sesión y redirige al login
@@ -38,63 +20,28 @@ function cerrarSesion() {
 //  DATATABLE
 // =============================================
 
-let dataTable = null;
-
-/**
- * Inicializa el DataTable vacío
- */
-function inicializarTabla() {
-    dataTable = $("#tabla_roles").DataTable({
-    language: {
-        lengthMenu: "Mostrar _MENU_ registros por página",
-        zeroRecords: "No se encontraron resultados",
-        info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
-        infoEmpty: "Mostrando 0 a 0 de 0 registros",
-        infoFiltered: "(filtrado de _MAX_ registros totales)",
-        search: "Buscar:",
-        paginate: {
-            first: "Primero",
-            last: "Último",
-            next: "Siguiente",
-            previous: "Anterior"
-        }
-    },
-        columns: [
-            { data: "id",          title: "ID",                   width: "5%" },
-            { data: "name",        title: "Nombre",               width: "15%" },
-            { data: "description", title: "Descripción",          width: "35%" },
-            { data: "created_at",  title: "Fecha de Creación",    width: "17%" },
-            { data: "updated_at",  title: "Fecha de Modificación",width: "17%" },
-            { data: "acciones",    title: "Acciones",             width: "11%", orderable: false }
-        ],
-        order: [[0, "asc"]],
-        pageLength: 10
-    });
-}
+const tablaRoles = crearDataTable("tabla_roles", [
+    { data: "id",          title: "ID",                    render: renderRaw  },
+    { data: "name",        title: "Nombre",                render: renderString },
+    { data: "description", title: "Descripción",           render: renderString },
+    { data: "created_at",  title: "Fecha de Creación",     render: renderFecha },
+    { data: "updated_at",  title: "Fecha de Modificación", render: renderFecha },
+], {
+    buttons: true,
+    searching: true,
+    pageLength: 10,
+    exportTitle: "LISTADO DE ROLES",
+    actions: rol => ({
+        edit:   `abrirModalEditar(${rol.id})`,
+        delete: `abrirModalEliminar(${rol.id})`,
+    })
+});
 
 /**
  * Carga (o recarga) los datos en el DataTable
  */
-function cargarTablaRoles() {
-    const roles = cargarRoles();
-    const filas = roles.map(rol => ({
-        id: rol.id,
-        name: rol.name,
-        description: rol.description || "—",
-        created_at: formatearFecha(rol.created_at),
-        updated_at: rol.updated_at ? formatearFecha(rol.updated_at) : "—",
-        acciones: `
-            <button class="btn btn-warning btn-sm me-1" title="Editar"
-                    onclick="abrirModalEditar(${rol.id})">
-                <i class="bi bi-pencil"></i>
-            </button>
-            <button class="btn btn-danger btn-sm" title="Eliminar"
-                    onclick="abrirModalEliminar(${rol.id})">
-                <i class="bi bi-trash"></i>
-            </button>`
-    }));
-
-    dataTable.clear().rows.add(filas).draw();
+function cargarDatos() {
+    cargarDataTable(tablaRoles, cargarRoles());
 }
 
 // =============================================
@@ -108,7 +55,7 @@ function abrirModalNuevo() {
     limpiarFormulario();
     document.getElementById("modalRolLabel").textContent = "Nuevo Rol";
     document.getElementById("rol_id").value = "";
-    generarCheckboxesPermisos(0);
+    generarCheckboxesPermisos(0n);
     const modal = new bootstrap.Modal(document.getElementById("modalRol"));
     modal.show();
 }
@@ -132,7 +79,7 @@ function abrirModalEditar(id) {
     document.getElementById("rol_id").value = rol.id;
     document.getElementById("rol_nombre").value = rol.name;
     document.getElementById("rol_descripcion").value = rol.description || "";
-    generarCheckboxesPermisos(rol.flags || 0);
+    generarCheckboxesPermisos(rol.flags || 0n);
     const modal = new bootstrap.Modal(document.getElementById("modalRol"));
     modal.show();
 }
@@ -162,17 +109,15 @@ function guardarRolForm() {
         return;
     }
 
-    // Calcular flags
-    let nuevosFlags = 0;
-    const checkboxes = document.querySelectorAll(".chk-permiso");
-    checkboxes.forEach(chk => {
+    // Calcular flags (BigInt)
+    let nuevosFlags = 0n;
+    document.querySelectorAll(".chk-permiso").forEach(chk => {
         if (chk.checked) {
-            nuevosFlags = agregarPermiso(nuevosFlags, parseInt(chk.value));
+            nuevosFlags = nuevosFlags | BigInt(chk.value);
         }
     });
 
     if (esNuevo) {
-        // Generar nuevo ID autoincremental
         const maxId = roles.length > 0 ? Math.max(...roles.map(r => r.id)) : 0;
         guardarRol({
             id: maxId + 1,
@@ -197,7 +142,7 @@ function guardarRolForm() {
     }
 
     bootstrap.Modal.getInstance(document.getElementById("modalRol")).hide();
-    cargarTablaRoles();
+    cargarDatos();
 }
 
 // =============================================
@@ -226,7 +171,6 @@ function abrirModalEliminar(id) {
 function confirmarEliminar() {
     const id = parseInt(document.getElementById("id_a_eliminar").value);
 
-    // Verificar que no haya usuarios con este rol
     const usuarios = cargarUsuarios();
     const tieneUsuarios = usuarios.some(u => u.rol_id === id);
     if (tieneUsuarios) {
@@ -238,7 +182,7 @@ function confirmarEliminar() {
     eliminarRol(id);
     bootstrap.Modal.getInstance(document.getElementById("modalEliminar")).hide();
     alertify.success("Rol eliminado correctamente.");
-    cargarTablaRoles();
+    cargarDatos();
 }
 
 // =============================================
@@ -271,22 +215,11 @@ function validarFormulario() {
     return valido;
 }
 
-/**
- * Marca un campo como inválido y muestra el mensaje de error
- * @param {string} campoId 
- * @param {string} errorId 
- * @param {string} mensaje 
- */
 function marcarInvalido(campoId, errorId, mensaje) {
-    const campo = document.getElementById(campoId);
-    const error = document.getElementById(errorId);
-    campo.classList.add("is-invalid");
-    error.textContent = mensaje;
+    document.getElementById(campoId).classList.add("is-invalid");
+    document.getElementById(errorId).textContent = mensaje;
 }
 
-/**
- * Limpia todas las validaciones del formulario
- */
 function limpiarValidaciones() {
     ["rol_nombre", "rol_descripcion"].forEach(id => {
         document.getElementById(id).classList.remove("is-invalid");
@@ -296,9 +229,6 @@ function limpiarValidaciones() {
     });
 }
 
-/**
- * Limpia el formulario completo
- */
 function limpiarFormulario() {
     document.getElementById("rol_id").value = "";
     document.getElementById("rol_nombre").value = "";
@@ -307,56 +237,85 @@ function limpiarFormulario() {
 }
 
 // =============================================
-//  UTILIDADES
+//  PERMISOS (CHECKBOXES)
 // =============================================
-
-/**
- * Formatea una fecha para mostrar en la tabla
- * @param {Date|string} fecha 
- * @returns {string}
- */
-function formatearFecha(fecha) {
-    if (!fecha) return "—";
-    const d = new Date(fecha);
-    if (isNaN(d)) return "—";
-    return d.toLocaleDateString("es-PY", {
-        day: "2-digit", month: "2-digit", year: "numeric",
-        hour: "2-digit", minute: "2-digit"
-    });
-}
 
 function generarCheckboxesPermisos(flagsActuales) {
     const contenedor = document.getElementById("contenedor_permisos");
     contenedor.innerHTML = "";
 
-    Object.keys(PERMISOS).forEach(key => {
-        const valorPermiso = PERMISOS[key];
-        const tienePermisoActualmente = tienePermiso(flagsActuales, valorPermiso);
-        
-        // Formatear nombre para mostrarlo amigable
-        const nombreAmigable = key.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+    // Agrupar permisos por módulo
+    const modulos = {
+        "Usuarios": ["ROLES_VER", "ROLES_CREAR", "ROLES_EDITAR", "USUARIOS_VER", "USUARIOS_CREAR", "USUARIOS_EDITAR"],
+        "Inventario": ["CATEGORIAS_VER", "CATEGORIAS_CREAR", "CATEGORIAS_EDITAR", "MARCAS_VER", "MARCAS_CREAR", "MARCAS_EDITAR", "PRODUCTOS_VER", "PRODUCTOS_CREAR", "PRODUCTOS_EDITAR"],
+        "Compras": ["PROVEEDORES_VER", "PROVEEDORES_CREAR", "PROVEEDORES_EDITAR", "COMPRAS_VER", "COMPRAS_CREAR", "COMPRAS_EDITAR"],
+        "Ventas": ["CLIENTES_VER", "CLIENTES_CREAR", "CLIENTES_EDITAR", "VENTAS_VER", "VENTAS_CREAR", "VENTAS_EDITAR"],
+        "Finanzas": ["CUENTAS_PAGAR_VER", "CUENTAS_PAGAR_CREAR", "CUENTAS_PAGAR_EDITAR", "PAGOS_VER", "PAGOS_CREAR", "PAGOS_EDITAR", "CUENTAS_COBRAR_VER", "CUENTAS_COBRAR_CREAR", "CUENTAS_COBRAR_EDITAR", "COBROS_VER", "COBROS_CREAR", "COBROS_EDITAR"]
+    };
 
-        const col = document.createElement("div");
-        col.className = "col-md-6 mb-2";
+    Object.entries(modulos).forEach(([nombreModulo, claves]) => {
+        const colModulo = document.createElement("div");
+        colModulo.className = "col-md-4 mb-3";
 
-        const formCheck = document.createElement("div");
-        formCheck.className = "form-check form-switch";
+        const card = document.createElement("div");
+        card.className = "card h-100";
 
-        const input = document.createElement("input");
-        input.className = "form-check-input chk-permiso";
-        input.type = "checkbox";
-        input.id = `chk-${key}`;
-        input.value = valorPermiso;
-        input.checked = tienePermisoActualmente;
+        const cardHeader = document.createElement("div");
+        cardHeader.className = "card-header bg-success text-white py-1 px-2 d-flex justify-content-between align-items-center";
+        cardHeader.innerHTML = `
+            <small class="fw-bold"><i class="bi bi-shield-check me-1"></i>${nombreModulo}</small>
+            <div>
+                <button type="button" class="btn btn-xs btn-light btn-sm py-0 px-1 me-1" style="font-size:0.7rem"
+                    onclick="seleccionarModulo('${nombreModulo}', true)">Todo</button>
+                <button type="button" class="btn btn-xs btn-outline-light btn-sm py-0 px-1" style="font-size:0.7rem"
+                    onclick="seleccionarModulo('${nombreModulo}', false)">Ninguno</button>
+            </div>
+        `;
 
-        const label = document.createElement("label");
-        label.className = "form-check-label";
-        label.htmlFor = `chk-${key}`;
-        label.textContent = nombreAmigable;
+        const cardBody = document.createElement("div");
+        cardBody.className = "card-body py-2 px-3";
 
-        formCheck.appendChild(input);
-        formCheck.appendChild(label);
-        col.appendChild(formCheck);
-        contenedor.appendChild(col);
+        claves.forEach(key => {
+            const valorPermiso = PERMISOS[key];
+            if (!valorPermiso) return;
+            const tienePermisoActualmente = tienePermiso(flagsActuales, valorPermiso);
+            const nombreAmigable = key.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+
+            const formCheck = document.createElement("div");
+            formCheck.className = "form-check form-switch mb-1";
+            formCheck.dataset.modulo = nombreModulo;
+
+            const input = document.createElement("input");
+            input.className = "form-check-input chk-permiso";
+            input.type = "checkbox";
+            input.id = `chk-${key}`;
+            input.value = valorPermiso.toString();
+            input.checked = tienePermisoActualmente;
+
+            const label = document.createElement("label");
+            label.className = "form-check-label small";
+            label.htmlFor = `chk-${key}`;
+            label.textContent = nombreAmigable;
+
+            formCheck.appendChild(input);
+            formCheck.appendChild(label);
+            cardBody.appendChild(formCheck);
+        });
+
+        card.appendChild(cardHeader);
+        card.appendChild(cardBody);
+        colModulo.appendChild(card);
+        contenedor.appendChild(colModulo);
+    });
+}
+
+/**
+ * Selecciona o deselecciona todos los permisos de un módulo
+ * @param {string} modulo 
+ * @param {boolean} valor 
+ */
+function seleccionarModulo(modulo, valor) {
+    document.querySelectorAll(`.form-check[data-modulo="${modulo}"] .chk-permiso`).forEach(chk => {
+        chk.checked = valor;
     });
 }

@@ -1,108 +1,70 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Vanguardia - Roles</title>
+    <link rel="icon" href="img/logo_x16.jpg">
+    <link href="menu/styles.css" rel="stylesheet"/>
     <link rel="stylesheet" href="bt/bootstrap.min.css">
     <link rel="stylesheet" href="bt-icons/bootstrap-icons.min.css">
     <link rel="stylesheet" href="alert/alertify.min.css">
     <link rel="stylesheet" href="alert/themes/default.min.css">
     <link rel="stylesheet" href="dt/datatables.min.css">
+    <link rel="stylesheet" href="dt/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="dt/buttons.dataTables.min.css">
+    <link rel="stylesheet" href="css/vanguardia.css">
 </head>
-<body class="bg-light">
-
-    <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
-        <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="#">
-                <i class="bi bi-pc-display"></i> Vanguardia
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="clientes.html"><i class="bi bi-people"></i> Clientes</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="proveedores.html"><i class="bi bi-truck"></i> Proveedores</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="articulos.html"><i class="bi bi-box-seam"></i> Artículos</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="usuarios.html"><i class="bi bi-person-badge"></i> Usuarios</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="roles.html"><i class="bi bi-shield-lock"></i> Roles</a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="cerrarSesion()">
-                            <i class="bi bi-box-arrow-right"></i> Cerrar sesión
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <!-- CONTENIDO PRINCIPAL -->
-    <div class="container-fluid mt-4 px-4">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-shield-lock"></i> Mantenimiento de Roles</h5>
-                <button class="btn btn-light btn-sm" onclick="abrirModalNuevo()">
-                    <i class="bi bi-plus-circle"></i> Nuevo Rol
-                </button>
-            </div>
-            <div class="card-body">
-                <table id="tabla_roles" class="display table table-striped table-bordered table-hover" style="width:100%">
-                    <thead class="table-primary">
-                        <tr>
-                            <th>ID</th>
-                            <th>Nombre</th>
-                            <th>Descripción</th>
-                            <th>Fecha de Creación</th>
-                            <th>Fecha de Modificación</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
+<body class="sb-nav-fixed">
+    <div id="contenedor-navbar"></div>
+    <div id="layoutSidenav">
+        <div id="contenedor-sidebar"></div>
+        <div id="layoutSidenav_content">
+            <main>
+                <div class="container-fluid px-4">
+                    <div class="d-flex justify-content-between align-items-center mt-2 mb-2">
+                        <h1 class="mb-0">Roles</h1>
+                        <button class="btn btn-sm btn-success" onclick="abrirModalNuevo()">
+                            <i class="bi bi-plus-circle me-1"></i> Nuevo Rol
+                        </button>
+                    </div>
+                    <div class="row">
+                        <table id="tabla_roles" class="display compact" style="width:100%"></table>
+                    </div>
+                </div>
+            </main>
+            <footer class="py-4 bg-light mt-auto" id="contenedor-footer"></footer>
         </div>
     </div>
 
     <!-- MODAL NUEVO / EDITAR ROL -->
     <div class="modal fade" id="modalRol" tabindex="-1" aria-hidden="true"
          data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="modalRolLabel">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
+                <div class="modal-header bg-success text-white">
                     <h5 class="modal-title" id="modalRolLabel">Nuevo Rol</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="rol_id">
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold" for="rol_nombre">
-                            Nombre <span class="text-danger">*</span>
-                        </label>
-                        <input class="form-control text-uppercase" id="rol_nombre" type="text"
-                               maxlength="30" placeholder="Ej: ADMINISTRADOR">
-                        <div class="invalid-feedback" id="error_nombre"></div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold" for="rol_nombre">
+                                Nombre <span class="text-danger">*</span>
+                            </label>
+                            <input class="form-control text-uppercase" id="rol_nombre" type="text"
+                                   maxlength="30" placeholder="Ej: ADMINISTRADOR">
+                            <div class="invalid-feedback" id="error_nombre"></div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold" for="rol_descripcion">Descripción</label>
+                            <textarea class="form-control" id="rol_descripcion" rows="1"
+                                      maxlength="100" placeholder="Descripción del rol..."></textarea>
+                            <div class="invalid-feedback" id="error_descripcion"></div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold" for="rol_descripcion">Descripción</label>
-                        <textarea class="form-control" id="rol_descripcion" rows="3"
-                                  maxlength="100" placeholder="Descripción del rol..."></textarea>
-                        <div class="invalid-feedback" id="error_descripcion"></div>
-                    </div>
-                    <div class="mb-3">
+                    <div class="mb-2">
                         <label class="form-label fw-semibold">Permisos del Rol</label>
                         <div class="row" id="contenedor_permisos">
                             <!-- Los checkboxes de permisos se generarán dinámicamente -->
@@ -160,15 +122,22 @@
         });
     </script>
 
-    <!-- LIB EXTERNAS (igual que el profe) -->
-    <script src="bt/bootstrap.min.js"></script>
+    <script src="menu/scripts.js"></script>
+    <script src="bt/bootstrap.bundle.min.js"></script>
     <script src="alert/alertify.min.js"></script>
     <script src="dt/jquery-3.7.1.js"></script>
     <script src="dt/datatables.min.js"></script>
+    <script src="dt/jquery.dataTables.min.js"></script>
+    <script src="dt/dataTables.buttons.min.js"></script>
+    <script src="dt/buttons.print.min.js"></script>
+    <script src="dt/buttons.html5.min.js"></script>
+    <script src="dt/jszip.min.js"></script>
+    <script src="dt/pdfmake.min.js"></script>
+    <script src="dt/vfs_fonts.js"></script>
     <script src="dt/es-ES.js"></script>
-    <!-- SCRIPTS -->
     <script src="js/bd.js"></script>
+    <script src="js/alertas.js"></script>
+    <script src="js/tablas.js"></script>
     <script src="js/roles.js"></script>
-
 </body>
 </html>
