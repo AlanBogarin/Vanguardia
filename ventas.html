@@ -16,30 +16,26 @@
     <link rel="stylesheet" href="css/vanguardia.css">
 </head>
 <body class="sb-nav-fixed">
-    <div id="contenedor-navbar">
-        <!-- ========================================================= -->
-        <!-- 1. CONTENEDOR DINÁMICO PARA LA BARRA SUPERIOR (NAVBAR)    -->
-        <!-- Este div vacío será llenado por JavaScript usando fetch() -->
-        <!-- con el contenido del archivo 'navbar.html'.               -->
-        <!-- ========================================================= -->
-    </div>
+
+    <div id="contenedor-navbar"></div>
+
     <div id="layoutSidenav">
-        <div id="contenedor-sidebar">
-            <!-- ========================================================= -->
-            <!-- 2. CONTENEDOR DINÁMICO PARA EL MENÚ LATERAL (SIDEBAR)     -->
-            <!-- Este div vacío será llenado por JavaScript usando fetch() -->
-            <!-- con el contenido del archivo 'sidebar.html'.              -->
-            <!-- ========================================================= -->
-        </div>
+        <div id="contenedor-sidebar"></div>
+
         <div id="layoutSidenav_content">
             <main>
                 <div class="container-fluid px-4">
+
+                    <!-- Encabezado -->
                     <div class="d-flex justify-content-between align-items-center mt-2 mb-2">
                         <h1 class="mb-0">Ventas</h1>
-                        <button class="btn btn-sm btn-primary" onclick="$('#modalNuevaVenta').modal('show')">
+                        <button class="btn btn-sm btn-primary"
+                                data-bs-toggle="modal" data-bs-target="#modalNuevaVenta">
                             <i class="bi bi-cart-check-fill me-1"></i> Nueva Venta
                         </button>
                     </div>
+
+                    <!-- Tabla principal -->
                     <div class="row">
                         <table id="tabla_ventas" class="display compact" style="width:100%">
                             <thead>
@@ -49,139 +45,254 @@
                                     <th>Usuario</th>
                                     <th>Tipo Pago</th>
                                     <th>Total</th>
+                                    <th>Observaciones</th>
                                     <th>Fecha</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
                         </table>
                     </div>
+
                 </div>
             </main>
-            <footer class="py-4 bg-light mt-auto" id="contenedor-footer">
-                <!-- ========================================================= -->
-                <!-- 3. CONTENEDOR DINÁMICO PARA EL PIE DE PAGINA (FOOTER)     -->
-                <!-- Este div vacío será llenado por JavaScript usando fetch() -->
-                <!-- con el contenido del archivo 'footer.html'.               -->
-                <!-- ========================================================= -->
-            </footer>
+
+            <footer class="py-4 bg-light mt-auto" id="contenedor-footer"></footer>
         </div>
     </div>
 
-    <!-- Modal Nueva Venta -->
-    <div class="modal fade modal-lg" id="modalNuevaVenta" tabindex="-1" aria-labelledby="modalNuevaVentaLabel" aria-hidden="true" data-bs-backdrop="static">
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- MODAL NUEVA VENTA                                       -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="modal fade modal-lg" id="modalNuevaVenta" tabindex="-1"
+         aria-labelledby="modalNuevaVentaLabel" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog">
             <form id="formNuevaVenta" class="modal-content">
                 <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="modalNuevaVentaLabel"><i class="bi bi-cart-check-fill"></i> Registrar Nueva Venta</h5>
+                    <h5 class="modal-title" id="modalNuevaVentaLabel">
+                        <i class="bi bi-cart-check-fill"></i> Registrar Nueva Venta
+                    </h5>
                 </div>
                 <div class="modal-body">
+
                     <div class="row mb-3">
+                        <!-- Cliente -->
                         <div class="col-md-6">
-                            <label class="form-label">Cliente</label>
-                            <select id="client_id" class="form-select" required></select>
+                            <label class="form-label">Cliente <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <select id="client_id" class="form-select" required>
+                                    <option value="">Seleccione un cliente...</option>
+                                </select>
+                                <button type="button" class="btn btn-outline-success"
+                                        title="Registrar nuevo cliente"
+                                        onclick="abrirModalNuevoCliente()">
+                                    <i class="bi bi-person-plus-fill"></i>
+                                </button>
+                            </div>
                         </div>
+                        <!-- Tipo de Pago -->
                         <div class="col-md-6">
-                            <label class="form-label">Tipo de Pago</label>
+                            <label class="form-label">Tipo de Pago <span class="text-danger">*</span></label>
                             <select id="payment_type" class="form-select" required>
                                 <option value="CONTADO">CONTADO</option>
                                 <option value="CREDITO">CRÉDITO</option>
+                                <option value="TRANSFERENCIA">TRANSFERENCIA</option>
+                                <option value="TARJETA_CREDITO">TARJETA CRÉDITO</option>
+                                <option value="TARJETA_DEBITO">TARJETA DÉBITO</option>
+                                <option value="CHEQUE">CHEQUE</option>
                             </select>
                         </div>
                     </div>
+
+                    <!-- Observaciones -->
                     <div class="mb-3">
-                        <label class="form-label">Observaciones</label>
-                        <input type="text" id="obs" class="form-control text-uppercase" maxlength="100">
+                        <label class="form-label">Observaciones / Nro. Comprobante</label>
+                        <input type="text" id="obs" class="form-control text-uppercase" maxlength="100"
+                               placeholder="Ej: FACTURA 001-001-0000123">
                     </div>
-                    
+
                     <hr>
                     <h6 class="fw-bold">Detalle de Productos</h6>
-                    <div class="row mb-2">
+
+                    <!-- Fila agregar producto -->
+                    <div class="row mb-2 align-items-end g-2">
                         <div class="col-md-5">
-                            <select id="producto_select" class="form-select">
+                            <label class="form-label small mb-1">Producto</label>
+                            <select id="producto_select" class="form-select form-select-sm">
                                 <option value="">Seleccione un producto...</option>
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <input type="number" id="cantidad_input" class="form-control" placeholder="Cantidad" min="1">
+                            <label class="form-label small mb-1">Cantidad</label>
+                            <input type="number" id="cantidad_input" class="form-control form-control-sm"
+                                   placeholder="Cantidad" min="1">
                         </div>
                         <div class="col-md-3">
-                            <input type="number" id="precio_input" class="form-control" placeholder="Precio Unit." readonly>
+                            <label class="form-label small mb-1">Precio Unit. (Gs.)</label>
+                            <input type="number" id="precio_input" class="form-control form-control-sm"
+                                   placeholder="Precio de venta" readonly>
                         </div>
                         <div class="col-md-1">
-                            <button type="button" class="btn btn-success w-100" id="btnAgregarDetalle"><i class="bi bi-plus-lg"></i></button>
+                            <button type="button" class="btn btn-success btn-sm w-100"
+                                    id="btnAgregarDetalle" title="Agregar producto">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
                         </div>
                     </div>
-                    
+
+                    <!-- Tabla detalle -->
                     <div class="table-responsive">
                         <table class="table table-sm table-bordered" id="tabla_detalles_venta">
                             <thead class="table-light">
                                 <tr>
                                     <th>Producto</th>
-                                    <th>Cantidad</th>
-                                    <th>Precio Unit.</th>
-                                    <th>Subtotal</th>
-                                    <th></th>
+                                    <th class="text-center">Cantidad</th>
+                                    <th class="text-end">Precio Unit.</th>
+                                    <th class="text-end">Subtotal</th>
+                                    <th class="text-center" style="width:50px"></th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <!-- Detalles dinámicos -->
-                            </tbody>
+                            <tbody></tbody>
                             <tfoot>
-                                <tr>
-                                    <th colspan="3" class="text-end">Total:</th>
-                                    <th id="total_venta">0</th>
+                                <tr class="table-light fw-bold">
+                                    <th colspan="3" class="text-end">Total (Gs.):</th>
+                                    <th id="total_venta" class="text-end">0</th>
                                     <th></th>
                                 </tr>
                             </tfoot>
                         </table>
                     </div>
-                </div>
+
+                </div><!-- /modal-body -->
                 <div class="modal-footer">
-                    <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-floppy"></i> Guardar Venta</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-floppy"></i> Guardar Venta
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Modal Ver Detalles Venta -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- MODAL VER DETALLES DE VENTA                            -->
+    <!-- ═══════════════════════════════════════════════════════ -->
     <div class="modal fade modal-lg" id="modalVerDetalles" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header bg-info text-white">
-                    <h5 class="modal-title"><i class="bi bi-info-circle"></i> Detalles de la Venta #<span id="ver_venta_id"></span></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title">
+                        <i class="bi bi-info-circle"></i> Detalles de la Venta #<span id="ver_venta_id"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white"
+                            data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6"><strong>Cliente:</strong> <span id="ver_cliente"></span></div>
-                        <div class="col-md-6"><strong>Fecha:</strong> <span id="ver_fecha"></span></div>
-                        <div class="col-md-6"><strong>Usuario:</strong> <span id="ver_usuario"></span></div>
+                    <div class="row mb-3 g-2">
+                        <div class="col-md-6"><strong>Cliente:</strong>   <span id="ver_cliente"></span></div>
+                        <div class="col-md-6"><strong>Fecha:</strong>     <span id="ver_fecha"></span></div>
+                        <div class="col-md-6"><strong>Usuario:</strong>   <span id="ver_usuario"></span></div>
                         <div class="col-md-6"><strong>Tipo Pago:</strong> <span id="ver_tipo_pago"></span></div>
-                        <div class="col-12 mt-2"><strong>Obs:</strong> <span id="ver_obs"></span></div>
+                        <div class="col-12"><strong>Obs:</strong>         <span id="ver_obs"></span></div>
                     </div>
                     <table class="table table-sm table-bordered" id="tabla_ver_detalles">
                         <thead class="table-light">
                             <tr>
                                 <th>Producto</th>
-                                <th>Cantidad</th>
-                                <th>Precio Unit.</th>
-                                <th>Subtotal</th>
+                                <th class="text-center">Cantidad</th>
+                                <th class="text-end">Precio Unit.</th>
+                                <th class="text-end">Subtotal</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
                         <tfoot>
-                            <tr>
-                                <th colspan="3" class="text-end">Total:</th>
-                                <th id="ver_total_venta">0</th>
+                            <tr class="table-light fw-bold">
+                                <th colspan="3" class="text-end">Total (Gs.):</th>
+                                <th id="ver_total_venta" class="text-end">0</th>
                             </tr>
                         </tfoot>
                     </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cerrar
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- MODAL NUEVO CLIENTE (desde pantalla de ventas)         -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="modal fade" id="modalNuevoCliente" tabindex="-1"
+         aria-labelledby="modalNuevoClienteLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <form id="formNuevoCliente" class="modal-content" novalidate>
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="modalNuevoClienteLabel">
+                        <i class="bi bi-person-plus-fill"></i> Registrar Nuevo Cliente
+                    </h5>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label class="form-label">Razón Social <span class="text-danger">*</span></label>
+                        <input type="text" id="nc_legal_name"
+                               class="form-control text-uppercase"
+                               minlength="5" maxlength="50"
+                               pattern="^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\s'\.,&\-]{5,50}$"
+                               placeholder="Nombre completo del cliente" required>
+                        <div class="invalid-feedback">Mínimo 5 letras, solo caracteres permitidos.</div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">RUC / Cédula <span class="text-danger">*</span></label>
+                        <input type="text" id="nc_ruc"
+                               class="form-control"
+                               pattern="^\d{5,8}[A-Z]?(-\d)?$"
+                               placeholder="Ej: 1234567 o 1234567-8" required>
+                        <div class="invalid-feedback">Formato inválido (ej: 1234567 o 1234567-8).</div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Teléfono <span class="text-danger">*</span></label>
+                        <input type="text" id="nc_tel"
+                               class="form-control"
+                               pattern="^09\d{8}$"
+                               placeholder="09XXXXXXXX" required>
+                        <div class="invalid-feedback">Formato requerido: 09XXXXXXXX (10 dígitos).</div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Correo Electrónico</label>
+                        <input type="text" id="nc_email"
+                               class="form-control"
+                               pattern="[^\s@]+@[^\s@]+\.[^\s@]{2,}"
+                               placeholder="correo@ejemplo.com (opcional)">
+                        <div class="invalid-feedback">Correo electrónico inválido.</div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Dirección <span class="text-danger">*</span></label>
+                        <input type="text" id="nc_address"
+                               class="form-control text-uppercase"
+                               minlength="5" maxlength="50"
+                               pattern="^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚüÜ\s,.:°#\/\-]{5,50}$"
+                               placeholder="Dirección del cliente" required>
+                        <div class="invalid-feedback">Mínimo 5 caracteres.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="btnGuardarNuevoCliente()">
+                        <i class="bi bi-floppy"></i> Guardar Cliente
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts (mismo orden que el resto del proyecto) -->
     <script src="menu/scripts.js"></script>
     <script src="bt/bootstrap.bundle.min.js"></script>
     <script src="alert/alertify.min.js"></script>
@@ -197,6 +308,7 @@
     <script src="dt/es-ES.js"></script>
     <script src="js/bd.js"></script>
     <script src="js/alertas.js"></script>
+    <script src="js/tablas.js"></script>
     <script src="js/ventas.js"></script>
 </body>
 </html>

@@ -1,329 +1,393 @@
-/** @typedef {import('alertify')} */
-/** @typedef {import('jquery')} */
-/** @typedef {import('./bd')} */
-/** @typedef {import('./alertas')} */
+/**
+ * MÓDULO DE VENTAS - VANGUARDIA
+ * Programación III - UNCA
+ *
+ * Usa las funciones y estructuras definidas en:
+ *   bd.js      → cargarVentas, guardarVenta, guardarVentaDetalle, cargarClientes,
+ *                cargarProductos, cargarUsuario, guardarCuentaPorCobrar,
+ *                obtenerSiguienteId, KEY_SESION, cargarSesion, etc.
+ *   alertas.js → validarSesion, mensajeSuccess, mensajeError, mensajeWarn,
+ *                confirmar, alertar
+ *   tablas.js  → crearDataTable, renderRaw, renderString, renderMoneda, renderFecha
+ */
 
-var tabla = null;
-const modalNVenta = new bootstrap.Modal(document.getElementById('modalNuevaVenta'));
-const modalVerDet = new bootstrap.Modal(document.getElementById('modalVerDetalles'));
+// ─────────────────────────────────────────────────────────────
+// 1. GUARD DE SESIÓN  (usa validarSesion de alertas.js)
+// ─────────────────────────────────────────────────────────────
+validarSesion();
 
-let detallesTemporales = [];
+// ─────────────────────────────────────────────────────────────
+// 2. ESTADO LOCAL DEL MÓDULO
+// ─────────────────────────────────────────────────────────────
+/** @type {Array<{_uid:number, product_id:number, nombre:string, amount:number, unit_price:number, subtotal:number}>} */
+let detallesTemp = [];
+let _uidCounter  = 0;
 
-function formatoMoneda(valor) {
-    return 'Gs. ' + Number(valor).toLocaleString('es-PY');
-}
-
-function obtenerSiguienteId(arr) {
-    if (arr.length === 0) return 1;
-    return Math.max(...arr.map(item => item.id)) + 1;
-}
-
-function cargarSelects() {
-    const clientes = cargarClientes();
-    const productos = cargarProductos().filter(p => p.active);
-    
-    let cliOptions = '<option value="">Seleccione un cliente...</option>';
-    clientes.forEach(c => {
-        cliOptions += `<option value="${c.id}">${c.legal_name} (${c.ruc})</option>`;
-    });
-    document.getElementById("client_id").innerHTML = cliOptions;
-
-    let prodOptions = '<option value="">Seleccione un producto...</option>';
-    productos.forEach(p => {
-        prodOptions += `<option value="${p.id}" data-precio="${p.sale_price}" data-stock="${p.stock}">${p.name} (Stock: ${p.stock})</option>`;
-    });
-    document.getElementById("producto_select").innerHTML = prodOptions;
-}
-
-function actualizarPrecioSugerido() {
-    const prodSelect = document.getElementById("producto_select");
-    const opt = prodSelect.options[prodSelect.selectedIndex];
-    const precioInput = document.getElementById("precio_input");
-    
-    if (opt && opt.value !== "") {
-        precioInput.value = opt.getAttribute("data-precio");
-    } else {
-        precioInput.value = "";
+// ─────────────────────────────────────────────────────────────
+// 3. DATATABLE PRINCIPAL DE VENTAS
+// ─────────────────────────────────────────────────────────────
+const tablaVentas = crearDataTable("tabla_ventas", [
+    { data: "id",           title: "Id Venta",     render: renderRaw    },
+    { data: "client_id",    title: "Cliente",       render: data => renderString(cargarCliente(data)?.legal_name ?? "—") },
+    { data: "user_id",      title: "Usuario",       render: data => renderString(cargarUsuario(data)?.username  ?? "—").toLowerCase() },
+    { data: "payment_type", title: "Tipo Pago",     render: renderString },
+    { data: "amount",       title: "Total",         render: renderMoneda },
+    { data: "obs",          title: "Observaciones", render: renderString },
+    { data: "created_at",   title: "Fecha",         render: renderFecha  },
+    {
+        data: null,
+        title: "Acciones",
+        orderable: false,
+        render: (data, type, row) =>
+            `<button class="btn btn-sm btn-info" onclick="abrirDetallesVenta(${row.id})" title="Ver detalles">
+                <i class="bi bi-eye"></i>
+             </button>`
     }
+]);
+
+// ─────────────────────────────────────────────────────────────
+// 4. INICIALIZACIÓN
+// ─────────────────────────────────────────────────────────────
+$(document).ready(function () {
+    refrescarTablaVentas();
+    cargarSelectClientes();
+    cargarSelectProductos();
+    bindEventos();
+});
+
+// ─────────────────────────────────────────────────────────────
+// 5. REFRESCO DE TABLA
+// ─────────────────────────────────────────────────────────────
+function refrescarTablaVentas() {
+    tablaVentas.clear().rows.add(cargarVentas()).draw();
 }
 
+// ─────────────────────────────────────────────────────────────
+// 6. SELECTS DEL MODAL
+// ─────────────────────────────────────────────────────────────
+function cargarSelectClientes() {
+    const $sel = $("#client_id").empty().append('<option value="">Seleccione un cliente...</option>');
+    cargarClientes()
+        .filter(c => c.active !== false)
+        .forEach(c => $sel.append(`<option value="${c.id}">${c.legal_name}</option>`));
+}
+
+function cargarSelectProductos() {
+    const $sel = $("#producto_select").empty().append('<option value="">Seleccione un producto...</option>');
+    cargarProductos()
+        .filter(p => p.active !== false && p.stock > 0)
+        .forEach(p => $sel.append(
+            `<option value="${p.id}" data-precio="${p.selling_price}" data-stock="${p.stock}">
+                ${p.name} (Stock: ${p.stock})
+             </option>`
+        ));
+}
+
+// ─────────────────────────────────────────────────────────────
+// 7. BINDING DE EVENTOS
+// ─────────────────────────────────────────────────────────────
+function bindEventos() {
+    // Autocompletar precio al elegir producto
+    $("#producto_select").on("change", function () {
+        const opt = $(this).find(":selected");
+        $("#precio_input").val(opt.data("precio") || "");
+        $("#cantidad_input").val("").focus();
+    });
+
+    // Botón agregar producto al detalle
+    $("#btnAgregarDetalle").on("click", agregarDetalle);
+
+    // Enter en cantidad → agregar
+    $("#cantidad_input").on("keydown", function (e) {
+        if (e.key === "Enter") { e.preventDefault(); agregarDetalle(); }
+    });
+
+    // Submit del formulario
+    $("#formNuevaVenta").on("submit", function (e) {
+        e.preventDefault();
+        guardarNuevaVenta();
+    });
+
+    // Limpiar al cerrar modal
+    $("#modalNuevaVenta").on("hidden.bs.modal", limpiarModalVenta);
+
+    // Refrescar selects al abrir modal
+    $("#modalNuevaVenta").on("show.bs.modal", function () {
+        cargarSelectClientes();
+        cargarSelectProductos();
+    });
+}
+
+// ─────────────────────────────────────────────────────────────
+// 8. AGREGAR / QUITAR DETALLE
+// ─────────────────────────────────────────────────────────────
 function agregarDetalle() {
-    const prodSelect = document.getElementById("producto_select");
-    const cantidadInput = document.getElementById("cantidad_input");
-    const precioInput = document.getElementById("precio_input");
+    const $sel      = $("#producto_select");
+    const productId = parseInt($sel.val());
+    const cantidad  = parseInt($("#cantidad_input").val());
+    const precio    = parseFloat($("#precio_input").val());
 
-    const producto_id = parseInt(prodSelect.value);
-    const cantidad = parseFloat(cantidadInput.value);
-    const precio = parseFloat(precioInput.value);
+    if (!productId)             { mensajeWarn("Seleccione un producto.");             return; }
+    if (!cantidad || cantidad < 1) { mensajeWarn("Ingrese una cantidad válida (≥1)."); return; }
+    if (!precio   || precio   <= 0){ mensajeWarn("El precio no puede ser cero.");      return; }
 
-    if (isNaN(producto_id) || isNaN(cantidad) || cantidad <= 0 || isNaN(precio) || precio <= 0) {
-        alertify.error("Debe seleccionar un producto, ingresar una cantidad válida y un precio unitario.");
+    const opt   = $sel.find(":selected");
+    const stock = parseInt(opt.data("stock"));
+
+    // Stock considerando lo ya cargado
+    const yaAgregado = detallesTemp
+        .filter(d => d.product_id === productId)
+        .reduce((s, d) => s + d.amount, 0);
+
+    if (yaAgregado + cantidad > stock) {
+        mensajeWarn(`Stock insuficiente. Disponible: ${stock - yaAgregado}`);
         return;
     }
 
-    const opt = prodSelect.options[prodSelect.selectedIndex];
-    const stockDisponible = parseFloat(opt.getAttribute("data-stock"));
-    const productoName = opt.text.split(" (")[0];
-
-    // Verificar cantidad ya agregada a la temporal
-    let cantidadTotalDeseada = cantidad;
-    const existente = detallesTemporales.find(d => d.product_id === producto_id);
-    if (existente) {
-        cantidadTotalDeseada += existente.quantity;
-    }
-
-    if (cantidadTotalDeseada > stockDisponible) {
-        alertify.error(`Stock insuficiente. Stock actual: ${stockDisponible}`);
-        return;
-    }
-
-    if (existente) {
-        existente.quantity = cantidadTotalDeseada;
-        // Precio unitario no cambia porque es de venta
-        existente.subtotal = existente.quantity * existente.unit_price;
+    // Acumular si ya existe el mismo producto
+    const existe = detallesTemp.find(d => d.product_id === productId);
+    if (existe) {
+        existe.amount  += cantidad;
+        existe.subtotal = existe.amount * existe.unit_price;
     } else {
-        detallesTemporales.push({
-            product_id: producto_id,
-            productoName: productoName,
-            quantity: cantidad,
+        _uidCounter++;
+        detallesTemp.push({
+            _uid:       _uidCounter,
+            product_id: productId,
+            nombre:     opt.text().split(" (")[0],
+            amount:     cantidad,
             unit_price: precio,
-            subtotal: cantidad * precio
+            subtotal:   cantidad * precio
         });
     }
 
-    prodSelect.value = "";
-    cantidadInput.value = "";
-    precioInput.value = "";
-    
-    renderizarDetalles();
+    renderTablaDetalle();
+    $("#producto_select").val("");
+    $("#precio_input").val("");
+    $("#cantidad_input").val("");
 }
 
-function eliminarDetalle(producto_id) {
-    detallesTemporales = detallesTemporales.filter(d => d.product_id !== producto_id);
-    renderizarDetalles();
+function quitarDetalle(uid) {
+    // Requiere autorización del supervisor/admin
+    confirmar(
+        "Autorización requerida",
+        "¿Confirma que está autorizado para quitar este artículo?",
+        () => {
+            detallesTemp = detallesTemp.filter(d => d._uid !== uid);
+            renderTablaDetalle();
+            mensajeSuccess("Artículo quitado de la venta.");
+        },
+        () => {}
+    );
 }
 
-function renderizarDetalles() {
-    const tbody = document.querySelector("#tabla_detalles_venta tbody");
-    tbody.innerHTML = "";
+function renderTablaDetalle() {
+    const $tbody = $("#tabla_detalles_venta tbody").empty();
     let total = 0;
 
-    detallesTemporales.forEach(det => {
-        total += det.subtotal;
-        tbody.innerHTML += `
+    detallesTemp.forEach(d => {
+        total += d.subtotal;
+        $tbody.append(`
             <tr>
-                <td>${det.productoName}</td>
-                <td>${det.quantity}</td>
-                <td>${formatoMoneda(det.unit_price)}</td>
-                <td>${formatoMoneda(det.subtotal)}</td>
+                <td>${d.nombre}</td>
+                <td class="text-center">${d.amount}</td>
+                <td class="text-end">${formatGs(d.unit_price)}</td>
+                <td class="text-end">${formatGs(d.subtotal)}</td>
                 <td class="text-center">
-                    <button type="button" class="btn btn-sm btn-danger" onclick="eliminarDetalle(${det.product_id})"><i class="bi bi-trash"></i></button>
+                    <button type="button" class="btn btn-sm btn-danger" onclick="quitarDetalle(${d._uid})">
+                        <i class="bi bi-trash"></i>
+                    </button>
                 </td>
             </tr>
-        `;
+        `);
     });
 
-    document.getElementById("total_venta").textContent = formatoMoneda(total);
+    $("#total_venta").text(formatGs(total));
 }
 
-function guardarNuevaVenta(e) {
-    e.preventDefault();
-    const cliente_id = parseInt(document.getElementById("client_id").value);
-    const tipo_pago = document.getElementById("payment_type").value;
-    const obs = document.getElementById("obs").value.trim();
+// ─────────────────────────────────────────────────────────────
+// 9. GUARDAR VENTA
+// ─────────────────────────────────────────────────────────────
+function guardarNuevaVenta() {
+    const clientId   = parseInt($("#client_id").val());
+    const paymentType = $("#payment_type").val();
+    const obs        = $("#obs").val().trim().toUpperCase();
 
-    if (isNaN(cliente_id)) {
-        alertify.error("Debe seleccionar un cliente.");
+    if (!clientId) { mensajeWarn("Seleccione un cliente."); return; }
+    if (detallesTemp.length === 0) { mensajeWarn("Agregue al menos un producto."); return; }
+
+    const total = detallesTemp.reduce((s, d) => s + d.subtotal, 0);
+
+    confirmar(
+        "Confirmar Venta",
+        `Total: <strong>Gs. ${formatGs(total)}</strong><br>Tipo de pago: ${paymentType}`,
+        () => {
+            const sesion  = cargarSesion();
+            const ventas  = cargarVentas();
+            const detalles = cargarVentaDetalles();
+            const idVenta  = obtenerSiguienteId(ventas);
+            const ahora    = new Date();
+
+            // ── Guardar cabecera de venta ──────────────────────
+            guardarVenta({
+                id:           idVenta,
+                client_id:    clientId,
+                user_id:      sesion ? sesion.user_id : null,
+                payment_type: paymentType,
+                amount:       total,
+                obs:          obs || "SIN OBSERVACIONES",
+                created_at:   ahora,
+                updated_at:   null
+            });
+
+            // ── Guardar detalles y descontar stock ─────────────
+            detallesTemp.forEach(d => {
+                guardarVentaDetalle({
+                    id:         obtenerSiguienteId(cargarVentaDetalles()),
+                    sale_id:    idVenta,
+                    product_id: d.product_id,
+                    amount:     d.amount,
+                    unit_price: d.unit_price,
+                    subtotal:   d.subtotal,
+                    created_at: ahora
+                });
+
+                // Actualizar stock del producto
+                const prod = cargarProducto(d.product_id);
+                if (prod) {
+                    prod.stock -= d.amount;
+                    prod.updated_at = ahora;
+                    guardarProducto(prod);
+                }
+            });
+
+            // ── Generar cuenta por cobrar si es CRÉDITO ────────
+            if (paymentType === "CREDITO") {
+                const cuentas = cargarCuentasPorCobrar();
+                guardarCuentaPorCobrar({
+                    id:           obtenerSiguienteId(cuentas),
+                    sale_id:      idVenta,
+                    client_id:    clientId,
+                    amount_total: total,
+                    amount_paid:  0,
+                    amount_due:   total,
+                    status:       ESTADO_PENDIENTE,
+                    expire_at:    new Date(ahora.getTime() + 86400000 * 30),
+                    created_at:   ahora,
+                    updated_at:   null
+                });
+            }
+
+            // ── Actualizar UI ──────────────────────────────────
+            $("#modalNuevaVenta").modal("hide");
+            limpiarModalVenta();
+            refrescarTablaVentas();
+            mensajeSuccess(`Venta #${idVenta} registrada correctamente.`);
+        },
+        () => {}
+    );
+}
+
+// ─────────────────────────────────────────────────────────────
+// 10. VER DETALLES DE UNA VENTA
+// ─────────────────────────────────────────────────────────────
+function abrirDetallesVenta(idVenta) {
+    const v = cargarVenta(idVenta);
+    if (!v) { mensajeError("Venta no encontrada."); return; }
+
+    const cli = cargarCliente(v.client_id);
+    const usr = cargarUsuario(v.user_id);
+
+    $("#ver_venta_id").text(v.id);
+    $("#ver_cliente").text(cli ? cli.legal_name : "—");
+    $("#ver_fecha").text(v.created_at ? new Date(v.created_at).toLocaleString("es-PY") : "—");
+    $("#ver_usuario").text(usr ? usr.username : "—");
+    $("#ver_tipo_pago").text(v.payment_type);
+    $("#ver_obs").text(v.obs || "—");
+
+    const detalles = cargarVentaDetalles(idVenta);
+    const $tbody = $("#tabla_ver_detalles tbody").empty();
+    let total = 0;
+
+    detalles.forEach(d => {
+        total += d.subtotal;
+        const prod = cargarProducto(d.product_id);
+        $tbody.append(`
+            <tr>
+                <td>${prod ? prod.name : d.product_id}</td>
+                <td class="text-center">${d.amount}</td>
+                <td class="text-end">${formatGs(d.unit_price)}</td>
+                <td class="text-end">${formatGs(d.subtotal)}</td>
+            </tr>
+        `);
+    });
+
+    $("#ver_total_venta").text(formatGs(total));
+    $("#modalVerDetalles").modal("show");
+}
+
+// ─────────────────────────────────────────────────────────────
+// 11. REGISTRAR NUEVO CLIENTE DESDE EL MODAL DE VENTA
+// Usa un modal Bootstrap dedicado (mismo patrón que clientes.html)
+// ─────────────────────────────────────────────────────────────
+function abrirModalNuevoCliente() {
+    document.getElementById("formNuevoCliente").reset();
+    document.getElementById("formNuevoCliente").classList.remove("was-validated");
+    $("#modalNuevoCliente").modal("show");
+}
+
+function btnGuardarNuevoCliente() {
+    const form       = document.getElementById("formNuevoCliente");
+    const legal_name = document.getElementById("nc_legal_name").value.trim().toUpperCase();
+    const ruc        = document.getElementById("nc_ruc").value.trim();
+    const tel        = document.getElementById("nc_tel").value.trim();
+    const address    = document.getElementById("nc_address").value.trim().toUpperCase();
+    const email      = document.getElementById("nc_email").value.trim().toLowerCase() || null;
+
+    form.classList.add("was-validated");
+    if (!form.checkValidity()) return;
+
+    const clientes = cargarClientes();
+    if (clientes.find(c => c.ruc === ruc)) {
+        mensajeWarn("Ya existe un cliente con ese RUC/CI.");
         return;
     }
 
-    if (detallesTemporales.length === 0) {
-        alertify.error("Debe agregar al menos un producto a la venta.");
-        return;
-    }
-
-    const ventas = cargarVentas();
-    const nuevaVentaId = obtenerSiguienteId(ventas);
-    let amount = detallesTemporales.reduce((acc, curr) => acc + curr.subtotal, 0);
-    const currentUser = 1; // Asumimos usuario 1
-
-    const nuevaVenta = {
-        id: nuevaVentaId,
-        client_id: cliente_id,
-        user_id: currentUser,
-        payment_type: tipo_pago,
-        amount: amount,
-        obs: obs,
+    const nuevoCliente = {
+        id:         obtenerSiguienteId(clientes),
+        legal_name: legal_name,
+        ruc:        ruc,
+        tel:        tel,
+        email:      email,
+        address:    address,
+        active:     true,
         created_at: new Date(),
         updated_at: null
     };
+    guardarCliente(nuevoCliente);
 
-    guardarVenta(nuevaVenta);
+    $("#modalNuevoCliente").modal("hide");
 
-    const detallesBD = cargarVentaDetalles();
-    let detalleId = obtenerSiguienteId(detallesBD);
-    const productos = cargarProductos();
-
-    detallesTemporales.forEach(det => {
-        guardarVentaDetalle({
-            id: detalleId++,
-            sale_id: nuevaVentaId,
-            product_id: det.product_id,
-            quantity: det.quantity,
-            unit_price: det.unit_price,
-            subtotal: det.subtotal
-        });
-
-        // Actualizar stock del producto (restar)
-        const p = productos.find(prod => prod.id === det.product_id);
-        if (p) {
-            p.stock -= det.quantity;
-            p.updated_at = new Date();
-            guardarProducto(p);
-        }
-    });
-
-    // Generar Cuenta por Cobrar si es a CRÉDITO
-    if (tipo_pago === 'CREDITO') {
-        const cuentasCobrar = cargarCuentasPorCobrar();
-        const vto = new Date();
-        vto.setDate(vto.getDate() + 30); // 30 días de vencimiento por defecto
-
-        guardarCuentaPorCobrar({
-            id: obtenerSiguienteId(cuentasCobrar),
-            sale_id: nuevaVentaId,
-            client_id: cliente_id,
-            amount_total: amount,
-            amount_paid: 0,
-            amount_due: amount,
-            status: 'PENDIENTE',
-            expire_at: vto,
-            created_at: new Date(),
-            updated_at: null
-        });
-        alertify.success("Venta a crédito guardada. Se generó Cuenta por Cobrar.");
-    } else {
-        alertify.success("Venta al contado registrada correctamente.");
-    }
-
-    // Reset Form
-    e.target.reset();
-    detallesTemporales = [];
-    renderizarDetalles();
-    cargarTablaVentas();
-    cargarSelects(); // Refrescar stocks en el select
-    modalNVenta.hide();
+    cargarSelectClientes();
+    $("#client_id").val(nuevoCliente.id);
+    mensajeSuccess(`Cliente "${nuevoCliente.legal_name}" registrado y seleccionado.`);
 }
 
-function verDetallesVenta(e) {
-    if (e.target.closest('.btn-ver-detalles')) {
-        const id = parseInt(e.target.closest('.btn-ver-detalles').dataset.id);
-        const venta = cargarVenta(id);
-        if (!venta) return;
-
-        const clientes = cargarClientes();
-        const usuarios = cargarUsuarios();
-        
-        const cli = clientes.find(c => c.id === venta.client_id);
-        const user = usuarios.find(u => u.id === venta.user_id);
-
-        document.getElementById("ver_venta_id").textContent = venta.id;
-        document.getElementById("ver_cliente").textContent = cli ? cli.legal_name : 'Desconocido';
-        document.getElementById("ver_usuario").textContent = user ? user.username : 'Desconocido';
-        document.getElementById("ver_fecha").textContent = new Date(venta.created_at).toLocaleString();
-        document.getElementById("ver_tipo_pago").textContent = venta.payment_type;
-        document.getElementById("ver_obs").textContent = venta.obs || 'N/A';
-
-        const detalles = cargarVentaDetalles().filter(d => d.sale_id === venta.id);
-        const productos = cargarProductos();
-
-        const tbody = document.querySelector("#tabla_ver_detalles tbody");
-        tbody.innerHTML = "";
-        
-        detalles.forEach(det => {
-            const p = productos.find(prod => prod.id === det.product_id);
-            const pName = p ? p.name : 'Desconocido';
-            tbody.innerHTML += `
-                <tr>
-                    <td>${pName}</td>
-                    <td>${det.quantity}</td>
-                    <td>${formatoMoneda(det.unit_price)}</td>
-                    <td>${formatoMoneda(det.subtotal)}</td>
-                </tr>
-            `;
-        });
-
-        document.getElementById("ver_total_venta").textContent = formatoMoneda(venta.amount);
-        modalVerDet.show();
-    }
+// ─────────────────────────────────────────────────────────────
+// 12. LIMPIAR MODAL
+// ─────────────────────────────────────────────────────────────
+function limpiarModalVenta() {
+    detallesTemp = [];
+    _uidCounter  = 0;
+    document.getElementById("formNuevaVenta")?.reset();
+    $("#tabla_detalles_venta tbody").empty();
+    $("#total_venta").text("0");
+    $("#precio_input").val("");
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-    cargarSelects();
-    cargarTablaVentas();
-
-    document.getElementById("producto_select").addEventListener("change", actualizarPrecioSugerido);
-    document.getElementById("btnAgregarDetalle").addEventListener("click", agregarDetalle);
-    document.getElementById("formNuevaVenta").addEventListener("submit", guardarNuevaVenta);
-    document.addEventListener("click", verDetallesVenta);
-});
-
-function cargarTablaVentas() {
-    const clientes = cargarClientes();
-    const usuarios = cargarUsuarios();
-
-    const ventas = cargarVentas().map(v => {
-        const cli = clientes.find(c => c.id === v.client_id);
-        const u = usuarios.find(user => user.id === v.user_id);
-
-        return {
-            ...v,
-            cliente_name: cli ? cli.legal_name : 'Desconocido',
-            usuario_name: u ? u.username : 'Desconocido',
-            total_fmt: formatoMoneda(v.amount),
-            fecha_fmt: new Date(v.created_at).toLocaleString()
-        };
-    });
-
-    if (tabla) {
-        tabla.clear().rows.add(ventas).draw();
-        return;
-    }
-
-    tabla = new DataTable("#tabla_ventas", {
-        data: ventas,
-        order: [[0, 'desc']],
-        columns: [
-            { data: 'id' },
-            { data: 'cliente_name' },
-            { data: 'usuario_name' },
-            { data: 'payment_type' },
-            { data: 'total_fmt' },
-            { data: 'fecha_fmt' },
-            {
-                data: null,
-                render: function (data, type, row) {
-                    return `<button class="btn btn-sm btn-info btn-ver-detalles" data-id="${row.id}" title="Ver Detalles"><i class="bi bi-eye"></i></button>`;
-                }
-            }
-        ],
-        dom: '<"d-flex justify-content-between align-items-center mb-2"Bf>rtip',
-        buttons: [
-            {
-                extend: 'print',
-                text: '<i class="bi bi-printer"></i> Imprimir',
-            },
-            {
-                extend: 'excelHtml5',
-                text: '<i class="bi bi-filetype-xlsx"></i> Exportar a Excel',
-            },
-            {
-                extend: 'pdfHtml5',
-                text: '<i class="bi bi-filetype-pdf"></i> Exportar a PDF',
-            }
-        ],
-        language: {
-            url: "dt/es-ES.json"
-        }
-    });
+// ─────────────────────────────────────────────────────────────
+// 13. UTILIDAD: Formatear Guaraníes
+// ─────────────────────────────────────────────────────────────
+function formatGs(n) {
+    return new Intl.NumberFormat("es-PY", { minimumFractionDigits: 0 }).format(n || 0);
 }
