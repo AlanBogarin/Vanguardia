@@ -35,7 +35,7 @@ const tablaVentas = crearDataTable("tabla_ventas", [
     { data: "id",           title: "Id Venta",     render: renderRaw    },
     { data: "client_id",    title: "Cliente",       render: data => renderString(cargarCliente(data).legal_name) },
     { data: "user_id",      title: "Usuario",       render: data => renderString(cargarUsuario(data).username).toLowerCase() },
-    { data: "payment_type", title: "Tipo Pago",     render: renderString },
+    { data: "payment_type", title: "Cond. Cobro",   render: renderString },
     { data: "amount",       title: "Total",         render: renderMoneda },
     { data: "obs",          title: "Observaciones", render: renderString },
     { data: "created_at",   title: "Fecha",         render: renderFecha  }
@@ -81,33 +81,66 @@ function refrescarTablaVentas() {
 // 6. SELECTS DEL MODAL
 // ─────────────────────────────────────────────────────────────
 function cargarSelectClientes() {
-    const $sel = $("#client_id").empty().append('<option value="">Seleccione un cliente...</option>');
+    // Llenar datalist para búsqueda de clientes
+    const $dl = $("#datalist_clientes").empty();
     cargarClientes()
         .filter(c => c.active !== false)
-        .forEach(c => $sel.append(`<option value="${c.id}">${c.legal_name}</option>`));
+        .forEach(c => $dl.append(`<option data-id="${c.id}" value="${c.legal_name} — ${c.ruc}">`));
+    $("#client_search").val("");
+    $("#client_id").val("");
+}
+
+function resolverClienteDesdeInput() {
+    const texto = $("#client_search").val().trim();
+    const opt   = $("#datalist_clientes option").filter(function() {
+        return $(this).val() === texto;
+    });
+    if (opt.length) {
+        $("#client_id").val(opt.data("id"));
+    } else {
+        $("#client_id").val("");
+    }
 }
 
 function cargarSelectProductos() {
-    const $sel = $("#producto_select").empty().append('<option value="">Seleccione un producto...</option>');
+    // Llenar datalist para búsqueda de productos
+    const $dl = $("#datalist_productos").empty();
     cargarProductos()
         .filter(p => p.active !== false && p.stock > 0)
-        .forEach(p => $sel.append(
-            `<option value="${p.id}" data-precio="${p.selling_price}" data-stock="${p.stock}">
-                ${p.name} (Stock: ${p.stock})
-             </option>`
+        .forEach(p => $dl.append(
+            `<option data-id="${p.id}" data-precio="${p.selling_price}" data-stock="${p.stock}"
+                     value="${p.name} — Cód: ${p.code}">`
         ));
+    $("#producto_search").val("");
+    $("#precio_input").val("");
+}
+
+function resolverProductoDesdeInput() {
+    const texto = $("#producto_search").val().trim();
+    const opt   = $("#datalist_productos option").filter(function() {
+        return $(this).val() === texto;
+    });
+    if (opt.length) {
+        $("#precio_input").val(opt.data("precio"));
+        $("#producto_search").data("selected-id",  opt.data("id"));
+        $("#producto_search").data("selected-stock", opt.data("stock"));
+        $("#cantidad_input").val("1").focus();
+    } else {
+        $("#precio_input").val("");
+        $("#producto_search").data("selected-id", "");
+        $("#producto_search").data("selected-stock", "");
+    }
 }
 
 // ─────────────────────────────────────────────────────────────
 // 7. BINDING DE EVENTOS
 // ─────────────────────────────────────────────────────────────
 function bindEventos() {
-    // Autocompletar precio al elegir producto
-    $("#producto_select").on("change", function () {
-        const opt = $(this).find(":selected");
-        $("#precio_input").val(opt.data("precio") || "");
-        $("#cantidad_input").val("1").focus();
-    });
+    // Autocompletar precio al escribir/seleccionar producto del datalist
+    $("#producto_search").on("input change", resolverProductoDesdeInput);
+
+    // Autocompletar cliente al escribir/seleccionar del datalist
+    $("#client_search").on("input change", resolverClienteDesdeInput);
 
     // Botón agregar producto al detalle
     $("#btnAgregarDetalle").on("click", agregarDetalle);
@@ -126,10 +159,11 @@ function bindEventos() {
     // Limpiar al cerrar modal
     $("#modalNuevaVenta").on("hidden.bs.modal", limpiarModalVenta);
 
-    // Refrescar selects al abrir modal
+    // Refrescar datalists al abrir modal y previsualizar nro factura
     $("#modalNuevaVenta").on("show.bs.modal", function () {
         cargarSelectClientes();
         cargarSelectProductos();
+        generarVistaPreviewFactura();
     });
 }
 
@@ -137,17 +171,14 @@ function bindEventos() {
 // 8. AGREGAR / QUITAR DETALLE
 // ─────────────────────────────────────────────────────────────
 function agregarDetalle() {
-    const $sel      = $("#producto_select");
-    const productId = parseInt($sel.val());
+    const productId = parseInt($("#producto_search").data("selected-id"));
+    const stock     = parseInt($("#producto_search").data("selected-stock")) || 0;
     const cantidad  = parseInt($("#cantidad_input").val());
     const precio    = parseFloat($("#precio_input").val());
 
-    if (!productId)             { mensajeWarn("Seleccione un producto.");             return; }
-    if (!cantidad || cantidad < 1) { mensajeWarn("Ingrese una cantidad válida (≥1)."); return; }
-    if (!precio   || precio   <= 0){ mensajeWarn("El precio no puede ser cero.");      return; }
-
-    const opt   = $sel.find(":selected");
-    const stock = parseInt(opt.data("stock"));
+    if (!productId)                { mensajeWarn("Seleccione un producto de la lista.");                              return; }
+    if (!cantidad || cantidad < 1) { mensajeWarn("Por favor ingrese cuántas unidades desea agregar (mínimo 1)."); return; }
+    if (!precio   || precio   <= 0){ mensajeWarn("El precio no puede ser cero.");                                     return; }
 
     // Stock considerando lo ya cargado
     const yaAgregado = detallesTemp
@@ -169,7 +200,7 @@ function agregarDetalle() {
         detallesTemp.push({
             _uid:       _uidCounter,
             product_id: productId,
-            nombre:     opt.text().split(" (")[0],
+            nombre:     $("#producto_search").val().split(" — Cód:")[0].trim(),
             amount:     cantidad,
             unit_price: precio,
             subtotal:   cantidad * precio
@@ -177,7 +208,7 @@ function agregarDetalle() {
     }
 
     renderTablaDetalle();
-    $("#producto_select").val("");
+    $("#producto_search").val("").data("selected-id", "").data("selected-stock", "");
     $("#precio_input").val("");
     $("#cantidad_input").val("");
 }
@@ -224,18 +255,18 @@ function renderTablaDetalle() {
 // 9. GUARDAR VENTA
 // ─────────────────────────────────────────────────────────────
 function guardarNuevaVenta() {
-    const clientId   = parseInt($("#client_id").val());
+    const clientId   = parseInt($("#client_id").val());  // resuelto por resolverClienteDesdeInput
     const paymentType = $("#payment_type").val();
     const obs        = $("#obs").val().trim().toUpperCase();
 
-    if (!clientId) { mensajeWarn("Seleccione un cliente."); return; }
+    if (!clientId) { mensajeWarn("Por favor busque y seleccione un cliente de la lista."); return; }
     if (detallesTemp.length === 0) { mensajeWarn("Agregue al menos un producto."); return; }
 
     const total = detallesTemp.reduce((s, d) => s + d.subtotal, 0);
 
     confirmar(
         "Confirmar Venta",
-        `Total: <strong>Gs. ${formatGs(total)}</strong><br>Tipo de pago: ${paymentType}`,
+        `Total: <strong>Gs. ${formatGs(total)}</strong><br>Condición de cobro: ${paymentType}`,
         () => {
             const sesion  = cargarSesion();
             const ventas  = cargarVentas();
@@ -244,13 +275,16 @@ function guardarNuevaVenta() {
             const ahora    = new Date();
 
             // ── Guardar cabecera de venta ──────────────────────
+            // Nro de factura autonumérico: 001-001-XXXXXXX (7 dígitos del id de venta)
+            const nroFactura = `001-001-${String(idVenta).padStart(7, "0")}`;
+
             guardarVenta({
                 id:           idVenta,
                 client_id:    clientId,
                 user_id:      sesion ? sesion.user_id : null,
                 payment_type: paymentType,
                 amount:       total,
-                obs:          obs || "SIN OBSERVACIONES",
+                obs:          `FACT. ${nroFactura}${obs ? " | " + obs : ""}`,
                 created_at:   ahora,
                 updated_at:   null
             });
@@ -398,10 +432,26 @@ function limpiarModalVenta() {
     $("#tabla_detalles_venta tbody").empty();
     $("#total_venta").text("0");
     $("#precio_input").val("");
+    // Limpiar campos datalist
+    $("#client_search").val("");
+    $("#client_id").val("");
+    $("#producto_search").val("").data("selected-id", "").data("selected-stock", "");
+    // Generar y mostrar el próximo nro de factura
+    generarVistaPreviewFactura();
 }
 
 // ─────────────────────────────────────────────────────────────
-// 13. UTILIDAD: Formatear Guaraníes
+// 13. UTILIDAD: Preview Nro. Factura
+// ─────────────────────────────────────────────────────────────
+function generarVistaPreviewFactura() {
+    const ventas    = cargarVentas();
+    const siguiente = obtenerSiguienteId(ventas);
+    const preview   = `001-001-${String(siguiente).padStart(7, "0")}`;
+    $("#nro_factura_preview").val(preview);
+}
+
+// ─────────────────────────────────────────────────────────────
+// 14. UTILIDAD: Formatear Guaraníes
 // ─────────────────────────────────────────────────────────────
 function formatGs(n) {
     return new Intl.NumberFormat("es-PY", { minimumFractionDigits: 0 }).format(n || 0);
