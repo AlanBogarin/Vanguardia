@@ -63,23 +63,28 @@
                 <div class="modal-body">
 
                     <div class="row mb-3">
-                        <!-- Cliente -->
+                        <!-- Cliente con datalist -->
                         <div class="col-md-6">
                             <label class="form-label">Cliente <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <select id="client_id" class="form-select" required>
-                                    <option value="">Seleccione un cliente...</option>
-                                </select>
+                                <input type="text" id="client_search"
+                                       class="form-control"
+                                       list="datalist_clientes"
+                                       placeholder="Buscar por nombre o RUC..."
+                                       autocomplete="off">
+                                <datalist id="datalist_clientes"></datalist>
+                                <input type="hidden" id="client_id">
                                 <button type="button" class="btn btn-outline-success"
                                         title="Registrar nuevo cliente"
                                         onclick="abrirModalNuevoCliente()">
                                     <i class="bi bi-person-plus-fill"></i>
                                 </button>
                             </div>
+                            <div class="form-text text-muted">Escriba el nombre o RUC del cliente.</div>
                         </div>
-                        <!-- Tipo de Pago -->
+                        <!-- Condición / Tipo de Cobro -->
                         <div class="col-md-6">
-                            <label class="form-label">Tipo de Pago <span class="text-danger">*</span></label>
+                            <label class="form-label">Condición de Cobro <span class="text-danger">*</span></label>
                             <select id="payment_type" class="form-select" required>
                                 <option value="CONTADO">CONTADO</option>
                                 <option value="CREDITO">CRÉDITO</option>
@@ -91,11 +96,21 @@
                         </div>
                     </div>
 
-                    <!-- Observaciones -->
-                    <div class="mb-3">
-                        <label class="form-label">Observaciones / Nro. Comprobante</label>
-                        <input type="text" id="obs" class="form-control text-uppercase" maxlength="100"
-                               placeholder="Ej: FACTURA 001-001-0000123">
+                    <!-- Nro. Factura autonumérico + Observaciones -->
+                    <div class="row mb-3 g-2">
+                        <div class="col-md-5">
+                            <label class="form-label">Nro. de Factura</label>
+                            <input type="text" id="nro_factura_preview"
+                                   class="form-control text-uppercase fw-bold"
+                                   readonly
+                                   title="Número generado automáticamente">
+                            <div class="form-text text-muted">Generado automáticamente.</div>
+                        </div>
+                        <div class="col-md-7">
+                            <label class="form-label">Observaciones</label>
+                            <input type="text" id="obs" class="form-control text-uppercase" maxlength="100"
+                                   placeholder="Observaciones adicionales (opcional)">
+                        </div>
                     </div>
 
                     <hr>
@@ -105,9 +120,12 @@
                     <div class="row mb-2 align-items-end g-2">
                         <div class="col-md-5">
                             <label class="form-label small mb-1">Producto</label>
-                            <select id="producto_select" class="form-select form-select-sm">
-                                <option value="">Seleccione un producto...</option>
-                            </select>
+                            <input type="text" id="producto_search"
+                                   class="form-control form-control-sm"
+                                   list="datalist_productos"
+                                   placeholder="Buscar por nombre o código..."
+                                   autocomplete="off">
+                            <datalist id="datalist_productos"></datalist>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label small mb-1">Cantidad</label>
@@ -181,7 +199,7 @@
                         <div class="col-md-6"><strong>Cliente:</strong>   <span id="ver_cliente"></span></div>
                         <div class="col-md-6"><strong>Fecha:</strong>     <span id="ver_fecha"></span></div>
                         <div class="col-md-6"><strong>Usuario:</strong>   <span id="ver_usuario"></span></div>
-                        <div class="col-md-6"><strong>Tipo Pago:</strong> <span id="ver_tipo_pago"></span></div>
+                        <div class="col-md-6"><strong>Cond. Cobro:</strong> <span id="ver_tipo_pago"></span></div>
                         <div class="col-12"><strong>Obs:</strong>         <span id="ver_obs"></span></div>
                     </div>
                     <table class="table table-sm table-bordered" id="tabla_ver_detalles">
