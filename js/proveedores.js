@@ -22,7 +22,7 @@ const tablaProveedores = crearDataTable("tabla_proveedores", [
     { data: "tel", title: "Teléfono", render: renderString, width: "10%" },
     { data: "email", title: "Correo", render: data => data ? renderString(data).toLowerCase() : "", width: "15%" },
     { data: "address", title: "Dirección", render: renderString, width: "27%" },
-    { data: "ciudad", title: "Ciudad", render: renderString, width: "10%" }
+    { data: "city", title: "Ciudad", render: renderString, width: "10%" }
 ], {
     buttons: true,
     pageLength: 10,
@@ -58,8 +58,8 @@ function btnNuevoProveedor() {
         const email = emailElem.value.trim().toLowerCase();
         const addressElem = document.getElementById("new_address");
         const address = addressElem.value.trim().toUpperCase();
-        const ciudadElem = document.getElementById("new_ciudad");
-        const ciudad = ciudadElem.value.trim().toUpperCase();
+        const cityElem = document.getElementById("new_city");
+        const city = cityElem.value.trim().toUpperCase();
 
         if (!legalName) {
             mensajeError("La razón social es obligatoria");
@@ -117,13 +117,13 @@ function btnNuevoProveedor() {
             mensajeError("La dirección debe tener entre 5 y 50 caracteres");
             addressElem.focus();
             return;
-        } else if (!ciudad) {
+        } else if (!city) {
             mensajeError("La ciudad es obligatoria");
-            ciudadElem.focus();
+            cityElem.focus();
             return;
-        } else if (ciudad.length < 5 || ciudad.length > 50) {
+        } else if (city.length < 5 || city.length > 50) {
             mensajeError("La ciudad debe tener entre 5 y 50 caracteres");
-            ciudadElem.focus();
+            cityElem.focus();
             return;
         }
 
@@ -134,7 +134,7 @@ function btnNuevoProveedor() {
             tel: tel,
             email: email,
             address: address,
-            ciudad: ciudad,
+            city: city,
             active: true,
             created_at: new Date(),
             updated_at: null
@@ -159,7 +159,7 @@ function ventanaEditarProveedor(id) {
     document.getElementById("edit_tel").value = proveedor.tel || "";
     document.getElementById("edit_email").value = proveedor.email || "";
     document.getElementById("edit_address").value = proveedor.address || "";
-    document.getElementById("edit_ciudad").value = proveedor.ciudad || "";
+    document.getElementById("edit_city").value = proveedor.city || "";
     modalEditar.show();
 }
 
@@ -181,8 +181,8 @@ function btnEditarProveedor() {
         const email = emailElem.value.trim().toLowerCase();
         const addressElem = document.getElementById("edit_address");
         const address = addressElem.value.trim().toUpperCase();
-        const ciudadElem = document.getElementById("edit_ciudad");
-        const ciudad = ciudadElem.value.trim().toUpperCase();
+        const cityElem = document.getElementById("edit_city");
+        const city = cityElem.value.trim().toUpperCase();
 
         if (!legalName) {
             mensajeError("La razón social es obligatoria");
@@ -240,13 +240,13 @@ function btnEditarProveedor() {
             mensajeError("La dirección debe tener entre 5 y 50 caracteres");
             addressElem.focus();
             return;
-        } else if (!ciudad) {
+        } else if (!city) {
             mensajeError("La ciudad es obligatoria");
-            ciudadElem.focus();
+            cityElem.focus();
             return;
-        } else if (ciudad.length < 5 || ciudad.length > 50) {
+        } else if (city.length < 5 || city.length > 50) {
             mensajeError("La ciudad debe tener entre 5 y 50 caracteres");
-            ciudadElem.focus();
+            cityElem.focus();
             return;
         }
 
@@ -256,7 +256,7 @@ function btnEditarProveedor() {
             proveedor.tel === tel &&
             proveedor.email === email &&
             proveedor.address === address &&
-            proveedor.ciudad === ciudad;
+            proveedor.city === city;
 
         if (sinCambios) {
             mensajeInfo("No se ha modificado nada");
@@ -268,7 +268,7 @@ function btnEditarProveedor() {
         proveedor.tel = tel;
         proveedor.email = email;
         proveedor.address = address;
-        proveedor.ciudad = ciudad;
+        proveedor.city = city;
         proveedor.updated_at = new Date();
         guardarProveedor(proveedor);
         cargarDatos();
@@ -291,7 +291,7 @@ function ventanaEliminarProveedor(id) {
     document.getElementById("del_tel").textContent = proveedor.tel || "-";
     document.getElementById("del_email").textContent = proveedor.email || "-";
     document.getElementById("del_address").textContent = proveedor.address || "-";
-    document.getElementById("del_ciudad").textContent = proveedor.ciudad || "-";
+    document.getElementById("del_city").textContent = proveedor.city || "-";
     modalEliminar.show();
 }
 

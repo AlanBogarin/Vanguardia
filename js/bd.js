@@ -41,7 +41,7 @@
  * @property {string} tel Telefono del proveedor
  * @property {string} email Correo electronico del proveedor
  * @property {string} address Direccion fisica del proveedor
- * @property {string} ciudad Ciudad del proveedor
+ * @property {string} city Ciudad del proveedor
  * @property {boolean} active El proveedor está activo
  * @property {Date} created_at Fecha de creacion del cliente
  * @property {Date?} updated_at Fecha de modificacion del cliente
@@ -548,7 +548,7 @@ function guardarProveedor(proveedor) {
         tel: proveedor.tel,
         email: proveedor.email ? proveedor.email.toLowerCase() : null,
         address: proveedor.address ? proveedor.address.toUpperCase() : null,
-        ciudad: proveedor.ciudad ? proveedor.ciudad.toUpperCase() : null,
+        city: proveedor.city ? proveedor.city.toUpperCase() : null,
         active: proveedor.active,
         created_at: proveedor.created_at,
         updated_at: proveedor.updated_at
@@ -1351,16 +1351,16 @@ function cargarDatosPrueba() {
     guardarMarca({ id: 10, name: "MICROSOFT", created_at: new Date(), updated_at: null });
 
     // 6. Proveedores
-    guardarProveedor({ id: 1, legal_name: "DISTRIBUIDORA APPLE PY", ruc: "80001111-1", tel: "021444555", email: "ventas@apple.com.py", address: "AV. MCAL. LOPEZ 1234", ciudad: "ASUNCION", active: true, created_at: new Date(), updated_at: null });
-    guardarProveedor({ id: 2, legal_name: "SAMSUNG PARAGUAY SA", ruc: "80002222-2", tel: "021555666", email: "ventas@samsung.com.py", address: "AV. REPUBLICA 567", ciudad: "FERNANDO DE LA MORA", active: true, created_at: new Date(), updated_at: null });
-    guardarProveedor({ id: 3, legal_name: "SONY ENTERTAINMENT PY", ruc: "80003333-3", tel: "021666777", email: "pedidos@sony.com.py", address: "CALLE PALMA 890", ciudad: "ASUNCION", active: true, created_at: new Date(), updated_at: null });
-    guardarProveedor({ id: 4, legal_name: "LG ELECTRONICS PY", ruc: "80004444-4", tel: "021777888", email: "contacto@lg.com.py", address: "AV. SAN BLAS 321", ciudad: "CIUDAD DEL ESTE", active: true, created_at: new Date(), updated_at: null });
-    guardarProveedor({ id: 5, legal_name: "HP INC PARAGUAY", ruc: "80005555-5", tel: "021888999", email: "ventas@hp.com.py", address: "RUTA 2 KM 12", ciudad: "SAN LORENZO", active: true, created_at: new Date(), updated_at: null });
-    guardarProveedor({ id: 6, legal_name: "DELL TECHNOLOGIES PY", ruc: "80006666-6", tel: "021999000", email: "ventas@dell.com.py", address: "AV. MARISCAL ESTIGARRIBIA 456", ciudad: "LUQUE", active: true, created_at: new Date(), updated_at: null });
-    guardarProveedor({ id: 7, legal_name: "LENOVO GROUP LATAM", ruc: "80007777-7", tel: "021111222", email: "info@lenovo.com.py", address: "CALLE CABALLERO 789", ciudad: "VILLA ELISA", active: true, created_at: new Date(), updated_at: null });
-    guardarProveedor({ id: 8, legal_name: "ASUS TECH PARAGUAY", ruc: "80008888-8", tel: "021222333", email: "pedidos@asus.com.py", address: "AV. EUSEBIO AYALA 1100", ciudad: "ASUNCION", active: true, created_at: new Date(), updated_at: null });
-    guardarProveedor({ id: 9, legal_name: "NINTENDO LATAM", ruc: "80009999-9", tel: "021333444", email: "ventas@nintendo.com", address: "AV. ADRIAN JARA 654", ciudad: "CIUDAD DEL ESTE", active: true, created_at: new Date(), updated_at: null });
-    guardarProveedor({ id: 10, legal_name: "MICROSOFT CORPORATION PY", ruc: "80000000-0", tel: "021444111", email: "ventas@microsoft.com.py", address: "AV. ESPANA 1420", ciudad: "ASUNCION", active: true, created_at: new Date(), updated_at: null });
+    guardarProveedor({ id: 1, legal_name: "DISTRIBUIDORA APPLE PY", ruc: "80001111-1", tel: "021444555", email: "ventas@apple.com.py", address: "AV. MCAL. LOPEZ 1234", city: "ASUNCION", active: true, created_at: new Date(), updated_at: null });
+    guardarProveedor({ id: 2, legal_name: "SAMSUNG PARAGUAY SA", ruc: "80002222-2", tel: "021555666", email: "ventas@samsung.com.py", address: "AV. REPUBLICA 567", city: "FERNANDO DE LA MORA", active: true, created_at: new Date(), updated_at: null });
+    guardarProveedor({ id: 3, legal_name: "SONY ENTERTAINMENT PY", ruc: "80003333-3", tel: "021666777", email: "pedidos@sony.com.py", address: "CALLE PALMA 890", city: "ASUNCION", active: true, created_at: new Date(), updated_at: null });
+    guardarProveedor({ id: 4, legal_name: "LG ELECTRONICS PY", ruc: "80004444-4", tel: "021777888", email: "contacto@lg.com.py", address: "AV. SAN BLAS 321", city: "CIUDAD DEL ESTE", active: true, created_at: new Date(), updated_at: null });
+    guardarProveedor({ id: 5, legal_name: "HP INC PARAGUAY", ruc: "80005555-5", tel: "021888999", email: "ventas@hp.com.py", address: "RUTA 2 KM 12", city: "SAN LORENZO", active: true, created_at: new Date(), updated_at: null });
+    guardarProveedor({ id: 6, legal_name: "DELL TECHNOLOGIES PY", ruc: "80006666-6", tel: "021999000", email: "ventas@dell.com.py", address: "AV. MARISCAL ESTIGARRIBIA 456", city: "LUQUE", active: true, created_at: new Date(), updated_at: null });
+    guardarProveedor({ id: 7, legal_name: "LENOVO GROUP LATAM", ruc: "80007777-7", tel: "021111222", email: "info@lenovo.com.py", address: "CALLE CABALLERO 789", city: "VILLA ELISA", active: true, created_at: new Date(), updated_at: null });
+    guardarProveedor({ id: 8, legal_name: "ASUS TECH PARAGUAY", ruc: "80008888-8", tel: "021222333", email: "pedidos@asus.com.py", address: "AV. EUSEBIO AYALA 1100", city: "ASUNCION", active: true, created_at: new Date(), updated_at: null });
+    guardarProveedor({ id: 9, legal_name: "NINTENDO LATAM", ruc: "80009999-9", tel: "021333444", email: "ventas@nintendo.com", address: "AV. ADRIAN JARA 654", city: "CIUDAD DEL ESTE", active: true, created_at: new Date(), updated_at: null });
+    guardarProveedor({ id: 10, legal_name: "MICROSOFT CORPORATION PY", ruc: "80000000-0", tel: "021444111", email: "ventas@microsoft.com.py", address: "AV. ESPANA 1420", city: "ASUNCION", active: true, created_at: new Date(), updated_at: null });
 
     // 7. Productos
     guardarProducto({ id: 1, code: "78400111", name: "IPHONE 15 PRO MAX", description: "SMARTPHONE APPLE 256GB", purchase_price: 8000000, selling_price: 10000000, stock: 15, min_stock: 5, category_id: 1, brand_id: 1, iva: 10, active: true, created_at: new Date(), updated_at: null });
