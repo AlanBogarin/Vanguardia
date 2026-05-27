@@ -28,6 +28,56 @@
                             <i class="bi bi-cash-coin me-1"></i> Ver Pagos
                         </a>
                     </div>
+                    <!-- Botones de exportación -->
+                    <div id="contenedor-botones-exportar" class="d-flex gap-1 mb-2"></div>
+                    <!-- Sección de Filtros -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="card" style="background:rgba(255,255,255,0.65);border:1px solid rgba(100,160,255,0.3);box-shadow:0 8px 32px rgba(30,80,180,0.12);border-radius:12px;backdrop-filter:blur(6px);">
+                                <div class="card-header py-2 px-3" style="background:rgba(30,80,180,0.9);color:white;border-radius:11px 11px 0 0;">
+                                    <i class="bi bi-funnel-fill me-1"></i><strong>Filtros</strong>
+                                </div>
+                                <div class="card-body py-3">
+                                    <div class="row g-3 align-items-end">
+                                        <div class="col-md-3 col-sm-6">
+                                            <label for="filtro_estado" class="form-label fw-semibold small mb-1" style="color:#0d2149">Estado</label>
+                                            <select id="filtro_estado" class="form-select form-select-sm" style="background-color:rgba(255,255,255,0.9);border:1px solid rgba(30,80,180,0.3);color:#0d2149;border-radius:6px;">
+                                                <option value="">Todos</option>
+                                                <option value="PENDIENTE">Pendiente</option>
+                                                <option value="PARCIAL">Parcial</option>
+                                                <option value="PAGADA">Pagada</option>
+                                                <option value="VENCIDO">Vencido</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2 col-sm-6">
+                                            <label for="filtro_fecha_desde" class="form-label fw-semibold small mb-1" style="color:#0d2149">Venc. Desde</label>
+                                            <input type="date" id="filtro_fecha_desde" class="form-control form-control-sm" style="background-color:rgba(255,255,255,0.9);border:1px solid rgba(30,80,180,0.3);color:#0d2149;border-radius:6px;">
+                                        </div>
+                                        <div class="col-md-2 col-sm-6">
+                                            <label for="filtro_fecha_hasta" class="form-label fw-semibold small mb-1" style="color:#0d2149">Venc. Hasta</label>
+                                            <input type="date" id="filtro_fecha_hasta" class="form-control form-control-sm" style="background-color:rgba(255,255,255,0.9);border:1px solid rgba(30,80,180,0.3);color:#0d2149;border-radius:6px;">
+                                        </div>
+                                        <div class="col-md-3 col-sm-6">
+                                            <label for="filtro_proveedor" class="form-label fw-semibold small mb-1" style="color:#0d2149">Proveedor</label>
+                                            <input type="text" id="filtro_proveedor" class="form-control form-control-sm" list="datalist_proveedores" placeholder="Buscar proveedor..." style="background-color:rgba(255,255,255,0.9);border:1px solid rgba(30,80,180,0.3);color:#0d2149;border-radius:6px;">
+                                            <datalist id="datalist_proveedores"></datalist>
+                                        </div>
+                                        <div class="col-md-2 col-sm-6 d-flex flex-column justify-content-end">
+                                            <div class="d-flex gap-1">
+                                                <button class="btn btn-sm btn-primary flex-fill" onclick="aplicarFiltros()">
+                                                    <i class="bi bi-funnel"></i> Filtrar
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-secondary flex-fill" onclick="limpiarFiltros()">
+                                                    <i class="bi bi-x-circle"></i> Limpiar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Tabla -->
                     <div class="row">
                         <table id="tabla_cuentas_pagar" class="display compact" style="width:100%">
                         </table>

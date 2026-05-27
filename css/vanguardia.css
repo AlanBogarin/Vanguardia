@@ -79,6 +79,10 @@ table.dataTable tbody td {
 }
 
 /* ── Buscador y selector de cantidad ── */
+.dataTables_filter {
+     text-align: right !important;
+     margin-left: auto !important;
+}
 .dataTables_filter label,
 .dataTables_info,
 .dataTables_length label {
