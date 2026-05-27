@@ -80,7 +80,7 @@
  * @property {number} user_id Identificador del usuario que compra
  * @property {MetodoPago} payment_type Tipo de pago
  * @property {number} amount Total de pago
- * @property {string} obs Nro. Referencia / Comprobante / Observaciones de la compra
+ * @property {string} invoice Nro. Factura de la compra
  * @property {Date} created_at Fecha de creacion de la compra
  * @property {Date?} updated_at Fecha de modificacion de la compra
  * 
@@ -91,6 +91,7 @@
  * @property {number} amount Cantidad del producto comprado
  * @property {number} unit_price Precio unitario
  * @property {number} subtotal Subtotal de compra: precio * cantidad
+ * @property {number} iva_tipo Tipo de IVA (0 | 5 | 10)
  * @property {Date} created_at Fecha de creacion de la compra
  * 
  * @typedef {Object} Venta
@@ -110,6 +111,7 @@
  * @property {number} amount Cantidad del producto vendido
  * @property {number} unit_price Precio unitario
  * @property {number} subtotal Subtotal de compra: precio * cantidad
+ * @property {0 | 5 | 10} iva Tipo de IVA
  * @property {Date} created_at Fecha de creacion de la compra
  * 
  * @typedef {Object} CuentaPorPagar
@@ -770,7 +772,7 @@ function guardarCompra(compra) {
         user_id: compra.user_id,
         payment_type: compra.payment_type,
         amount: compra.amount,
-        obs: compra.obs.toUpperCase(),
+        invoice: compra.invoice.toUpperCase(),
         created_at: compra.created_at,
         updated_at: compra.updated_at
     }
@@ -831,6 +833,7 @@ function guardarCompraDetalle(detalle) {
         amount: detalle.amount,
         unit_price: detalle.unit_price,
         subtotal: detalle.subtotal,
+        iva_tipo: detalle.iva_tipo !== undefined ? detalle.iva_tipo : 0,
         created_at: detalle.created_at
     }
     if (index === -1) {
@@ -946,6 +949,7 @@ function guardarVentaDetalle(detalle) {
         amount: detalle.amount,
         unit_price: detalle.unit_price,
         subtotal: detalle.subtotal,
+        iva: detalle.iva !== undefined ? detalle.iva : 0,
         created_at: detalle.created_at
     }
     if (index === -1) {
@@ -1373,30 +1377,30 @@ function cargarDatosPrueba() {
     guardarProducto({ id: 10, code: "78401000", name: "XBOX SERIES X", description: "CONSOLA MICROSOFT 1TB", purchase_price: 3500000, selling_price: 4500000, stock: 18, min_stock: 5, category_id: 6, brand_id: 10, iva: 10, active: true, created_at: new Date(), updated_at: null });
 
     // 8. Compras
-    guardarCompra({ id: 1, provider_id: 1, user_id: 4, payment_type: "CONTADO", amount: 120000000, obs: "Compra inicial Apple", created_at: new Date(Date.now() - 86400000 * 5), updated_at: null });
-    guardarCompra({ id: 2, provider_id: 3, user_id: 4, payment_type: "CREDITO", amount: 65000000, obs: "Lote de PS5 y TVs", created_at: new Date(Date.now() - 86400000 * 4), updated_at: null });
-    guardarCompra({ id: 3, provider_id: 5, user_id: 4, payment_type: "CONTADO", amount: 85000000, obs: "Laptops para oficina", created_at: new Date(Date.now() - 86400000 * 3), updated_at: null });
-    guardarCompra({ id: 4, provider_id: 8, user_id: 4, payment_type: "CREDITO", amount: 54000000, obs: "Laptops gamer ASUS", created_at: new Date(Date.now() - 86400000 * 2), updated_at: null });
-    guardarCompra({ id: 5, provider_id: 9, user_id: 4, payment_type: "CONTADO", amount: 20000000, obs: "Reposición Nintendo", created_at: new Date(Date.now() - 86400000 * 1), updated_at: null });
-    guardarCompra({ id: 6, provider_id: 2, user_id: 4, payment_type: "CREDITO", amount: 150000000, obs: "Nuevo lote Samsung", created_at: new Date(), updated_at: null });
-    guardarCompra({ id: 7, provider_id: 10, user_id: 4, payment_type: "CONTADO", amount: 35000000, obs: "Consolas Xbox", created_at: new Date(), updated_at: null });
-    guardarCompra({ id: 8, provider_id: 7, user_id: 4, payment_type: "CREDITO", amount: 42500000, obs: "Laptops Lenovo", created_at: new Date(), updated_at: null });
-    guardarCompra({ id: 9, provider_id: 6, user_id: 4, payment_type: "CONTADO", amount: 14000000, obs: "Reposición DELL", created_at: new Date(), updated_at: null });
-    guardarCompra({ id: 10, provider_id: 4, user_id: 4, payment_type: "CREDITO", amount: 12000000, obs: "Televisores LG", created_at: new Date(), updated_at: null });
+    guardarCompra({ id: 1, provider_id: 1, user_id: 4, payment_type: "CONTADO", amount: 120000000, invoice: "001-001-0000001", created_at: new Date(Date.now() - 86400000 * 5), updated_at: null });
+    guardarCompra({ id: 2, provider_id: 3, user_id: 4, payment_type: "CREDITO", amount: 65000000, invoice: "001-001-0000002", created_at: new Date(Date.now() - 86400000 * 4), updated_at: null });
+    guardarCompra({ id: 3, provider_id: 5, user_id: 4, payment_type: "CONTADO", amount: 85000000, invoice: "001-001-0000003", created_at: new Date(Date.now() - 86400000 * 3), updated_at: null });
+    guardarCompra({ id: 4, provider_id: 8, user_id: 4, payment_type: "CREDITO", amount: 54000000, invoice: "001-001-0000004", created_at: new Date(Date.now() - 86400000 * 2), updated_at: null });
+    guardarCompra({ id: 5, provider_id: 9, user_id: 4, payment_type: "CONTADO", amount: 20000000, invoice: "001-001-0000005", created_at: new Date(Date.now() - 86400000 * 1), updated_at: null });
+    guardarCompra({ id: 6, provider_id: 2, user_id: 4, payment_type: "CREDITO", amount: 150000000, invoice: "001-001-0000006", created_at: new Date(), updated_at: null });
+    guardarCompra({ id: 7, provider_id: 10, user_id: 4, payment_type: "CONTADO", amount: 35000000, invoice: "001-001-0000007", created_at: new Date(), updated_at: null });
+    guardarCompra({ id: 8, provider_id: 7, user_id: 4, payment_type: "CREDITO", amount: 42500000, invoice: "001-001-0000008", created_at: new Date(), updated_at: null });
+    guardarCompra({ id: 9, provider_id: 6, user_id: 4, payment_type: "CONTADO", amount: 14000000, invoice: "001-001-0000009", created_at: new Date(), updated_at: null });
+    guardarCompra({ id: 10, provider_id: 4, user_id: 4, payment_type: "CREDITO", amount: 12000000, invoice: "001-001-0000010", created_at: new Date(), updated_at: null });
 
     // 9. CompraDetalles
-    guardarCompraDetalle({ id: 1, purchase_id: 1, product_id: 1, amount: 15, unit_price: 8000000, subtotal: 120000000, created_at: new Date(Date.now() - 86400000 * 5) });
-    guardarCompraDetalle({ id: 2, purchase_id: 2, product_id: 3, amount: 10, unit_price: 3500000, subtotal: 35000000, created_at: new Date(Date.now() - 86400000 * 4) });
-    guardarCompraDetalle({ id: 3, purchase_id: 2, product_id: 4, amount: 5, unit_price: 6000000, subtotal: 30000000, created_at: new Date(Date.now() - 86400000 * 4) });
-    guardarCompraDetalle({ id: 4, purchase_id: 3, product_id: 5, amount: 10, unit_price: 5000000, subtotal: 50000000, created_at: new Date(Date.now() - 86400000 * 3) });
-    guardarCompraDetalle({ id: 5, purchase_id: 3, product_id: 6, amount: 5, unit_price: 7000000, subtotal: 35000000, created_at: new Date(Date.now() - 86400000 * 3) });
-    guardarCompraDetalle({ id: 6, purchase_id: 4, product_id: 8, amount: 6, unit_price: 9000000, subtotal: 54000000, created_at: new Date(Date.now() - 86400000 * 2) });
-    guardarCompraDetalle({ id: 7, purchase_id: 5, product_id: 9, amount: 10, unit_price: 2000000, subtotal: 20000000, created_at: new Date(Date.now() - 86400000 * 1) });
-    guardarCompraDetalle({ id: 8, purchase_id: 6, product_id: 2, amount: 20, unit_price: 7500000, subtotal: 150000000, created_at: new Date() });
-    guardarCompraDetalle({ id: 9, purchase_id: 7, product_id: 10, amount: 10, unit_price: 3500000, subtotal: 35000000, created_at: new Date() });
-    guardarCompraDetalle({ id: 10, purchase_id: 8, product_id: 7, amount: 5, unit_price: 8500000, subtotal: 42500000, created_at: new Date() });
-    guardarCompraDetalle({ id: 11, purchase_id: 9, product_id: 6, amount: 2, unit_price: 7000000, subtotal: 14000000, created_at: new Date() });
-    guardarCompraDetalle({ id: 12, purchase_id: 10, product_id: 4, amount: 2, unit_price: 6000000, subtotal: 12000000, created_at: new Date() });
+    guardarCompraDetalle({ id: 1, purchase_id: 1, product_id: 1, amount: 15, unit_price: 8000000, subtotal: 120000000, iva_tipo: 10, created_at: new Date(Date.now() - 86400000 * 5) });
+    guardarCompraDetalle({ id: 2, purchase_id: 2, product_id: 3, amount: 10, unit_price: 3500000, subtotal: 35000000, iva_tipo: 10, created_at: new Date(Date.now() - 86400000 * 4) });
+    guardarCompraDetalle({ id: 3, purchase_id: 2, product_id: 4, amount: 5, unit_price: 6000000, subtotal: 30000000, iva_tipo: 10, created_at: new Date(Date.now() - 86400000 * 4) });
+    guardarCompraDetalle({ id: 4, purchase_id: 3, product_id: 5, amount: 10, unit_price: 5000000, subtotal: 50000000, iva_tipo: 10, created_at: new Date(Date.now() - 86400000 * 3) });
+    guardarCompraDetalle({ id: 5, purchase_id: 3, product_id: 6, amount: 5, unit_price: 7000000, subtotal: 35000000, iva_tipo: 10, created_at: new Date(Date.now() - 86400000 * 3) });
+    guardarCompraDetalle({ id: 6, purchase_id: 4, product_id: 8, amount: 6, unit_price: 9000000, subtotal: 54000000, iva_tipo: 10, created_at: new Date(Date.now() - 86400000 * 2) });
+    guardarCompraDetalle({ id: 7, purchase_id: 5, product_id: 9, amount: 10, unit_price: 2000000, subtotal: 20000000, iva_tipo: 10, created_at: new Date(Date.now() - 86400000 * 1) });
+    guardarCompraDetalle({ id: 8, purchase_id: 6, product_id: 2, amount: 20, unit_price: 7500000, subtotal: 150000000, iva_tipo: 10, created_at: new Date() });
+    guardarCompraDetalle({ id: 9, purchase_id: 7, product_id: 10, amount: 10, unit_price: 3500000, subtotal: 35000000, iva_tipo: 10, created_at: new Date() });
+    guardarCompraDetalle({ id: 10, purchase_id: 8, product_id: 7, amount: 5, unit_price: 8500000, subtotal: 42500000, iva_tipo: 10, created_at: new Date() });
+    guardarCompraDetalle({ id: 11, purchase_id: 9, product_id: 6, amount: 2, unit_price: 7000000, subtotal: 14000000, iva_tipo: 10, created_at: new Date() });
+    guardarCompraDetalle({ id: 12, purchase_id: 10, product_id: 4, amount: 2, unit_price: 6000000, subtotal: 12000000, iva_tipo: 10, created_at: new Date() });
 
     // 10. Ventas
     guardarVenta({ id: 1, client_id: 2, user_id: 2, payment_type: "CONTADO", amount: 20000000, obs: "Venta iPhone", created_at: new Date(Date.now() - 86400000 * 3), updated_at: null });
@@ -1411,18 +1415,18 @@ function cargarDatosPrueba() {
     guardarVenta({ id: 10, client_id: 10, user_id: 3, payment_type: "CONTADO", amount: 4500000, obs: "Venta Xbox", created_at: new Date(), updated_at: null });
 
     // 11. VentaDetalles
-    guardarVentaDetalle({ id: 1, sale_id: 1, product_id: 1, amount: 2, unit_price: 10000000, subtotal: 20000000, created_at: new Date(Date.now() - 86400000 * 3) });
-    guardarVentaDetalle({ id: 2, sale_id: 2, product_id: 5, amount: 1, unit_price: 6500000, subtotal: 6500000, created_at: new Date(Date.now() - 86400000 * 2) });
-    guardarVentaDetalle({ id: 3, sale_id: 3, product_id: 7, amount: 1, unit_price: 10500000, subtotal: 10500000, created_at: new Date(Date.now() - 86400000 * 1) });
-    guardarVentaDetalle({ id: 4, sale_id: 4, product_id: 9, amount: 2, unit_price: 2800000, subtotal: 5600000, created_at: new Date() });
-    guardarVentaDetalle({ id: 5, sale_id: 4, product_id: 7, amount: 1, unit_price: 10500000, subtotal: 10500000, created_at: new Date() });
-    guardarVentaDetalle({ id: 6, sale_id: 5, product_id: 3, amount: 1, unit_price: 4500000, subtotal: 4500000, created_at: new Date() });
-    guardarVentaDetalle({ id: 7, sale_id: 6, product_id: 2, amount: 1, unit_price: 9500000, subtotal: 9500000, created_at: new Date() });
-    guardarVentaDetalle({ id: 8, sale_id: 7, product_id: 5, amount: 1, unit_price: 6500000, subtotal: 6500000, created_at: new Date() });
-    guardarVentaDetalle({ id: 9, sale_id: 7, product_id: 4, amount: 1, unit_price: 8000000, subtotal: 8000000, created_at: new Date() });
-    guardarVentaDetalle({ id: 10, sale_id: 8, product_id: 1, amount: 1, unit_price: 10000000, subtotal: 10000000, created_at: new Date() });
-    guardarVentaDetalle({ id: 11, sale_id: 9, product_id: 4, amount: 1, unit_price: 8000000, subtotal: 8000000, created_at: new Date() });
-    guardarVentaDetalle({ id: 12, sale_id: 10, product_id: 10, amount: 1, unit_price: 4500000, subtotal: 4500000, created_at: new Date() });
+    guardarVentaDetalle({ id: 1, sale_id: 1, product_id: 1, amount: 2, unit_price: 10000000, subtotal: 20000000, iva: 10, created_at: new Date(Date.now() - 86400000 * 3) });
+    guardarVentaDetalle({ id: 2, sale_id: 2, product_id: 5, amount: 1, unit_price: 6500000, subtotal: 6500000, iva: 10, created_at: new Date(Date.now() - 86400000 * 2) });
+    guardarVentaDetalle({ id: 3, sale_id: 3, product_id: 7, amount: 1, unit_price: 10500000, subtotal: 10500000, iva: 10, created_at: new Date(Date.now() - 86400000 * 1) });
+    guardarVentaDetalle({ id: 4, sale_id: 4, product_id: 9, amount: 2, unit_price: 2800000, subtotal: 5600000, iva: 10, created_at: new Date() });
+    guardarVentaDetalle({ id: 5, sale_id: 4, product_id: 7, amount: 1, unit_price: 10500000, subtotal: 10500000, iva: 10, created_at: new Date() });
+    guardarVentaDetalle({ id: 6, sale_id: 5, product_id: 3, amount: 1, unit_price: 4500000, subtotal: 4500000, iva: 10, created_at: new Date() });
+    guardarVentaDetalle({ id: 7, sale_id: 6, product_id: 2, amount: 1, unit_price: 9500000, subtotal: 9500000, iva: 10, created_at: new Date() });
+    guardarVentaDetalle({ id: 8, sale_id: 7, product_id: 5, amount: 1, unit_price: 6500000, subtotal: 6500000, iva: 10, created_at: new Date() });
+    guardarVentaDetalle({ id: 9, sale_id: 7, product_id: 4, amount: 1, unit_price: 8000000, subtotal: 8000000, iva: 10, created_at: new Date() });
+    guardarVentaDetalle({ id: 10, sale_id: 8, product_id: 1, amount: 1, unit_price: 10000000, subtotal: 10000000, iva: 10, created_at: new Date() });
+    guardarVentaDetalle({ id: 11, sale_id: 9, product_id: 4, amount: 1, unit_price: 8000000, subtotal: 8000000, iva: 10, created_at: new Date() });
+    guardarVentaDetalle({ id: 12, sale_id: 10, product_id: 10, amount: 1, unit_price: 4500000, subtotal: 4500000, iva: 10, created_at: new Date() });
 
     // 12. CuentasPorPagar (las compras a credito fueron: id 2, 4, 6, 8, 10)
     guardarCuentaPorPagar({ id: 1, purchase_id: 2, provider_id: 3, amount_total: 65000000, amount_paid: 35000000, amount_due: 30000000, status: "PARCIAL", expire_at: new Date(Date.now() + 86400000 * 25), created_at: new Date(Date.now() - 86400000 * 4), updated_at: null });

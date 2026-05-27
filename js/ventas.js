@@ -257,6 +257,8 @@ function guardarNuevaVenta() {
 
             // ── Guardar detalles y descontar stock ─────────────
             detallesTemp.forEach(d => {
+                const prod = cargarProducto(d.product_id);
+                const iva = prod ? prod.iva : 10;
                 guardarVentaDetalle({
                     id:         obtenerSiguienteId(cargarVentaDetalles()),
                     sale_id:    idVenta,
@@ -264,11 +266,11 @@ function guardarNuevaVenta() {
                     amount:     d.amount,
                     unit_price: d.unit_price,
                     subtotal:   d.subtotal,
+                    iva:        iva,
                     created_at: ahora
                 });
 
                 // Actualizar stock del producto
-                const prod = cargarProducto(d.product_id);
                 if (prod) {
                     prod.stock -= d.amount;
                     prod.updated_at = ahora;
