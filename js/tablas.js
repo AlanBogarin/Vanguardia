@@ -111,7 +111,7 @@ function renderBoolean(data) {
  * @returns {string}
  */
 function renderRaw(data) {
-    return new String(data);
+    return data ? new String(data) : "";
 }
 
 /**

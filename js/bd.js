@@ -150,9 +150,10 @@
  * @typedef {Object} Cobro
  * @property {number} id Identificador unico del cobro
  * @property {number} account_receivable_id Identificador de la cuenta por cobrar
+ * @property {number} sale_id Identificador de la venta pagada al CONTADO
  * @property {number} amount Cantidad cobrada
  * @property {MetodoPago} payment_method Método de pago
- * @property {string} obs Nro. Referencia / Comprobante / Observaciones del cobro
+ * @property {string} invoice Nro. Factura / Comprobante del cobro
  * @property {Date} created_at Fecha de creacion del cobro
  * 
  * @typedef {Object} Sesion
