@@ -102,6 +102,7 @@ const tablaVentas = crearDataTable("tabla_ventas", [
     { data: "user_id", title: "Usuario", render: data => renderString(cargarUsuario(data).username).toLowerCase() },
     { data: "payment_type", title: "Tipo de Pago", render: renderString },
     { data: "amount", title: "Monto", render: renderMoneda },
+    { data: "invoice", title: "Nro. Factura", render: renderString },
     { data: "obs", title: "Observaciones", render: renderString },
     { data: "created_at", title: "Fecha de Creación", render: renderFecha },
     { data: "updated_at", title: "Fecha de Modificación", render: renderFecha }

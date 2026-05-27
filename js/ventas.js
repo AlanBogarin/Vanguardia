@@ -32,18 +32,18 @@ let _uidCounter  = 0;
 // 3. DATATABLE PRINCIPAL DE VENTAS
 // ─────────────────────────────────────────────────────────────
 const tablaVentas = crearDataTable("tabla_ventas", [
-    { data: "id",           title: "Id Venta",     render: renderRaw    },
-    { data: "client_id",    title: "Cliente",       render: data => renderString(cargarCliente(data).legal_name) },
-    { data: "user_id",      title: "Usuario",       render: data => renderString(cargarUsuario(data).username).toLowerCase() },
-    { data: "payment_type", title: "Cond. Cobro",   render: renderString },
-    { data: "amount",       title: "Total",         render: renderMoneda },
-    { data: "obs",          title: "Observaciones", render: renderString },
-    { data: "created_at",   title: "Fecha",         render: renderFecha  }
+    { data: "id", title: "Id Venta", render: renderRaw },
+    { data: "client_id", title: "Cliente", render: data => renderString(cargarCliente(data).legal_name) },
+    { data: "user_id", title: "Usuario", render: data => renderString(cargarUsuario(data).username).toLowerCase() },
+    { data: "condition", title: "Condición", render: renderString },
+    { data: "amount", title: "Total", render: renderMoneda },
+    { data: "invoice", title: "Nro. Factura", render: renderString },
+    { data: "created_at", title: "Fecha", render: renderFecha  }
 ], {
     buttons: true, 
     pageLength: 10,
     searching: true,
-    exportTitle: "LISTADO DE USUARIOS",
+    exportTitle: "LISTADO DE VENTAS",
     actions: (venta) => ({
         edit: null,
         delete: null,
@@ -55,6 +55,12 @@ const tablaVentas = crearDataTable("tabla_ventas", [
                 content: '<i class="bi bi-eye"></i>',
                 properties: `onclick="abrirDetallesVenta(${venta.id})"`,
                 title: "Ver detalles"
+            },
+            {
+                color: "btn-danger",
+                content: '<i class="bi bi-file-earmark-pdf"></i>',
+                properties: `onclick="imprimirFacturaVenta(${venta.id})"`,
+                title: "Imprimir Factura"
             }
         ]
     })
@@ -165,6 +171,9 @@ function bindEventos() {
         cargarSelectProductos();
         generarVistaPreviewFactura();
     });
+
+    $("#btnAgregarCobro").on("click", agregarCobroTemp);
+    $("#btnConfirmarCobro").on("click", confirmarVentaYCobro);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -172,13 +181,22 @@ function bindEventos() {
 // ─────────────────────────────────────────────────────────────
 function agregarDetalle() {
     const productId = parseInt($("#producto_search").data("selected-id"));
-    const stock     = parseInt($("#producto_search").data("selected-stock")) || 0;
-    const cantidad  = parseInt($("#cantidad_input").val());
-    const precio    = parseFloat($("#precio_input").val());
+    const stock = parseInt($("#producto_search").data("selected-stock")) || 0;
+    const cantidad = parseInt($("#cantidad_input").val());
+    const precio = parseFloat($("#precio_input").val());
 
-    if (!productId)                { mensajeWarn("Seleccione un producto de la lista.");                              return; }
-    if (!cantidad || cantidad < 1) { mensajeWarn("Por favor ingrese cuántas unidades desea agregar (mínimo 1)."); return; }
-    if (!precio   || precio   <= 0){ mensajeWarn("El precio no puede ser cero.");                                     return; }
+    if (!productId) {
+        mensajeWarn("Seleccione un producto de la lista.");
+        return;
+    }
+    if (!cantidad || cantidad < 1) {
+        mensajeWarn("Por favor ingrese cuántas unidades desea agregar (mínimo 1).");
+        return;
+    }
+    if (!precio || precio <= 0){
+        mensajeWarn("El precio no puede ser cero.");
+        return;
+    }
 
     // Stock considerando lo ya cargado
     const yaAgregado = detallesTemp
@@ -255,88 +273,246 @@ function renderTablaDetalle() {
 // 9. GUARDAR VENTA
 // ─────────────────────────────────────────────────────────────
 function guardarNuevaVenta() {
-    const clientId   = parseInt($("#client_id").val());  // resuelto por resolverClienteDesdeInput
-    const paymentType = $("#payment_type").val();
-    const obs        = $("#obs").val().trim().toUpperCase();
+    const clientId = parseInt($("#client_id").val());
+    const condition = $("#condition").val();
 
     if (!clientId) { mensajeWarn("Por favor busque y seleccione un cliente de la lista."); return; }
     if (detallesTemp.length === 0) { mensajeWarn("Agregue al menos un producto."); return; }
 
     const total = detallesTemp.reduce((s, d) => s + d.subtotal, 0);
 
-    confirmar(
-        "Confirmar Venta",
-        `Total: <strong>Gs. ${formatGs(total)}</strong><br>Condición de cobro: ${paymentType}`,
-        () => {
-            const sesion  = cargarSesion();
-            const ventas  = cargarVentas();
-            const detalles = cargarVentaDetalles();
-            const idVenta  = obtenerSiguienteId(ventas);
-            const ahora    = new Date();
+    if (condition === "CONTADO") {
+        abrirModalCobroContado(total);
+    } else {
+        confirmar(
+            "Confirmar Venta a Crédito",
+            `Total: <strong>Gs. ${formatGs(total)}</strong><br>Condición de cobro: CRÉDITO`,
+            () => {
+                ejecutarGuardadoVenta("CREDITO", total, []);
+            },
+            () => {}
+        );
+    }
+}
 
-            // ── Guardar cabecera de venta ──────────────────────
-            // Nro de factura autonumérico: 001-001-XXXXXXX (7 dígitos del id de venta)
-            const nroFactura = `001-001-${String(idVenta).padStart(7, "0")}`;
+let cobrosTemp = [];
+let ventaTotalTemp = 0;
+let ultimaVentaIdParaFactura = null;
 
-            guardarVenta({
-                id:           idVenta,
-                client_id:    clientId,
-                user_id:      sesion ? sesion.user_id : null,
-                payment_type: paymentType,
-                amount:       total,
-                obs:          `FACT. ${nroFactura}${obs ? " | " + obs : ""}`,
-                created_at:   ahora,
-                updated_at:   null
+function abrirModalCobroContado(total) {
+    cobrosTemp = [];
+    ventaTotalTemp = total;
+    $("#cobro_total_pagar").text(formatGs(total) + " Gs.");
+    $("#cobro_monto").val("");
+    actualizarTablaCobrosTemp();
+    $("#modalCobroContado").modal("show");
+}
+
+function actualizarTablaCobrosTemp() {
+    const $tbody = $("#tabla_cobros_temp tbody").empty();
+    let totalPagado = 0;
+    cobrosTemp.forEach((c, idx) => {
+        totalPagado += c.amount;
+        $tbody.append(`
+            <tr>
+                <td>${c.payment_method}</td>
+                <td class="text-end">${formatGs(c.amount)}</td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-danger py-0" onclick="quitarCobroTemp(${idx})"><i class="bi bi-trash"></i></button>
+                </td>
+            </tr>
+        `);
+    });
+    const restante = ventaTotalTemp - totalPagado;
+    $("#cobro_restante").text(formatGs(restante) + " Gs.");
+    
+    if (restante === 0) {
+        $("#btnConfirmarCobro").prop("disabled", false);
+        $("#btnAgregarCobro").prop("disabled", true);
+    } else {
+        $("#btnConfirmarCobro").prop("disabled", true);
+        $("#btnAgregarCobro").prop("disabled", false);
+    }
+}
+
+function quitarCobroTemp(idx) {
+    cobrosTemp.splice(idx, 1);
+    actualizarTablaCobrosTemp();
+}
+
+function agregarCobroTemp() {
+    const method = $("#cobro_metodo").val();
+    const amount = parseFloat($("#cobro_monto").val());
+    
+    if (!amount || amount <= 0) {
+        mensajeWarn("Ingrese un monto válido.");
+        return;
+    }
+    
+    const totalPagado = cobrosTemp.reduce((sum, c) => sum + c.amount, 0);
+    const restante = ventaTotalTemp - totalPagado;
+    
+    if (amount > restante) {
+        mensajeWarn(`El monto no puede ser mayor al restante (${formatGs(restante)} Gs.)`);
+        return;
+    }
+    
+    cobrosTemp.push({ payment_method: method, amount: amount });
+    $("#cobro_monto").val("");
+    actualizarTablaCobrosTemp();
+}
+
+function confirmarVentaYCobro() {
+    const totalPagado = cobrosTemp.reduce((sum, c) => sum + c.amount, 0);
+    if (totalPagado !== ventaTotalTemp) {
+        mensajeWarn("El monto total pagado debe ser igual al total de la venta.");
+        return;
+    }
+    
+    $("#modalCobroContado").modal("hide");
+    ejecutarGuardadoVenta("CONTADO", ventaTotalTemp, cobrosTemp);
+}
+
+function ejecutarGuardadoVenta(condition, total, cobrosArray) {
+    const clientId = parseInt($("#client_id").val());
+    const sesion  = cargarSesion();
+    const ventas  = cargarVentas();
+    const idVenta  = obtenerSiguienteId(ventas);
+    const ahora    = new Date();
+
+    const nroFactura = `001-001-${String(idVenta).padStart(7, "0")}`;
+
+    guardarVenta({
+        id:           idVenta,
+        client_id:    clientId,
+        user_id:      sesion ? sesion.user_id : null,
+        condition:    condition,
+        amount:       total,
+        invoice:      nroFactura,
+        created_at:   ahora,
+        updated_at:   null
+    });
+
+    detallesTemp.forEach(d => {
+        const prod = cargarProducto(d.product_id);
+        const iva = prod ? prod.iva : 10;
+        guardarVentaDetalle({
+            id:         obtenerSiguienteId(cargarVentaDetalles()),
+            sale_id:    idVenta,
+            product_id: d.product_id,
+            amount:     d.amount,
+            unit_price: d.unit_price,
+            subtotal:   d.subtotal,
+            iva:        iva,
+            created_at: ahora
+        });
+
+        if (prod) {
+            prod.stock -= d.amount;
+            prod.updated_at = ahora;
+            guardarProducto(prod);
+        }
+    });
+
+    if (condition === "CREDITO") {
+        const cuentas = cargarCuentasPorCobrar();
+        guardarCuentaPorCobrar({
+            id:           obtenerSiguienteId(cuentas),
+            sale_id:      idVenta,
+            client_id:    clientId,
+            amount_total: total,
+            amount_paid:  0,
+            amount_due:   total,
+            status:       ESTADO_PENDIENTE,
+            expire_at:    new Date(ahora.getTime() + 86400000 * 30),
+            created_at:   ahora,
+            updated_at:   null
+        });
+    } else if (condition === "CONTADO") {
+        cobrosArray.forEach(c => {
+            guardarCobro({
+                id: obtenerSiguienteId(cargarCobros()),
+                account_receivable_id: null,
+                sale_id: idVenta,
+                amount: c.amount,
+                payment_method: c.payment_method,
+                obs: "VENTA AL CONTADO",
+                created_at: ahora
             });
+        });
+    }
 
-            // ── Guardar detalles y descontar stock ─────────────
-            detallesTemp.forEach(d => {
-                const prod = cargarProducto(d.product_id);
-                const iva = prod ? prod.iva : 10;
-                guardarVentaDetalle({
-                    id:         obtenerSiguienteId(cargarVentaDetalles()),
-                    sale_id:    idVenta,
-                    product_id: d.product_id,
-                    amount:     d.amount,
-                    unit_price: d.unit_price,
-                    subtotal:   d.subtotal,
-                    iva:        iva,
-                    created_at: ahora
-                });
+    ultimaVentaIdParaFactura = idVenta;
 
-                // Actualizar stock del producto
-                if (prod) {
-                    prod.stock -= d.amount;
-                    prod.updated_at = ahora;
-                    guardarProducto(prod);
+    $("#modalNuevaVenta").modal("hide");
+    limpiarModalVenta();
+    refrescarTablaVentas();
+    $("#modalImprimirFactura").modal("show");
+}
+
+function simularImpresionPDF() {
+    if (!ultimaVentaIdParaFactura) return;
+    imprimirFacturaVenta(ultimaVentaIdParaFactura);
+    $("#modalImprimirFactura").modal("hide");
+}
+
+function imprimirFacturaVenta(idVenta) {
+    const v = cargarVenta(idVenta);
+    if (!v) return;
+
+    const cli = cargarCliente(v.client_id);
+    const detalles = cargarVentaDetalles(v.id);
+
+    const bodyDetalles = [
+        [
+            {text: 'Producto', bold: true},
+            {text: 'Cant', bold: true, alignment: 'center'},
+            {text: 'Precio Unit.', bold: true, alignment: 'right'},
+            {text: 'Subtotal', bold: true, alignment: 'right'}
+        ]
+    ];
+
+    detalles.forEach(d => {
+        const p = cargarProducto(d.product_id);
+        bodyDetalles.push([
+            p ? p.name : 'Producto',
+            {text: d.amount.toString(), alignment: 'center'},
+            {text: formatGs(d.unit_price), alignment: 'right'},
+            {text: formatGs(d.subtotal), alignment: 'right'}
+        ]);
+    });
+
+    const docDefinition = {
+        content: [
+            { text: 'VANGUARDIA', style: 'header', alignment: 'center' },
+            { text: 'FACTURA DE VENTA', style: 'subheader', alignment: 'center' },
+            { text: '\n' },
+            {
+                columns: [
+                    { text: [ {text: 'Fecha: ', bold: true}, new Date(v.created_at).toLocaleString("es-PY") ] },
+                    { text: [ {text: 'Nro Factura: ', bold: true}, v.invoice ], alignment: 'right' }
+                ]
+            },
+            { text: [ {text: 'Cliente: ', bold: true}, cli ? cli.legal_name : '' ], margin: [0, 5, 0, 0] },
+            { text: [ {text: 'Condición: ', bold: true}, v.condition ], margin: [0, 2, 0, 10] },
+            {
+                table: {
+                    headerRows: 1,
+                    widths: ['*', 'auto', 'auto', 'auto'],
+                    body: bodyDetalles
                 }
-            });
+            },
+            { text: '\n' },
+            { text: [ {text: 'TOTAL: ', bold: true, fontSize: 14}, {text: 'Gs. ' + formatGs(v.amount), fontSize: 14} ], alignment: 'right' }
+        ],
+        styles: {
+            header: { fontSize: 22, bold: true },
+            subheader: { fontSize: 14, bold: true, margin: [0, 5, 0, 5] }
+        }
+    };
 
-            // ── Generar cuenta por cobrar si es CRÉDITO ────────
-            if (paymentType === "CREDITO") {
-                const cuentas = cargarCuentasPorCobrar();
-                guardarCuentaPorCobrar({
-                    id:           obtenerSiguienteId(cuentas),
-                    sale_id:      idVenta,
-                    client_id:    clientId,
-                    amount_total: total,
-                    amount_paid:  0,
-                    amount_due:   total,
-                    status:       ESTADO_PENDIENTE,
-                    expire_at:    new Date(ahora.getTime() + 86400000 * 30),
-                    created_at:   ahora,
-                    updated_at:   null
-                });
-            }
-
-            // ── Actualizar UI ──────────────────────────────────
-            $("#modalNuevaVenta").modal("hide");
-            limpiarModalVenta();
-            refrescarTablaVentas();
-            mensajeSuccess(`Venta #${idVenta} registrada correctamente.`);
-        },
-        () => {}
-    );
+    pdfMake.createPdf(docDefinition).download(`Factura_${v.invoice}.pdf`);
+    mensajeSuccess("Generando y descargando PDF...");
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -353,8 +529,8 @@ function abrirDetallesVenta(idVenta) {
     $("#ver_cliente").text(cli ? cli.legal_name : "—");
     $("#ver_fecha").text(v.created_at ? new Date(v.created_at).toLocaleString("es-PY") : "—");
     $("#ver_usuario").text(usr ? usr.username : "—");
-    $("#ver_tipo_pago").text(v.payment_type);
-    $("#ver_obs").text(v.obs || "—");
+    $("#ver_tipo_pago").text(v.condition);
+    $("#ver_obs").text(v.invoice || "—");
 
     const detalles = cargarVentaDetalles(idVenta);
     const $tbody = $("#tabla_ver_detalles tbody").empty();
@@ -449,7 +625,7 @@ function generarVistaPreviewFactura() {
     const ventas    = cargarVentas();
     const siguiente = obtenerSiguienteId(ventas);
     const preview   = `001-001-${String(siguiente).padStart(7, "0")}`;
-    $("#nro_factura_preview").val(preview);
+    $("#invoice").val(preview);
 }
 
 // ─────────────────────────────────────────────────────────────

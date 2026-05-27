@@ -82,34 +82,26 @@
                             </div>
                             <div class="form-text text-muted">Escriba el nombre o RUC del cliente.</div>
                         </div>
-                        <!-- Condición / Tipo de Cobro -->
+                        <!-- Condición de Cobro -->
                         <div class="col-md-6">
                             <label class="form-label">Condición de Cobro <span class="text-danger">*</span></label>
-                            <select id="payment_type" class="form-select" required>
+                            <select id="condition" class="form-select" required>
                                 <option value="CONTADO">CONTADO</option>
                                 <option value="CREDITO">CRÉDITO</option>
-                                <option value="TRANSFERENCIA">TRANSFERENCIA</option>
-                                <option value="TARJETA_CREDITO">TARJETA CRÉDITO</option>
-                                <option value="TARJETA_DEBITO">TARJETA DÉBITO</option>
-                                <option value="CHEQUE">CHEQUE</option>
                             </select>
                         </div>
                     </div>
 
-                    <!-- Nro. Factura autonumérico + Observaciones -->
+                    <!-- Nro. Factura autonumérico -->
                     <div class="row mb-3 g-2">
-                        <div class="col-md-5">
+                        <div class="col-md-12">
                             <label class="form-label">Nro. de Factura</label>
-                            <input type="text" id="nro_factura_preview"
+                            <input type="text" id="invoice"
                                    class="form-control text-uppercase fw-bold"
                                    readonly
-                                   title="Número generado automáticamente">
+                                   title="Número generado automáticamente"
+                                   placeholder="001-001-XXXXXXX">
                             <div class="form-text text-muted">Generado automáticamente.</div>
-                        </div>
-                        <div class="col-md-7">
-                            <label class="form-label">Observaciones</label>
-                            <input type="text" id="obs" class="form-control text-uppercase" maxlength="100"
-                                   placeholder="Observaciones adicionales (opcional)">
                         </div>
                     </div>
 
@@ -199,8 +191,8 @@
                         <div class="col-md-6"><strong>Cliente:</strong>   <span id="ver_cliente"></span></div>
                         <div class="col-md-6"><strong>Fecha:</strong>     <span id="ver_fecha"></span></div>
                         <div class="col-md-6"><strong>Usuario:</strong>   <span id="ver_usuario"></span></div>
-                        <div class="col-md-6"><strong>Cond. Cobro:</strong> <span id="ver_tipo_pago"></span></div>
-                        <div class="col-12"><strong>Obs:</strong>         <span id="ver_obs"></span></div>
+                        <div class="col-md-6"><strong>Condición:</strong> <span id="ver_tipo_pago"></span></div>
+                        <div class="col-12"><strong>Nro. Factura:</strong>         <span id="ver_obs"></span></div>
                     </div>
                     <table class="table table-sm table-bordered" id="tabla_ver_detalles">
                         <thead class="table-light">
@@ -295,6 +287,88 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- MODAL COBRO CONTADO                                     -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="modal fade" id="modalCobroContado" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title"><i class="bi bi-cash-coin"></i> Registrar Pagos</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>Total a Pagar:</strong></div>
+                        <div class="col-6 text-end" id="cobro_total_pagar">0 Gs.</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-6"><strong>Restante:</strong></div>
+                        <div class="col-6 text-end text-danger fw-bold" id="cobro_restante">0 Gs.</div>
+                    </div>
+                    <hr>
+                    <div class="row g-2 align-items-end mb-3">
+                        <div class="col-md-5">
+                            <label class="form-label small">Método de Pago</label>
+                            <select id="cobro_metodo" class="form-select form-select-sm">
+                                <option value="EFECTIVO">EFECTIVO</option>
+                                <option value="TRANSFERENCIA">TRANSFERENCIA</option>
+                                <option value="TARJETA_CREDITO">TARJETA CRÉDITO</option>
+                                <option value="TARJETA_DEBITO">TARJETA DÉBITO</option>
+                                <option value="CHEQUE">CHEQUE</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label small">Monto</label>
+                            <input type="number" id="cobro_monto" class="form-control form-control-sm" min="1">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-sm btn-primary w-100" id="btnAgregarCobro">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <table class="table table-sm table-bordered" id="tabla_cobros_temp">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Método</th>
+                                <th class="text-end">Monto</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" id="btnConfirmarCobro" disabled>Confirmar Venta y Cobro</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- MODAL IMPRIMIR FACTURA                                  -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="modal fade" id="modalImprimirFactura" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="bi bi-printer"></i> Venta Exitosa</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <p>La venta se guardó correctamente.</p>
+                    <button type="button" class="btn btn-outline-danger w-100" onclick="simularImpresionPDF()">
+                        <i class="bi bi-file-earmark-pdf-fill"></i> Imprimir Factura (PDF)
+                    </button>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
         </div>
     </div>
 
