@@ -231,6 +231,10 @@ async function btnEditarUsuario() {
     //     contra
     //     return;
     // }
+    } else if (contra && cargarSesion().user_id !== id && tienePermiso(cargarRol(usuario.rol_id).flags, PERMISOS.USUARIOS_EDITAR)) {
+        mensajeError("No puedes cambiar la contraseña de un administrador de usuarios");
+        contraElem.focus();
+        return;
     } else if (!nombre) {
         mensajeError("El nombre es obligatorio");
         nombreElem.focus();
@@ -387,10 +391,10 @@ function ventanaAnularUsuario(id) {
         "Anular Usuario",
         "¿Deseas proceder con la anulación?",
         () => {
-            const pagoPendiente = cargarCompras().filter(c => c.user_id === usuario.id)
-                .some(c => cargarCuentaPorPagar(null, c.id).status !== "PAGADA");
-            const cobroPendiente = cargarVentas().filter(c => c.user_id === usuario.id)
-                .some(c => cargarCuentaPorCobrar(null, c.id).status !== "COBRADA");
+            const pagoPendiente = cargarCompras().filter(c => c.user_id === usuario.id && c.condition === CONDICION_CREDITO)
+                .some(c => cargarCuentaPorPagar(null, c.id).status !== ESTADO_PAGADA);
+            const cobroPendiente = cargarVentas().filter(c => c.user_id === usuario.id && c.condition === CONDICION_CREDITO)
+                .some(c => cargarCuentaPorCobrar(null, c.id).status !== ESTADO_COBRADA);
             if (pagoPendiente || cobroPendiente) {
                 mensajeError("No se puede anular el usuario porque tiene pagos o cobros pendientes");
                 return;
@@ -402,7 +406,10 @@ function ventanaAnularUsuario(id) {
             mensajeSuccess("Usuario anulado correctamente");
         },
         () => mensajeError("Anulación cancelada")
-    );
+    ).set("labels", {
+        ok: "Sí, anular",
+        cancel: "No, cancelar"
+    });
 }
 
 function cargarDatos() {

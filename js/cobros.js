@@ -89,9 +89,9 @@ function btnGuardarCobro() {
     cuenta.amount_paid += monto;
     cuenta.amount_due -= monto;
     if (cuenta.amount_due === 0) {
-        cuenta.status = 'COBRADA';
+        cuenta.status = ESTADO_COBRADA;
     } else {
-        cuenta.status = 'PARCIAL';
+        cuenta.status = ESTADO_PARCIAL;
     }
     cuenta.updated_at = new Date();
     guardarCuentaPorCobrar(cuenta);
@@ -108,7 +108,7 @@ function cargarDatos() {
     // Cargar select
     const cuentaElem = document.getElementById("account_receivable_id");
     cuentaElem.innerHTML = '<option value="">Seleccione una cuenta pendiente...</option>'
-        + cargarCuentasPorCobrar().filter(c => c.status !== 'COBRADA').map(c => `
+        + cargarCuentasPorCobrar().filter(c => c.status !== ESTADO_COBRADA).map(c => `
             <option value="${c.id}" data-saldo="${c.amount_due}">
                 ID: ${c.id} - ${cargarCliente(c.client_id).legal_name} (Pendiente: ${renderMoneda(c.amount_due)})
             </option>`

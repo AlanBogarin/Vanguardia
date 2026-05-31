@@ -39,9 +39,9 @@ function cargarTablaCuentas() {
         const cli = clientes.find(client => client.id === c.client_id);
         
         let badgeClase = 'bg-secondary';
-        if (c.status === 'PENDIENTE') badgeClase = 'bg-danger';
-        else if (c.status === 'PARCIAL') badgeClase = 'bg-warning text-dark';
-        else if (c.status === 'COBRADA') badgeClase = 'bg-success';
+        if (c.status === ESTADO_PENDIENTE) badgeClase = 'bg-danger';
+        else if (c.status === ESTADO_PARCIAL) badgeClase = 'bg-warning text-dark';
+        else if (c.status === ESTADO_COBRADA) badgeClase = 'bg-success';
 
         return {
             ...c,
@@ -74,7 +74,7 @@ function cargarTablaCuentas() {
                 data: null,
                 render: function (data, type, row) {
                     let btnCobrar = "";
-                    if (row.status !== 'COBRADA') {
+                    if (row.status !== ESTADO_COBRADA) {
                         btnCobrar = `<a href="cobros.html?cuenta_id=${row.id}" class="btn btn-sm btn-success me-1" title="Realizar Cobro"><i class="bi bi-cash-stack"></i> Cobrar</a>`;
                     }
                     return `

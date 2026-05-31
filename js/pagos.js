@@ -140,7 +140,7 @@ function cargarDatos() {
     // Cargar Select
     const cuentaElem = document.getElementById("cuenta_id");
     cuentaElem.innerHTML = '<option value="">Seleccione una cuenta pendiente...</option>'
-        + cargarCuentasPorPagar().filter(c => c.status !== "PAGADA").map(c => `<option value="${c.id}">
+        + cargarCuentasPorPagar().filter(c => c.status !== ESTADO_PAGADA).map(c => `<option value="${c.id}">
             ID: ${c.id} - ${cargarProveedor(c.provider_id).legal_name} (Pendiente: ${renderMoneda(c.amount_due)})
         </option>`).join('');
     // Precargar desde url
