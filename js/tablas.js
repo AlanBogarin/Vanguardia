@@ -422,6 +422,30 @@ async function estilizarPDF(doc, title) {
         };
         doc.styles.tableHeader = { bold: true, color: 'white', alignment: 'center', fontSize: 9 };
         doc.defaultStyle.fontSize = 8;
+        // TABLA 100% ANCHO
+        const body = doc.content[tableIndex].table.body;
+        const numCols = body[0]?.length || 1;
+        doc.content[tableIndex].table.widths = Array(numCols).fill('*');
+        // ALINEAR COLUMNAS NUMÉRICAS A LA DERECHA
+        // Detecta columnas donde todas las celdas de datos son solo números formateados
+        const reNumero = /^\s*[\d.,]+\s*$/;
+        for (let col = 0; col < numCols; col++) {
+            const esNumerica = body.slice(1).every(row => {
+                const celda = row[col];
+                const texto = typeof celda === 'object' ? (celda.text ?? '') : (celda ?? '');
+                return reNumero.test(String(texto));
+            });
+            if (esNumerica) {
+                body.forEach((row, rowIdx) => {
+                    const celda = row[col];
+                    if (typeof celda === 'object') {
+                        celda.alignment = rowIdx === 0 ? 'center' : 'right';
+                    } else {
+                        row[col] = { text: celda, alignment: rowIdx === 0 ? 'center' : 'right' };
+                    }
+                });
+            }
+        }
     }
 }
 

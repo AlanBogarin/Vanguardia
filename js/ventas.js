@@ -1,36 +1,24 @@
 /**
- * MÓDULO DE VENTAS - VANGUARDIA
- * Programación III - UNCA
- *
- * Usa las funciones y estructuras definidas en:
- *   bd.js      → cargarVentas, guardarVenta, guardarVentaDetalle, cargarClientes,
- *                cargarProductos, cargarUsuario, guardarCuentaPorCobrar,
- *                obtenerSiguienteId, KEY_SESION, cargarSesion, etc.
- *   alertas.js → validarSesion, mensajeSuccess, mensajeError, mensajeWarn,
- *                confirmar, alertar
- *   tablas.js  → crearDataTable, renderRaw, renderString, renderMoneda, renderFecha
- * 
  * @typedef {import('jquery')}
  * @typedef {import('./bd')}
  * @typedef {import('./alertas')}
  * @typedef {import('./tablas')}
+ * 
+ * @typedef {Object} DetalleTemp
+ * @property {number} _uid 
+ * @property {number} product_id 
+ * @property {string} nombre 
+ * @property {number} amount 
+ * @property {number} unit_price 
+ * @property {number} subtotal 
  */
 
-// ─────────────────────────────────────────────────────────────
-// 1. GUARD DE SESIÓN  (usa validarSesion de alertas.js)
-// ─────────────────────────────────────────────────────────────
-validarSesion();
+const modalVerDetalles = new bootstrap.Modal(document.getElementById("modalVerDetalles"));
 
-// ─────────────────────────────────────────────────────────────
-// 2. ESTADO LOCAL DEL MÓDULO
-// ─────────────────────────────────────────────────────────────
-/** @type {Array<{_uid:number, product_id:number, nombre:string, amount:number, unit_price:number, subtotal:number}>} */
+/** @type {DetalleTemp} */
 let detallesTemp = [];
 let _uidCounter  = 0;
 
-// ─────────────────────────────────────────────────────────────
-// 3. DATATABLE PRINCIPAL DE VENTAS
-// ─────────────────────────────────────────────────────────────
 const tablaVentas = crearDataTable("tabla_ventas", [
     { data: "id", title: "Id Venta", render: renderRaw },
     { data: "client_id", title: "Cliente", render: data => renderString(cargarCliente(data).legal_name) },
@@ -66,9 +54,6 @@ const tablaVentas = crearDataTable("tabla_ventas", [
     })
 });
 
-// ─────────────────────────────────────────────────────────────
-// 4. INICIALIZACIÓN
-// ─────────────────────────────────────────────────────────────
 $(document).ready(function () {
     refrescarTablaVentas();
     cargarSelectClientes();
@@ -76,16 +61,10 @@ $(document).ready(function () {
     bindEventos();
 });
 
-// ─────────────────────────────────────────────────────────────
-// 5. REFRESCO DE TABLA
-// ─────────────────────────────────────────────────────────────
 function refrescarTablaVentas() {
     cargarDataTable(tablaVentas, cargarVentas());
 }
 
-// ─────────────────────────────────────────────────────────────
-// 6. SELECTS DEL MODAL
-// ─────────────────────────────────────────────────────────────
 function cargarSelectClientes() {
     // Llenar datalist para búsqueda de clientes
     const $dl = $("#datalist_clientes").empty();
@@ -138,9 +117,6 @@ function resolverProductoDesdeInput() {
     }
 }
 
-// ─────────────────────────────────────────────────────────────
-// 7. BINDING DE EVENTOS
-// ─────────────────────────────────────────────────────────────
 function bindEventos() {
     // Autocompletar precio al escribir/seleccionar producto del datalist
     $("#producto_search").on("input change", resolverProductoDesdeInput);
@@ -176,9 +152,6 @@ function bindEventos() {
     $("#btnConfirmarCobro").on("click", confirmarVentaYCobro);
 }
 
-// ─────────────────────────────────────────────────────────────
-// 8. AGREGAR / QUITAR DETALLE
-// ─────────────────────────────────────────────────────────────
 function agregarDetalle() {
     const productId = parseInt($("#producto_search").data("selected-id"));
     const stock = parseInt($("#producto_search").data("selected-stock")) || 0;
@@ -269,9 +242,6 @@ function renderTablaDetalle() {
     $("#total_venta").text(formatGs(total));
 }
 
-// ─────────────────────────────────────────────────────────────
-// 9. GUARDAR VENTA
-// ─────────────────────────────────────────────────────────────
 function guardarNuevaVenta() {
     const clientId = parseInt($("#client_id").val());
     const condition = $("#condition").val();
@@ -515,9 +485,6 @@ function imprimirFacturaVenta(idVenta) {
     mensajeSuccess("Generando y descargando PDF...");
 }
 
-// ─────────────────────────────────────────────────────────────
-// 10. VER DETALLES DE UNA VENTA
-// ─────────────────────────────────────────────────────────────
 function abrirDetallesVenta(idVenta) {
     const v = cargarVenta(idVenta);
     if (!v) { mensajeError("Venta no encontrada."); return; }
@@ -553,10 +520,6 @@ function abrirDetallesVenta(idVenta) {
     $("#modalVerDetalles").modal("show");
 }
 
-// ─────────────────────────────────────────────────────────────
-// 11. REGISTRAR NUEVO CLIENTE DESDE EL MODAL DE VENTA
-// Usa un modal Bootstrap dedicado (mismo patrón que clientes.html)
-// ─────────────────────────────────────────────────────────────
 function abrirModalNuevoCliente() {
     document.getElementById("formNuevoCliente").reset();
     document.getElementById("formNuevoCliente").classList.remove("was-validated");
@@ -600,9 +563,6 @@ function btnGuardarNuevoCliente() {
     mensajeSuccess(`Cliente "${nuevoCliente.legal_name}" registrado y seleccionado.`);
 }
 
-// ─────────────────────────────────────────────────────────────
-// 12. LIMPIAR MODAL
-// ─────────────────────────────────────────────────────────────
 function limpiarModalVenta() {
     detallesTemp = [];
     _uidCounter  = 0;
@@ -618,9 +578,6 @@ function limpiarModalVenta() {
     generarVistaPreviewFactura();
 }
 
-// ─────────────────────────────────────────────────────────────
-// 13. UTILIDAD: Preview Nro. Factura
-// ─────────────────────────────────────────────────────────────
 function generarVistaPreviewFactura() {
     const ventas    = cargarVentas();
     const siguiente = obtenerSiguienteId(ventas);
@@ -628,9 +585,13 @@ function generarVistaPreviewFactura() {
     $("#invoice").val(preview);
 }
 
-// ─────────────────────────────────────────────────────────────
-// 14. UTILIDAD: Formatear Guaraníes
-// ─────────────────────────────────────────────────────────────
 function formatGs(n) {
     return new Intl.NumberFormat("es-PY", { minimumFractionDigits: 0 }).format(n || 0);
 }
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (!validarPermiso(PERMISOS.USUARIOS_VER)) return;
+    if (!tienePermisoSesion(PERMISOS.USUARIOS_CREAR)) document.getElementById("btnModalNuevo").style.display = "none";
+    cargarDatos();
+});
