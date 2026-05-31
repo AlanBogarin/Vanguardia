@@ -1,42 +1,39 @@
-/** @typedef {import('alertify')} */
-/** @typedef {import('jquery')} */
-/** @typedef {import('./bd')} */
-/** @typedef {import('./alertas')} */
+/**
+ * @typedef {import('jquery')}
+ * @typedef {import('./bd')}
+ * @typedef {import('./alertas')}
+ * @typedef {import('./tablas')}
+ */
 
-var tabla = null;
-const modalNCobro = new bootstrap.Modal(document.getElementById('modalNuevoCobro'));
+const modalNuevo = new bootstrap.Modal(document.getElementById('modalNuevoCobro'));
 
-function formatoMoneda(valor) {
-    return 'Gs. ' + Number(valor).toLocaleString('es-PY');
-}
+// Nro. Timbrado?
+const tablaCobros = crearDataTable("tabla_cobros", [
+    { data: "id", title: "Id Cobro", render: renderRaw },
+    { data: "account_receivable_id", title: "Id Cuenta", render: renderRaw },
+    { data: "sale_id", title: "Id Venta", render: renderRaw },
+    { data: null, title: "Cliente", render: data => renderString(cargarCliente(
+        (data.sale_id ? cargarVenta(data.sale_id) : cargarCuentaPorCobrar(data.account_receivable_id)).client_id
+    ).legal_name) },
+    { data: "amount", title: "Monto Cobrado", render: renderMoneda },
+    { data: "payment_method", title: "Método de pago", render: renderString },
+    { data: "invoice", title: "Nro. Factura / Comprobante", render: renderString },
+    { data: "created_at", title: "Fecha de Cobro", render: renderFecha }
+], {
+    buttons: true,
+    pageLength: 10,
+    searching: true,
+    exportTitle: "LISTADO DE COBROS",
+    actions: null
+    // actions: tienePermisoSesion(PERMISOS.COBROS_EDITAR) ? (cobro) => ({
+    //     edit: `ventanaEditarCobro(${cobro.id})`,
+    //     delete: `ventanaEliminarCobro(${cobro.id})`,
+    //     enable: null,
+    //     disable: null
+    // }) : null
+});
 
-function obtenerSiguienteId() {
-    const cobros = cargarCobros();
-    if (cobros.length === 0) return 1;
-    return Math.max(...cobros.map(c => c.id)) + 1;
-}
-
-function cargarOpcionesCuentas(preselectId = null) {
-    const cuentas = cargarCuentasPorCobrar().filter(c => c.status !== 'COBRADA');
-    const clientes = cargarClientes();
-    const select = document.getElementById("account_receivable_id");
-
-    let options = '<option value="">Seleccione una cuenta pendiente...</option>';
-    cuentas.forEach(c => {
-        const cli = clientes.find(client => client.id === c.client_id);
-        const cliName = cli ? cli.legal_name : 'Desconocido';
-        options += `<option value="${c.id}" data-saldo="${c.amount_due}">ID: ${c.id} - ${cliName} (Pendiente: ${formatoMoneda(c.amount_due)})</option>`;
-    });
-
-    select.innerHTML = options;
-
-    if (preselectId) {
-        select.value = preselectId;
-        actualizarSaldoPendiente();
-    }
-}
-
-function actualizarSaldoPendiente() {
+function onchangeCuenta() {
     const select = document.getElementById("account_receivable_id");
     const option = select.options[select.selectedIndex];
     const saldoInput = document.getElementById("saldo_pendiente");
@@ -44,7 +41,7 @@ function actualizarSaldoPendiente() {
     
     if (option && option.value !== "") {
         const saldo = option.getAttribute("data-saldo");
-        saldoInput.value = formatoMoneda(saldo);
+        saldoInput.value = renderMoneda(saldo);
         montoInput.max = saldo;
         montoInput.value = saldo; // Sugerir el saldo completo
     } else {
@@ -54,42 +51,37 @@ function actualizarSaldoPendiente() {
     }
 }
 
-function guardarNuevoCobro(e) {
-    e.preventDefault();
+function btnGuardarCobro() {
     const cuentaIdElem = document.getElementById("account_receivable_id");
-    const montoElem = document.getElementById("monto");
-    const metodoElem = document.getElementById("metodo");
-    const referenciaElem = document.getElementById("referencia");
-
     const cuenta_id = parseInt(cuentaIdElem.value);
+    const montoElem = document.getElementById("monto");
     const monto = parseFloat(montoElem.value);
+    const metodoElem = document.getElementById("metodo");
     const metodo = metodoElem.value;
-    const referencia = referenciaElem.value.trim();
-
-    if (!cuenta_id || isNaN(monto) || monto <= 0 || !metodo) {
-        alertify.error("Complete los campos obligatorios correctamente.");
+    const facturaElem = document.getElementById("factura");
+    const factura = facturaElem.value.trim();
+    if (!cuenta_id || isNaN(monto) || monto <= 0 || !metodo || !factura) {
+        mensajeError("Complete los campos obligatorios correctamente.");
         return;
     }
-
     const cuenta = cargarCuentaPorCobrar(cuenta_id);
     if (!cuenta) {
-        alertify.error("La cuenta seleccionada no existe.");
+        mensajeError("La cuenta seleccionada no existe.");
         return;
     }
-
     if (monto > cuenta.amount_due) {
-        alertify.error("El monto a cobrar no puede ser mayor al saldo pendiente.");
+        mensajeError("El monto a cobrar no puede ser mayor al saldo pendiente.");
         return;
     }
-
     // Guardar Cobro
-    const nuevo_id = obtenerSiguienteId();
+    const nuevo_id = obtenerSiguienteId(cargarCobros());
     guardarCobro({
         id: nuevo_id,
         account_receivable_id: cuenta_id,
+        sale_id: null,
         amount: monto,
         payment_method: metodo,
-        reference_number: referencia,
+        invoice: factura,
         created_at: new Date()
     });
 
@@ -104,82 +96,36 @@ function guardarNuevoCobro(e) {
     cuenta.updated_at = new Date();
     guardarCuentaPorCobrar(cuenta);
 
-    this.reset();
     document.getElementById("saldo_pendiente").value = "";
     
-    cargarTablaCobros();
-    cargarOpcionesCuentas(); // Refrescar cuentas (puede que la que se cobró ya no esté pendiente)
-    modalNCobro.hide();
-    alertify.success("Cobro registrado exitosamente");
+    cargarDatos();
+    modalNuevo.hide();
+    mensajeSuccess("Cobro registrado exitosamente");
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-    cargarTablaCobros();
-    cargarOpcionesCuentas();
+function cargarDatos() {
+    cargarDataTable(tablaCobros, cargarCobros());
+    // Cargar select
+    const cuentaElem = document.getElementById("account_receivable_id");
+    cuentaElem.innerHTML = '<option value="">Seleccione una cuenta pendiente...</option>'
+        + cargarCuentasPorCobrar().filter(c => c.status !== 'COBRADA').map(c => `
+            <option value="${c.id}" data-saldo="${c.amount_due}">
+                ID: ${c.id} - ${cargarCliente(c.client_id).legal_name} (Pendiente: ${renderMoneda(c.amount_due)})
+            </option>`
+    ).join("");
+    // Precargar desde url
+    const cuenta_id = parseInt(new URLSearchParams(window.location.search).get("cuenta_id"));
+    if (!cuenta_id) return;
+    const cuenta = cargarCuentaPorCobrar(cuenta_id);
+    if (!cuenta) return;
+    modalNuevo.show();
+    window.history.replaceState({}, document.title, window.location.pathname);
+    cuentaElem.value = cuenta_id;
+    onchangeCuenta();
+}
 
-    document.getElementById("account_receivable_id").addEventListener("change", actualizarSaldoPendiente);
-    document.getElementById("formNuevoCobro").addEventListener("submit", guardarNuevoCobro);
-
-    // Leer parámetros de URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const cuentaParam = urlParams.get('cuenta_id');
-    if (cuentaParam) {
-        cargarOpcionesCuentas(parseInt(cuentaParam));
-        modalNCobro.show();
-        window.history.replaceState({}, document.title, window.location.pathname);
-    }
+document.addEventListener('DOMContentLoaded', () => {
+    if (!validarPermiso(PERMISOS.COBROS_VER)) return;
+    if (!tienePermisoSesion(PERMISOS.COBROS_CREAR)) document.getElementById("btnModalNuevo").style.display = "none";
+    cargarDatos();
 });
-
-function cargarTablaCobros() {
-    const cuentas = cargarCuentasPorCobrar();
-    const clientes = cargarClientes();
-    
-    const cobros = cargarCobros().map(c => {
-        const cuenta = cuentas.find(acc => acc.id === c.account_receivable_id);
-        const cli = cuenta ? clientes.find(client => client.id === cuenta.client_id) : null;
-        
-        return {
-            ...c,
-            cliente_name: cli ? cli.legal_name : 'Desconocido',
-            monto_fmt: formatoMoneda(c.amount),
-            fecha_fmt: new Date(c.created_at).toLocaleString()
-        };
-    });
-
-    if (tabla) {
-        tabla.clear().rows.add(cobros).draw();
-        return;
-    }
-
-    tabla = new DataTable("#tabla_cobros", {
-        data: cobros,
-        order: [[0, 'desc']], // Ordenar por ID descendente
-        columns: [
-            { data: 'id' },
-            { data: 'account_receivable_id' },
-            { data: 'cliente_name' },
-            { data: 'monto_fmt' },
-            { data: 'payment_method' },
-            { data: 'reference_number' },
-            { data: 'fecha_fmt' }
-        ],
-        dom: '<"d-flex justify-content-between align-items-center mb-2"Bf>rtip',
-        buttons: [
-            {
-                extend: 'print',
-                text: '<i class="bi bi-printer"></i> Imprimir',
-            },
-            {
-                extend: 'excelHtml5',
-                text: '<i class="bi bi-filetype-xlsx"></i> Exportar a Excel',
-            },
-            {
-                extend: 'pdfHtml5',
-                text: '<i class="bi bi-filetype-pdf"></i> Exportar a PDF',
-            }
-        ],
-        language: {
-            url: "dt/es-ES.json"
-        }
-    });
-}

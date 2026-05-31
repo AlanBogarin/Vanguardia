@@ -33,7 +33,7 @@ const tablaClientes = crearDataTable("tabla_clientes", [
     { data: "tel", title: "Teléfono", render: renderString },
     { data: "email", title: "Correo Electrónico", render: renderString },
     { data: "address", title: "Dirección", render: renderString },
-    { data: "active", title: "Activo", renderBoolean },
+    { data: "active", title: "Activo", render: renderBoolean },
     { data: "created_at", title: "Fecha de Creación", render: renderFecha },
     { data: "updated_at", title: "Fecha de Modificación", render: renderFecha }
 ]);
@@ -102,6 +102,7 @@ const tablaVentas = crearDataTable("tabla_ventas", [
     { data: "user_id", title: "Usuario", render: data => renderString(cargarUsuario(data).username).toLowerCase() },
     { data: "payment_type", title: "Tipo de Pago", render: renderString },
     { data: "amount", title: "Monto", render: renderMoneda },
+    { data: "invoice", title: "Nro. Factura", render: renderString },
     { data: "obs", title: "Observaciones", render: renderString },
     { data: "created_at", title: "Fecha de Creación", render: renderFecha },
     { data: "updated_at", title: "Fecha de Modificación", render: renderFecha }

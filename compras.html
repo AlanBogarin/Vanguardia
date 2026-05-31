@@ -105,12 +105,17 @@
                         </div>
                     </div>
                     <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold text-black">Número de Factura *</label>
-                        <input type="text" id="invoice" class="form-control text-uppercase" placeholder="Ej: 001-001-0001234" pattern="\d{3}-\d{3}-\d{7}" required>
-                        <div class="invalid-feedback">Formato requerido: 000-000-0000000</div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-black">Número de Timbrado *</label>
+                        <input type="text" id="timbrado" class="form-control" placeholder="Ej: 12345678" pattern="\d{8}" required>
+                        <div class="invalid-feedback">Debe contener 8 dígitos.</div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-black">Número de Factura *</label>
+                        <input type="text" id="invoice" class="form-control text-uppercase" placeholder="Ej: 001-001-123" pattern="\d{3}-\d{3}-\d{3}" required>
+                        <div class="invalid-feedback">Formato requerido: 000-000-000</div>
+                    </div>
+                    <div class="col-md-4">
                         <label class="form-label">Observaciones / Notas</label>
                         <input type="text" id="notas_adicionales" class="form-control text-uppercase" maxlength="100" placeholder="Opcional...">
                     </div>
@@ -134,11 +139,11 @@
                         <input type="number" id="precio_input" class="form-control" placeholder="Precio Unit.">
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label small text-muted">IVA Tipo</label>
-                        <select id="iva_select_manual" class="form-select fw-bold text-center">
+                        <label class="form-label small text-muted">IVA</label>
+                        <select id="iva_select_manual" class="form-select fw-bold text-center" disabled>
+                            <option value="">-</option>
                             <option value="10">10%</option>
                             <option value="5">5%</option>
-                            <option value="0">Exenta</option>
                         </select>
                     </div>
                     <div class="col-md-1">
@@ -171,16 +176,16 @@
                                     <td colspan="6" class="p-2 bg-light">
                                         <div class="d-flex justify-content-start gap-4 small text-muted font-monospace">
                                             <div>
-                                                <label class="fw-bold">IVA 10%:</label>
-                                                <span id="total_iva10" class="badge bg-dark fs-6 ms-1">Gs. 0</span>
-                                            </div>
-                                            <div>
                                                 <label class="fw-bold">IVA 5%:</label>
                                                 <span id="total_iva5" class="badge bg-dark fs-6 ms-1">Gs. 0</span>
                                             </div>
                                             <div>
-                                                <label class="fw-bold">EXENTA:</label>
-                                                <span id="total_exenta" class="badge bg-secondary fs-6 ms-1">Gs. 0</span>
+                                                <label class="fw-bold">IVA 10%:</label>
+                                                <span id="total_iva10" class="badge bg-dark fs-6 ms-1">Gs. 0</span>
+                                            </div>
+                                            <div>
+                                                <label class="fw-bold text-primary">Total IVA:</label>
+                                                <span id="total_iva_sum_nueva" class="badge bg-primary fs-6 ms-1">Gs. 0</span>
                                             </div>
                                         </div>
                                     </td>
@@ -211,7 +216,8 @@
                         <div class="col-md-6"><strong>Fecha:</strong> <span id="ver_fecha"></span></div>
                         <div class="col-md-6"><strong>Usuario:</strong> <span id="ver_usuario"></span></div>
                         <div class="col-md-6"><strong>Tipo Pago:</strong> <span id="ver_tipo_pago"></span></div>
-                        <div class="col-12 mt-2"><strong>Nro. Factura:</strong> <span id="ver_invoice"></span></div>
+                        <div class="col-md-6 mt-2"><strong>Nro. Timbrado:</strong> <span id="ver_timbrado"></span></div>
+                        <div class="col-md-6 mt-2"><strong>Nro. Factura:</strong> <span id="ver_invoice"></span></div>
                     </div>
                     <table class="table table-sm table-bordered" id="tabla_ver_detalles">
                         <thead class="table-light">
@@ -220,7 +226,6 @@
                                 <th>Cantidad</th>
                                 <th>Precio Unit.</th>
                                 <th>IVA</th> <th>Subtotal</th>
-                                <th>Subtotal</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -229,20 +234,20 @@
                                 <th id="ver_total_compra" class="table-light text-primary fw-bold">Gs. 0</th>
                             </tr>
                             <tr class="small text-muted">
-                                <th colspan="3" class="text-end border-0">Liquidación de IVA:</th>
+                                <th colspan="3" class="text-end border-0"> IVA:</th>
                                 <td colspan="2" class="border-0 p-0">
                                     <table class="table table-sm table-borderless m-0 py-0" style="font-size: 0.85rem;">
                                         <tr>
-                                            <td class="py-0 text-end" style="width: 50%;">Exenta:</td>
-                                            <td class="py-0 fw-bold" id="ver_total_exenta">Gs. 0</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="py-0 text-end">IVA 5%:</td>
+                                            <td class="py-0 text-end borde-0">LiqIVA 5%:</td>
                                             <td class="py-0 fw-bold" id="ver_total_iva5">Gs. 0</td>
                                         </tr>
                                         <tr>
-                                            <td class="py-0 text-end">IVA 10%:</td>
+                                            <td class="py-0 text-end borde-0">LiqIVA 10%:</td>
                                             <td class="py-0 fw-bold" id="ver_total_iva10">Gs. 0</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-0 text-end borde-0 fw-bold text-primary">Total IVA:</td>
+                                            <td class="py-0 fw-bold text-primary" id="ver_total_iva_sum">Gs. 0</td>
                                         </tr>
                                     </table>
                                 </td>

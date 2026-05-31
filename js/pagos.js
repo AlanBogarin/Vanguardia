@@ -5,28 +5,6 @@
  * @typedef {import('./tablas')}
  */
 
-/**
- * @typedef {Object} CuentaPorPagar
- * @property {number} id Identificador unico de la cuenta a pagar
- * @property {number} purchase_id Identificador de la compra
- * @property {number} provider_id Identificador del proveedor
- * @property {number} amount_total Cantidad total a pagar
- * @property {number} amount_paid Cantidad pagada
- * @property {number} amount_due Cantidad pendiente a pagar (amount_total - amount_paid)
- * @property {EstadoPago} status Estado de la cuenta
- * @property {Date} expire_at Fecha de vencimiento del pago
- * @property {Date} created_at Fecha de creacion de la compra
- * @property {Date?} updated_at Fecha de modificacion de la compra
- * 
- * @typedef {Object} Pago
- * @property {number} id Identificador unico del pago
- * @property {number} account_payable_id Identificador de la cuenta por pagar
- * @property {number} amount Cantidad pagada
- * @property {MetodoPago} payment_method Método de pago
- * @property {string} obs Observaciones del pago
- * @property {Date} created_at Fecha de creacion del pago
- */
-
 const modalNuevo = new bootstrap.Modal(document.getElementById('modalNuevoPago'));
 
 const tablaPagos = crearDataTable("tabla_pagos", [
@@ -39,7 +17,7 @@ const tablaPagos = crearDataTable("tabla_pagos", [
     }},
     { data: "amount", title: "Cantidad Pagada", render: renderMoneda },
     { data: "payment_method", title: "Método de pago", render: renderString },
-    { data: "obs", title: "Observaciones", render: renderString },
+    { data: "obs", title: "Nro. Referencia / Comprobante / Observaciones", render: renderString },
     { data: "created_at", title: "Fecha de creación", render: renderFecha }
 ], {
     buttons: true,

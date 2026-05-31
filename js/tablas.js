@@ -111,7 +111,7 @@ function renderBoolean(data) {
  * @returns {string}
  */
 function renderRaw(data) {
-    return new String(data);
+    return data ? new String(data) : "";
 }
 
 /**
@@ -120,114 +120,61 @@ function renderRaw(data) {
  * @param {DataTableConfig} config
  * @returns {any}
  */
-function crearDataTable(elementId, columns, config={}) {
-    const searching = config?.searching ?? false;
-    const buttons = config?.buttons ?? false;
-    const pageLength = config?.pageLength ?? 5;
-    const actions = config?.actions ?? null;
-    const exportTitle = config?.exportTitle ?? "LISTADO";
-    const exportColumns = Array.from({ length: columns.length }, (_, index) => index);
-    const extras = { dom: 'rtip'}
-    if (searching || buttons) {
-        extras.dom = '<"d-'
-        + (buttons ? 'flex' : 'grid')
-        + ' justify-content-between align-items-center mb-2"'
-        + (buttons ? 'B' : '')
-        + (searching ? 'f' : '')
-        + `>${extras.dom}`;
+function crearDataTable(elementId, columns, config) {
+    const default_config = {
+        searching: true,
+        buttons: false,
+        pageLength: 10,
+        exportTitle: "Reporte",
+        actions: null
+    };
+    if (config) {
+        Object.assign(default_config, config);
     }
-    if (actions) {
+
+    if (default_config.actions) {
         columns.push({
             data: null,
             title: "Acciones",
-            render: data => {
-                const actionButtons = [];
-                const actionCallbacks = actions(data);
-                if (actionCallbacks.edit) {
-                    actionButtons.push({ color: "btn-warning", onclick: actionCallbacks.edit, title: "Editar", icon: "bi-pencil-square" });
+            className: "text-center",
+            render: function (data, type, row) {
+                const acts = default_config.actions(row);
+                if (!acts) return "";
+                let html = '<div class="btn-group btn-group-sm" role="group">';
+                if (acts.edit) html += `<button type="button" class="btn btn-warning text-dark" onclick="${acts.edit}" title="Editar"><i class="bi bi-pencil-square"></i></button>`;
+                if (acts.delete) html += `<button type="button" class="btn btn-danger" onclick="${acts.delete}" title="Eliminar"><i class="bi bi-trash"></i></button>`;
+                if (acts.enable) html += `<button type="button" class="btn btn-success" onclick="${acts.enable}" title="Habilitar"><i class="bi bi-check-circle"></i></button>`;
+                if (acts.disable) html += `<button type="button" class="btn btn-secondary" onclick="${acts.disable}" title="Deshabilitar"><i class="bi bi-x-circle"></i></button>`;
+                if (acts.customs) {
+                    for (const c of acts.customs) {
+                        if (c.href) {
+                            html += `<a class="btn ${c.color}" href="${c.href}" title="${c.title}" ${c.properties || ''}>${c.content}</a>`;
+                        } else {
+                            html += `<button type="button" class="btn ${c.color}" title="${c.title}" ${c.properties || ''}>${c.content}</button>`;
+                        }
+                    }
                 }
-                if (actionCallbacks.delete) {
-                    actionButtons.push({ color: "btn-danger", onclick: actionCallbacks.delete, title: "Eliminar", icon: "bi-trash" });
-                }
-                if (actionCallbacks.enable) {
-                    actionButtons.push({ color: "btn-success", onclick: actionCallbacks.enable, title: "Activar", icon: "bi-check-circle" });
-                }
-                if (actionCallbacks.disable) {
-                    actionButtons.push({ color: "btn-secondary", onclick: actionCallbacks.disable, title: "Anular", icon: "bi-ban" });
-                }
-                let actionsHtml = "";
-                for (const action of actionButtons.toReversed()) {
-                    actionsHtml = `
-                        <button class="btn btn-sm ${action.color} me-1"
-                                onclick="${action.onclick}"
-                                title="${action.title}">
-                            <i class="bi ${action.icon}"></i>
-                        </button>
-                    ` + actionsHtml;
-                }
-                for (const custom of actionCallbacks.customs || []) {
-                    const tag = custom.href ? 'a' : 'button';
-                    const hrefAttr = custom.href ? `href="${custom.href}"` : '';
-                    const propiedades = custom.properties ? custom.properties.trim() : '';
-                    actionsHtml = `
-                        <${tag} class="btn btn-sm ${custom.color.trim()} me-1"
-                                ${hrefAttr}
-                                ${propiedades}
-                                title="${custom.title.trim()}">
-                            ${custom.content.trim()}
-                        </${tag}>
-                    ` + actionsHtml;
-                }
-                return `<div class="d-flex align-items-center">${actionsHtml}</div>`;
+                html += '</div>';
+                return html;
             }
         });
     }
-    if (buttons) {
-        extras.buttons = {
-            dom: { button: { className: 'btn' } },
-            buttons: [
-                {
-                    extend: "print",
-                    // title: exportTitle,
-                    text: '<i class="bi bi-printer-fill"></i> Imprimir',
-                    titleAttr: "Imprimir",
-                    className: "btn btn-sm btn-info",
-                    exportOptions: { columns: exportColumns },
-                    customize: win => estilizarImpresion(win, exportTitle)
-                },
-                {
-                    extend: "excelHtml5",
-                    title: null,
-                    text: '<i class="bi bi-file-earmark-excel-fill"></i> Exportar a Excel',
-                    titleAttr: "Exportar a Excel",
-                    className: "btn btn-sm btn-success",
-                    exportOptions: { columns: exportColumns },
-                    customize: xlsx => estilizarExcel(xlsx, exportTitle),
-                },
-                {
-                    extend: "pdfHtml5",
-                    title: null,
-                    text: '<i class="bi bi-file-earmark-pdf-fill"></i> Exportar a PDF',
-                    titleAttr: "Exportar a PDF",
-                    className: "btn btn-sm btn-danger",
-                    exportOptions: { columns: exportColumns },
-                    // orientation: () => determinarOrientacion(`#${elementId}`),
-                    orientation: 'landscape',
-                    pageSize: 'A4',
-                    customize: doc => estilizarPDF(doc, exportTitle)
-                }
-            ]
-        }
-    }
-    return new DataTable(`#${elementId}`, {
+
+    const dtConfig = {
         columns: columns,
-        language: spanish,
-        responsive: true,
-        searching: searching,
-        lengthChange: false,
-        pageLength: pageLength,
-        ...extras
-    });
+        pageLength: default_config.pageLength,
+        searching: default_config.searching,
+        language: {
+            url: "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+        }
+    };
+
+    if (default_config.buttons) {
+        dtConfig.dom = '<"d-flex justify-content-between align-items-center mb-2"Bf>rtip';
+        dtConfig.buttons = botonesCorporativos(default_config.exportTitle, ':visible');
+    }
+
+    return new DataTable(`#${elementId}`, dtConfig);
 }
 
 /**
@@ -458,7 +405,7 @@ function botonesCorporativos(titulo, columns) {
             titleAttr: 'Imprimir',
             className: 'btn btn-sm btn-info',
             exportOptions: { columns: columns },
-            customize: estilizarImpresion
+            customize: estilizarImpresion 
         },
         {
             extend: 'excelHtml5',
@@ -467,24 +414,23 @@ function botonesCorporativos(titulo, columns) {
             className: 'btn btn-sm btn-success',
             exportOptions: { columns: columns },
             title: null,
-            messageTop:
-                'VANGUARDIA\n' +
+            messageTop: 'VANGUARDIA\n' + 
                 'Comercialización de Productos Informáticos y Tecnológicos\n' +
                 'Dir.: Previstero Juan Carlos García / Madrinas de Guerra – Bo. Villa Armando – Concepción\n' +
                 'Tel.: 0985-495-253\n\n' +
                 titulo,
             messageBottom: '\nReporte generado: ' + renderFecha(new Date()),
-            customize: estilizarExcel
+            customize: estilizarExcel 
         },
         {
             extend: 'pdfHtml5',
             text: '<i class="bi bi-file-earmark-pdf-fill"></i> PDF',
             titleAttr: 'Exportar a PDF',
             className: 'btn btn-sm btn-danger',
-            exportOptions: {columns: columns},
+            exportOptions: { columns: columns },
             orientation: 'landscape',
             pageSize: 'A4',
-            customize: estilizarPDF
+            customize: estilizarPDF 
         }
     ];
 }
