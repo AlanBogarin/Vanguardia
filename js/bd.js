@@ -199,29 +199,24 @@ const REGEX_CATEGORIA = /^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ\s-.]{3,}$/;
 const REGEX_PRODUCTO = /^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ\s-.]{5,}$/;
 const REGEX_TEXTO = /^[A-Z0-9ÑÁÉÍÓÚÜ\s\-\.\,\/\(\)\%\+\*\&\#\[\]]{5,50}$/;
 
-/** @type {MetodoPago} */
 const METODO_TRANSFERENCIA = "TRANSFERENCIA";
-/** @type {MetodoPago} */
 const TARJETA_CREDITO = "TARJETA_CREDITO";
-/** @type {MetodoPago} */
 const TARJETA_DEBITO = "TARJETA_DEBITO";
-/** @type {MetodoPago} */
 const METODO_EFECTIVO = "EFECTIVO";
-/** @type {MetodoPago} */
-const METODO_CREDITO = "CREDITO";
-/** @type {MetodoPago} */
 const METODO_CHEQUE = "CHEQUE";
-/** @type {MetodoPago[]} */
-const METODO_PAGO = [METODO_TRANSFERENCIA, TARJETA_CREDITO, TARJETA_DEBITO, METODO_EFECTIVO, METODO_CREDITO, METODO_CHEQUE]
+const METODO_PAGO = [METODO_TRANSFERENCIA, TARJETA_CREDITO, TARJETA_DEBITO, METODO_EFECTIVO, METODO_CHEQUE]
 
-/** @type {EstadoPago} */
+const CONDICION_EFECTIVO = "EFECTIVO";
+const CONDICION_CREDITO = "CREDITO";
+const CONDICION_PAGO = [CONDICION_EFECTIVO, CONDICION_CREDITO];
+
 const ESTADO_PENDIENTE = "PENDIENTE";
-/** @type {EstadoPago} */
 const ESTADO_PARCIAL = "PARCIAL";
-/** @type {EstadoPago} */
 const ESTADO_PAGADA = "PAGADA";
-/** @type {EstadoPago[]} */
 const ESTADO_PAGO = [ESTADO_PENDIENTE, ESTADO_PARCIAL, ESTADO_PAGADA];
+
+const ESTADO_COBRADA = "COBRADA";
+const ESTADO_COBRO = [ESTADO_PENDIENTE, ESTADO_PARCIAL, ESTADO_COBRADA];
 
 const PERMISOS = {
     // MODULO USUARIOS (Bits 1-6)
@@ -800,7 +795,7 @@ function eliminarCompra(id) {
     compras.splice(index, 1);
     guardarBD(KEY_COMPRAS, compras);
 }
-    
+
 /**
  * Recupera un detalle de compra mediante el ID
  * @param {number} id Identificador de la compra

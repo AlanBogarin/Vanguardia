@@ -45,13 +45,21 @@ const logoBase64 = descargarRecurso("img/logo_x128.jpg")
         reader.readAsDataURL(blob);
     }));
 
+function renderDate(data) {
+    return new Date(data).toLocaleDateString(Intl.DateTimeFormat, { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+function renderTime(data) {
+    return new Date(data).toLocaleTimeString(Intl.DateTimeFormat, { hour: "2-digit", minute: "2-digit", second: "2-digit"});
+}
+
 /**
  * 
  * @param {string?} data 
  * @returns {string}
  */
 function renderFecha(data) {
-    return data ? new Date(data).toLocaleString("es-PY") : "";
+    return `${renderDate(data)} ${renderTime(data)}`;
 }
 
 /**
@@ -121,60 +129,81 @@ function renderRaw(data) {
  * @returns {any}
  */
 function crearDataTable(elementId, columns, config) {
-    const default_config = {
-        searching: true,
-        buttons: false,
-        pageLength: 10,
-        exportTitle: "Reporte",
-        actions: null
-    };
-    if (config) {
-        Object.assign(default_config, config);
+    const dtconfig = Object.assign({
+        language: spanish,
+        responsive: true,
+        searching: false,
+        lengthChange: false,
+        pageLength: 5,
+        dom: "rtip",
+        exportTitle: "REPORTE"
+    }, config);
+    const exportColumns = Array.from({ length: columns.length }, (_, index) => index);
+    if (dtconfig.searching || dtconfig.actions) {
+        dtconfig.dom = '<"d-'
+            + (dtconfig.buttons ? 'flex' : 'grid')
+            + ' justify-content-between align-items-center mb-2"'
+            + (dtconfig.buttons ? 'B' : '')
+            + (dtconfig.searching ? 'f' : '')
+            + `>${dtconfig.dom}`;
     }
-
-    if (default_config.actions) {
+    if (dtconfig.actions) {
         columns.push({
             data: null,
             title: "Acciones",
             className: "text-center",
-            render: function (data, type, row) {
-                const acts = default_config.actions(row);
-                if (!acts) return "";
-                let html = '<div class="btn-group btn-group-sm" role="group">';
-                if (acts.edit) html += `<button type="button" class="btn btn-warning text-dark" onclick="${acts.edit}" title="Editar"><i class="bi bi-pencil-square"></i></button>`;
-                if (acts.delete) html += `<button type="button" class="btn btn-danger" onclick="${acts.delete}" title="Eliminar"><i class="bi bi-trash"></i></button>`;
-                if (acts.enable) html += `<button type="button" class="btn btn-success" onclick="${acts.enable}" title="Habilitar"><i class="bi bi-check-circle"></i></button>`;
-                if (acts.disable) html += `<button type="button" class="btn btn-secondary" onclick="${acts.disable}" title="Deshabilitar"><i class="bi bi-x-circle"></i></button>`;
-                if (acts.customs) {
-                    for (const c of acts.customs) {
-                        if (c.href) {
-                            html += `<a class="btn ${c.color}" href="${c.href}" title="${c.title}" ${c.properties || ''}>${c.content}</a>`;
-                        } else {
-                            html += `<button type="button" class="btn ${c.color}" title="${c.title}" ${c.properties || ''}>${c.content}</button>`;
-                        }
-                    }
+            render: data => {
+                const actions = dtconfig.actions(data);
+                const buttons = [
+                    ...(actions.edit ? [{
+                        color: "btn-warning",
+                        content: "<i class=\"bi bi-pencil-square\"></i>",
+                        title: "Editar",
+                        properties: `onclick="${actions.edit}"`,
+                    }] : []),
+                    ...(actions.delete ? [{
+                        color: "btn-danger",
+                        content: "<i class=\"bi bi-trash\"></i>",
+                        title: "Eliminar",
+                        properties: `onclick="${actions.delete}"`,
+                    }] : []),
+                    ...(actions.enable ? [{
+                        color: "btn-success",
+                        content: "<i class=\"bi bi-check-circle\"></i>",
+                        title: "Activar",
+                        properties: `onclick="${actions.enable}"`,
+                    }] : []),
+                    ...(actions.disable ? [{
+                        color: "btn-secondary",
+                        content: "<i class=\"bi bi-ban\"></i>",
+                        title: "Anular",
+                        properties: `onclick="${actions.disable}"`,
+                    }] : []),
+                    ...(actions.customs || [])
+                ];
+                let actionsHtml = "";
+                for (const button of buttons) {
+                    const tag = button.href ? 'a' : 'button';
+                    const href = button.href ? `href="${button.href}"` : '';
+                    const properties = button.properties ? button.properties.trim() : '';
+                    actionsHtml = `
+                        <${tag} class="btn btn-sm ${button.color.trim()} me-1"
+                                ${href}
+                                ${properties}
+                                title="${button.title.trim()}">
+                            ${button.content.trim()}
+                        </${tag}>
+                    ` + actionsHtml;
                 }
-                html += '</div>';
-                return html;
+                return `<div class="d-flex align-items-center">${actionsHtml}</div>`;
             }
         });
     }
-
-    const dtConfig = {
-        columns: columns,
-        pageLength: default_config.pageLength,
-        searching: default_config.searching,
-        language: {
-            url: "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
-        }
-    };
-
-    if (default_config.buttons) {
-        dtConfig.dom = '<"d-flex justify-content-between align-items-center mb-2"Bf>rtip';
-        dtConfig.buttons = botonesCorporativos(default_config.exportTitle, ':visible');
+    if (dtconfig.buttons) {
+        dtconfig.buttons = botonesCorporativos(dtconfig.exportTitle, exportColumns);
     }
-
-    return new DataTable(`#${elementId}`, dtConfig);
+    dtconfig.columns = columns;
+    return new DataTable(`#${elementId}`, dtconfig);
 }
 
 /**
@@ -396,41 +425,40 @@ async function estilizarPDF(doc, title) {
     }
 }
 
-function botonesCorporativos(titulo, columns) {
-    titulo = titulo.toUpperCase();
-    return [
-        {
-            extend: 'print',
-            text: '<i class="bi bi-printer-fill"></i> Imprimir',
-            titleAttr: 'Imprimir',
-            className: 'btn btn-sm btn-info',
-            exportOptions: { columns: columns },
-            customize: estilizarImpresion 
-        },
-        {
-            extend: 'excelHtml5',
-            text: '<i class="bi bi-file-earmark-excel-fill"></i> Excel',
-            titleAttr: 'Exportar a Excel',
-            className: 'btn btn-sm btn-success',
-            exportOptions: { columns: columns },
-            title: null,
-            messageTop: 'VANGUARDIA\n' + 
-                'Comercialización de Productos Informáticos y Tecnológicos\n' +
-                'Dir.: Previstero Juan Carlos García / Madrinas de Guerra – Bo. Villa Armando – Concepción\n' +
-                'Tel.: 0985-495-253\n\n' +
-                titulo,
-            messageBottom: '\nReporte generado: ' + renderFecha(new Date()),
-            customize: estilizarExcel 
-        },
-        {
-            extend: 'pdfHtml5',
-            text: '<i class="bi bi-file-earmark-pdf-fill"></i> PDF',
-            titleAttr: 'Exportar a PDF',
-            className: 'btn btn-sm btn-danger',
-            exportOptions: { columns: columns },
-            orientation: 'landscape',
-            pageSize: 'A4',
-            customize: estilizarPDF 
-        }
-    ];
+function botonesCorporativos(exportTitle, exportColumns) {
+    exportTitle = exportTitle.toUpperCase();
+    return {
+        dom: { button: { className: "btn" } },
+        buttons: [
+            {
+                extend: "print",
+                text: "<i class=\"bi bi-printer-fill\"></i> Imprimir",
+                titleAttr: "Imprimir",
+                className: "btn btn-sm btn-info",
+                exportOptions: { columns: exportColumns },
+                customize: win => estilizarImpresion(win, exportTitle)
+            },
+            {
+                extend: "excelHtml5",
+                title: null,
+                text: "<i class=\"bi bi-file-earmark-excel-fill\"></i> Exportar a Excel",
+                titleAttr: "Exportar a Excel",
+                className: "btn btn-sm btn-success",
+                exportOptions: { columns: exportColumns },
+                customize: xlsx => estilizarExcel(xlsx, exportTitle),
+            },
+            {
+                extend: "pdfHtml5",
+                title: null,
+                text: "<i class=\"bi bi-file-earmark-pdf-fill\"></i> Exportar a PDF",
+                titleAttr: "Exportar a PDF",
+                className: "btn btn-sm btn-danger",
+                exportOptions: { columns: exportColumns },
+                // orientation: () => determinarOrientacion(`#${elementId}`),
+                orientation: 'landscape',
+                pageSize: 'A4',
+                customize: doc => estilizarPDF(doc, exportTitle)
+            }
+        ]
+    };
 }
