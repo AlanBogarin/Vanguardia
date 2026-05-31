@@ -33,7 +33,7 @@ const tablaClientes = crearDataTable("tabla_clientes", [
     { data: "tel", title: "Teléfono", render: renderString },
     { data: "email", title: "Correo Electrónico", render: renderString },
     { data: "address", title: "Dirección", render: renderString },
-    { data: "active", title: "Activo", renderBoolean },
+    { data: "active", title: "Activo", render: renderBoolean },
     { data: "created_at", title: "Fecha de Creación", render: renderFecha },
     { data: "updated_at", title: "Fecha de Modificación", render: renderFecha }
 ]);

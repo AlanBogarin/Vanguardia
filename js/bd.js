@@ -82,6 +82,7 @@
  * @property {MetodoPago} payment_type Tipo de pago
  * @property {number} amount Total de pago
  * @property {string} invoice Nro. Factura de la compra
+ * @property {string} timbrado Nro. Timbrado de la compra
  * @property {Date} created_at Fecha de creacion de la compra
  * @property {Date?} updated_at Fecha de modificacion de la compra
  * 
@@ -776,6 +777,7 @@ function guardarCompra(compra) {
         payment_type: compra.payment_type,
         amount: compra.amount,
         invoice: compra.invoice.toUpperCase(),
+        timbrado: compra.timbrado,
         created_at: compra.created_at,
         updated_at: compra.updated_at
     }

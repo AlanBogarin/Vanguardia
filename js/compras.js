@@ -31,7 +31,8 @@ function cargarSelects() {
 
     let prodOptions = '<option value="">Seleccione un producto...</option>';
     productos.forEach(p => {
-        prodOptions += `<option value="${p.id}" data-precio="${p.sale_price}">${p.name} (Stock: ${p.stock})</option>`;
+        const iva = p.iva !== undefined ? p.iva : 10;
+        prodOptions += `<option value="${p.id}" data-precio="${p.sale_price}" data-iva="${iva}">${p.name} (Stock: ${p.stock})</option>`;
     });
     document.getElementById("producto_select").innerHTML = prodOptions;
 }
@@ -74,7 +75,7 @@ function agregarDetalle() {
     prodSelect.value = "";
     cantidadInput.value = "";
     precioInput.value = "";
-    document.getElementById("iva_select_manual").value = "10"; // Vuelve a dejarlo en 10% por defecto
+    document.getElementById("iva_select_manual").value = ""; // Vuelve a dejarlo vacío por defecto
     
     renderizarDetalles();
 }
@@ -124,10 +125,20 @@ function renderizarDetalles() {
     const liquidacionIva10 = Math.round(acumIva10 / 11);
 
     // Muestra los resultados en el nuevo diseño del pie de tabla
-    document.getElementById("total_compra").textContent = formatoMoneda(total);
-    document.getElementById("total_exenta").textContent = formatoMoneda(acumExenta);
-    document.getElementById("total_iva5").textContent = formatoMoneda(liquidacionIva5);
-    document.getElementById("total_iva10").textContent = formatoMoneda(liquidacionIva10);
+    const elTotalCompra = document.getElementById("total_compra");
+    if (elTotalCompra) elTotalCompra.textContent = formatoMoneda(total);
+
+    // const elTotalExenta = document.getElementById("total_exenta");
+    // if (elTotalExenta) elTotalExenta.textContent = formatoMoneda(acumExenta);
+
+    const elTotalIva5 = document.getElementById("total_iva5");
+    if (elTotalIva5) elTotalIva5.textContent = formatoMoneda(liquidacionIva5);
+
+    const elTotalIva10 = document.getElementById("total_iva10");
+    if (elTotalIva10) elTotalIva10.textContent = formatoMoneda(liquidacionIva10);
+
+    const elTotalIvaSum = document.getElementById("total_iva_sum_nueva");
+    if (elTotalIvaSum) elTotalIvaSum.textContent = formatoMoneda(liquidacionIva5 + liquidacionIva10);
 }
 
 
@@ -137,15 +148,22 @@ function guardarNuevaCompra(e) {
     const proveedor_id = parseInt(document.getElementById("provider_id").value);
     const tipo_pago = document.getElementById("payment_type").value;
     const invoice = document.getElementById("invoice").value.trim();
+    const timbrado = document.getElementById("timbrado").value.trim();
 
     if (isNaN(proveedor_id)) {
         alertify.error("Debe seleccionar un proveedor.");
         return;
     }
 
-    const regexInvoice = /^\d{3}-\d{3}-\d{7}$/;
+    const regexTimbrado = /^\d{8}$/;
+    if (!regexTimbrado.test(timbrado)) {
+        alertify.error("El número de timbrado debe tener 8 dígitos.");
+        return;
+    }
+
+    const regexInvoice = /^\d{3}-\d{3}-\d{3}$/;
     if (!regexInvoice.test(invoice)) {
-        alertify.error("El número de factura debe tener el formato 000-000-0000000.");
+        alertify.error("El número de factura debe tener el formato 000-000-000.");
         return;
     }
 
@@ -166,6 +184,7 @@ function guardarNuevaCompra(e) {
         payment_type: tipo_pago,
         amount: amount,
         invoice: invoice,
+        timbrado: timbrado,
         created_at: new Date(),
         updated_at: null
     };
@@ -246,6 +265,7 @@ function verDetallesCompra(e) {
         const elFecha = document.getElementById("ver_fecha");
         const elPago = document.getElementById("ver_tipo_pago");
         const elInvoice = document.getElementById("ver_invoice");
+        const elTimbrado = document.getElementById("ver_timbrado");
 
         if (elId) elId.textContent = compra.id;
         if (elProv) elProv.textContent = prov ? (prov.legal_name || prov.name || 'Proveedor') : 'Desconocido';
@@ -253,6 +273,7 @@ function verDetallesCompra(e) {
         if (elFecha) elFecha.textContent = new Date(compra.created_at).toLocaleString();
         if (elPago) elPago.textContent = compra.payment_type;
         if (elInvoice) elInvoice.textContent = compra.invoice || 'SIN FACTURA';
+        if (elTimbrado) elTimbrado.textContent = compra.timbrado || 'SIN TIMBRADO';
 
         const detalles = cargarCompraDetalles().filter(d => d.purchase_id === compra.id);
         const productos = cargarProductos();
@@ -314,6 +335,9 @@ function verDetallesCompra(e) {
         const elIva10 = document.getElementById("ver_total_iva10");
         if (elIva10) elIva10.textContent = formatoMoneda(liquidacionVerIva10);
 
+        const elIvaSum = document.getElementById("ver_total_iva_sum");
+        if (elIvaSum) elIvaSum.textContent = formatoMoneda(liquidacionVerIva5 + liquidacionVerIva10);
+
         // Abre la ventana flotante pase lo que pase
         modalVerDet.show();
     }
@@ -333,6 +357,22 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById("btnAgregarDetalle").addEventListener("click", agregarDetalle);
     document.getElementById("formNuevaCompra").addEventListener("submit", guardarNuevaCompra);
     document.addEventListener("click", verDetallesCompra);
+
+    const productoSelect = document.getElementById("producto_select");
+    if (productoSelect) {
+        productoSelect.addEventListener("change", function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const ivaSelect = document.getElementById("iva_select_manual");
+            if (selectedOption && selectedOption.value) {
+                const iva = selectedOption.getAttribute('data-iva');
+                if (iva !== null && iva !== undefined) {
+                    ivaSelect.value = iva;
+                }
+            } else {
+                ivaSelect.value = "";
+            }
+        });
+    }
 
     // Filtrado interactivo de proveedor
     const elBuscarProv = document.getElementById("buscar_proveedor");
@@ -448,6 +488,7 @@ function cargarTablaCompras() {
                 className: 'btn btn-danger'
             }
         ],
+        
         // ... resto del código
 // ... resto del código
         language: {
