@@ -60,7 +60,7 @@ const tablaVentas = crearDataTable("tabla_ventas", [
                 color: "btn-danger",
                 content: '<i class="bi bi-file-earmark-pdf"></i>',
                 properties: `onclick="imprimirFacturaVenta(${venta.id})"`,
-                title: "Imprimir Factura"
+                title: "Reimprimir Factura"
             }
         ]
     })
