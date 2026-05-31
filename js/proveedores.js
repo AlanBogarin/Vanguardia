@@ -12,7 +12,7 @@ const modalEliminar = new bootstrap.Modal(document.getElementById("modalEliminar
 let _guardandoProveedor = false;
 let _editandoProveedor = false;
 
-const REGEX_RUC_PROVEEDOR = /^\d+-\d$/;
+const REGEX_RUC_PROVEEDOR = /^(\d+-\d|\d+)$/;
 const REGEX_TEL_PROVEEDOR = /^\d{9,15}$/;
 
 const tablaProveedores = crearDataTable("tabla_proveedores", [
@@ -82,7 +82,7 @@ function btnNuevoProveedor() {
             rucElem.focus();
             return;
         } else if (!ruc.match(REGEX_RUC_PROVEEDOR)) {
-            mensajeError("El RUC debe contener solo números, un guión y un dígito al final (Ej: 80012345-1)");
+            mensajeError("El RUC o cédula debe contener solo números, o números con guión y dígito verificador (Ej: 1234567 o 80012345-1)");
             rucElem.focus();
             return;
         } else if (cargarProveedores().some(p => p.ruc === ruc)) {
@@ -205,7 +205,7 @@ function btnEditarProveedor() {
             rucElem.focus();
             return;
         } else if (!ruc.match(REGEX_RUC_PROVEEDOR)) {
-            mensajeError("El RUC debe contener solo números, un guión y un dígito al final (Ej: 80012345-1)");
+            mensajeError("El RUC o cédula debe contener solo números, o números con guión y dígito verificador (Ej: 1234567 o 80012345-1)");
             rucElem.focus();
             return;
         } else if (cargarProveedores().some(p => p.ruc === ruc && p.id !== id)) {
