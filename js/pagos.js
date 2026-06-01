@@ -1,3 +1,4 @@
+/* global bootstrap */
 /**
  * @typedef {import('jquery')}
  * @typedef {import('./bd')}
@@ -5,18 +6,24 @@
  * @typedef {import('./tablas')}
  */
 
-const modalNuevo = new bootstrap.Modal(document.getElementById('modalNuevoPago'));
+const modalNuevoPago = new bootstrap.Modal(document.getElementById('modalNuevoPago'));
 
 const tablaPagos = crearDataTable("tabla_pagos", [
     { data: "id", title: "Id Pago", render: renderRaw },
-    { data: "account_payable_id", title: "Cuenta por Pagar", render: data => {
-        const cuenta = cargarCuentaPorPagar(data);
-        return `
+    {
+        data: "account_payable_id", title: "Cuenta por Pagar", render: data => {
+            const cuenta = cargarCuentaPorPagar(data);
+            return `
         ${data} - ${renderMoneda(cuenta.amount_total)} - ${cargarProveedor(cuenta.provider_id).legal_name}
         `
-    }},
+        }
+    },
     { data: "amount", title: "Cantidad Pagada", render: renderMoneda },
-    { data: "payment_method", title: "Método de pago", render: renderString },
+    {
+        data: "payment_method", title: "Método de pago", render: (data, type, row) => {
+            return row.bank ? `${renderString(data)} (${renderString(row.bank)})` : renderString(data);
+        }
+    },
     { data: "obs", title: "Nro. Referencia / Comprobante / Observaciones", render: renderString },
     { data: "created_at", title: "Fecha de creación", render: renderFecha }
 ], {
@@ -41,9 +48,21 @@ function ventanaNuevoPago() {
     const cuentaElem = document.getElementById("cuenta_id");
     const saldoElem = document.getElementById("saldo_pendiente");
     const montoElem = document.getElementById("monto");
+    const metodoElem = document.getElementById("metodo");
+    const divBanco = document.getElementById("div_banco");
+    const bancoElem = document.getElementById("banco");
+    const obsElem = document.getElementById("obs");
+
     saldoElem.value = "";
     montoElem.value = "";
-    modalNuevo.show();
+    metodoElem.value = "";
+    divBanco.classList.add("d-none");
+    bancoElem.value = "";
+    bancoElem.required = false;
+    obsElem.value = "";
+    obsElem.placeholder = "";
+
+    modalNuevoPago.show();
 }
 
 function onchangeCuenta() {
@@ -58,18 +77,27 @@ function onchangeCuenta() {
     montoElem.value = montoElem.max = cuenta.amount_due;
 }
 
-/**
- * @param {Event} e 
- */
 function onchangeMetodoPago() {
     const metodo = document.getElementById("metodo").value;
     const obsElem = document.getElementById("obs");
+    const divBanco = document.getElementById("div_banco");
+    const bancoElem = document.getElementById("banco");
+
+    if (metodo === "TRANSFERENCIA" || metodo === "CHEQUE") {
+        divBanco.classList.remove("d-none");
+        bancoElem.required = true;
+    } else {
+        divBanco.classList.add("d-none");
+        bancoElem.value = "";
+        bancoElem.required = false;
+    }
+
     if (metodo === "TARJETA_CREDITO" || metodo === "TARJETA_DEBITO") {
         obsElem.placeholder = "EJ: ÚLTIMOS 4 DÍGITOS + NRO DE AUTORIZACIÓN";
     } else if (metodo === "TRANSFERENCIA") {
-        obsElem.placeholder = "EJ: NRO DE TRANSACCIÓN / CÓDIGO DE BANCO";
+        obsElem.placeholder = "EJ: NRO DE TRANSACCIÓN";
     } else if (metodo === "CHEQUE") {
-        obsElem.placeholder = "EJ: NRO DE CHEQUE / BANCO";
+        obsElem.placeholder = "EJ: NRO DE CHEQUE";
     } else if (metodo === "CREDITO") {
         obsElem.placeholder = "EJ: NRO DE CUENTA CORRIENTE O CONVENIO";
     } else if (metodo === "EFECTIVO") {
@@ -86,8 +114,11 @@ function btnGuardarPago() {
     const monto = parseInt(montoElem.value.trim()) || 0;
     const metodoElem = document.getElementById("metodo");
     const metodo = metodoElem.value.trim().toUpperCase();
+    const bancoElem = document.getElementById("banco");
+    const banco = bancoElem.value.trim().toUpperCase();
     const obsElem = document.getElementById("obs");
     const obs = obsElem.value.trim().toUpperCase();
+
     if (!cuenta) {
         mensajeError("Debe seleccionar una cuenta para poder realizar el pago");
         cuentaElem.focus();
@@ -108,6 +139,10 @@ function btnGuardarPago() {
         mensajeError("Debe ingresar un método de pago para poder realizar el pago");
         metodoElem.focus();
         return;
+    } else if ((metodo === "TRANSFERENCIA" || metodo === "CHEQUE") && !banco) {
+        mensajeError("Debe seleccionar un banco para poder realizar el pago");
+        bancoElem.focus();
+        return;
     } else if (!obs) {
         mensajeError("Debe ingresar una observación para poder realizar el pago");
         obsElem.focus();
@@ -121,26 +156,73 @@ function btnGuardarPago() {
     cuenta.amount_due = cuenta.amount_total - cuenta.amount_paid;
     cuenta.status = cuenta.amount_due ? ESTADO_PARCIAL : ESTADO_PAGADA;
     cuenta.updated_at = new Date();
-    guardarPago({
-        id: obtenerSiguienteId(cargarPagos()),
+
+    const pagos = cargarPagos();
+    const nuevoPago = {
+        id: obtenerSiguienteId(pagos),
         account_payable_id: cuenta.id,
         amount: monto,
         payment_method: metodo,
+        bank: (metodo === "TRANSFERENCIA" || metodo === "CHEQUE") ? banco : null,
         obs: obs,
-        created_at: new Date(), 
-    });
+        created_at: new Date()
+    };
+    guardarPago(nuevoPago);
     guardarCuentaPorPagar(cuenta);
     cargarDatos();
-    modalNuevo.hide();
+    modalNuevoPago.hide();
     mensajeSuccess("Pago registrado exitosamente");
 }
 
+function aplicarFiltros() {
+    cargarDatos();
+}
+
+function limpiarFiltros() {
+    document.getElementById('filtro_metodo').value = '';
+    document.getElementById('filtro_fecha_desde').value = '';
+    document.getElementById('filtro_fecha_hasta').value = '';
+    cargarDatos();
+}
+
+function obtenerPagosFiltrados() {
+    const metodo = document.getElementById('filtro_metodo').value;
+    const fechaDesde = document.getElementById('filtro_fecha_desde').value;
+    const fechaHasta = document.getElementById('filtro_fecha_hasta').value;
+
+    return cargarPagos().filter(p => {
+        // Filtro metodo de pago
+        if (metodo && p.payment_method !== metodo) return false;
+
+        // Filtro rango de fechas (created_at)
+        const createdAt = new Date(p.created_at);
+        if (fechaDesde) {
+            const desde = new Date(fechaDesde);
+            desde.setHours(0, 0, 0, 0);
+            if (createdAt < desde) return false;
+        }
+        if (fechaHasta) {
+            const hasta = new Date(fechaHasta);
+            hasta.setHours(23, 59, 59, 999);
+            if (createdAt > hasta) return false;
+        }
+
+        return true;
+    });
+}
+
 function cargarDatos() {
-    cargarDataTable(tablaPagos, cargarPagos());
+    const pagosFiltrados = obtenerPagosFiltrados();
+    cargarDataTable(tablaPagos, pagosFiltrados);
+
+    // Sumatoria de pagos
+    const sumatoria = pagosFiltrados.reduce((sum, p) => sum + (p.amount || 0), 0);
+    document.getElementById("suma_pagos").textContent = renderMoneda(sumatoria) + " Gs.";
+
     // Cargar Select
     const cuentaElem = document.getElementById("cuenta_id");
     cuentaElem.innerHTML = '<option value="">Seleccione una cuenta pendiente...</option>'
-        + cargarCuentasPorPagar().filter(c => c.status !== "PAGADA").map(c => `<option value="${c.id}">
+        + cargarCuentasPorPagar().filter(c => c.status !== ESTADO_PAGADA).map(c => `<option value="${c.id}">
             ID: ${c.id} - ${cargarProveedor(c.provider_id).legal_name} (Pendiente: ${renderMoneda(c.amount_due)})
         </option>`).join('');
     // Precargar desde url

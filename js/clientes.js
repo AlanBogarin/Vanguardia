@@ -319,7 +319,7 @@ function ventanaAnularCliente(id) {
         "Anular Cliente",
         "¿Deseas proceder con la anulación?",
         () => {
-            if (cargarCuentasPorCobrar().some(c => c.client_id === id && c.status !== "COBRADA")) {
+            if (cargarCuentasPorCobrar().some(c => c.client_id === id && c.status !== ESTADO_COBRADA)) {
                 mensajeError("No se puede anular el cliente porque tiene cuentas por cobrar pendientes.");
                 return;
             }

@@ -430,9 +430,9 @@ function ventanaAnularProducto(id) {
         () => {
             const producto = cargarProducto(id);
             const pagoPendiente = cargarCompraDetalles().filter(d => d.product_id === id).map(d => cargarCompra(d.purchase_id)).filter(
-                c => c.payment_type === "CREDITO").some(c => cargarCuentaPorPagar(null, c.id).status !== "PAGADA");
+                c => c.payment_type === "CREDITO").some(c => cargarCuentaPorPagar(null, c.id).status !== ESTADO_PAGADA);
             const cobroPendiente = cargarVentaDetalles().filter(d => d.product_id === id).map(d => cargarVenta(d.sale_id)).filter(
-                c => c.payment_type === "CREDITO").some(c => cargarCuentaPorCobrar(null, c.id).status !== "COBRADA");
+                c => c.payment_type === "CREDITO").some(c => cargarCuentaPorCobrar(null, c.id).status !== ESTADO_COBRADA);
             if (pagoPendiente || cobroPendiente) {
                 mensajeError("No se puede anular el producto porque tiene pagos o cobros pendientes.");
                 return;

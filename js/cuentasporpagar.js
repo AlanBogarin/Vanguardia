@@ -39,7 +39,7 @@ const tablaCuentas = crearDataTable("tabla_cuentas_pagar", [
         enable: null,
         disable: null,
         customs: [
-            ...(cuenta.status === "PAGADA" ? [] : [{
+            ...(cuenta.status === ESTADO_PAGADA ? [] : [{
                 color: "btn-success",
                 href: `pagos.html?cuenta_id=${cuenta.id}`,
                 content: '<i class="bi bi-cash"></i> Pagar',

@@ -128,9 +128,6 @@ function renderizarDetalles() {
     const elTotalCompra = document.getElementById("total_compra");
     if (elTotalCompra) elTotalCompra.textContent = formatoMoneda(total);
 
-    // const elTotalExenta = document.getElementById("total_exenta");
-    // if (elTotalExenta) elTotalExenta.textContent = formatoMoneda(acumExenta);
-
     const elTotalIva5 = document.getElementById("total_iva5");
     if (elTotalIva5) elTotalIva5.textContent = formatoMoneda(liquidacionIva5);
 
@@ -203,7 +200,7 @@ function guardarNuevaCompra(e) {
             quantity: det.quantity,
             unit_price: det.unit_price,
             subtotal: det.subtotal,
-            iva_tipo: det.iva_tipo // <-- AGREGA ESTA LÍNEA AQUÍ
+            iva_tipo: det.iva_tipo 
         });
 
         // Actualizar stock del producto
@@ -471,23 +468,7 @@ function cargarTablaCompras() {
         // Busca esta parte en tu archivo compras.js y ajústala:
 
         // ... dentro de la función cargarTablaCompras ...
-       buttons: [
-            {
-                extend: 'print',
-                text: '<i class="bi bi-printer"></i> Imprimir',
-                className: 'btn btn-info'
-            },
-            {
-                extend: 'excelHtml5',
-                text: '<i class="bi bi-filetype-xlsx"></i> Exportar a Excel',
-                className: 'btn btn-success'
-            },
-            {
-                extend: 'pdfHtml5',
-                text: '<i class="bi bi-filetype-pdf"></i> Exportar a PDF',
-                className: 'btn btn-danger'
-            }
-        ],
+        buttons: botonesCorporativos("REPORTE DE COMPRAS", ':visible'),
         
         // ... resto del código
 // ... resto del código
