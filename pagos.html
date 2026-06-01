@@ -46,6 +46,66 @@
                             <i class="bi bi-cash-coin me-1"></i> Registrar Nuevo Pago
                         </button>
                     </div>
+                    <!-- Sección de Filtros -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="card" style="background:rgba(255,255,255,0.65);border:1px solid rgba(100,160,255,0.3);box-shadow:0 8px 32px rgba(30,80,180,0.12);border-radius:12px;backdrop-filter:blur(6px);">
+                                <div class="card-header py-2 px-3" style="background:rgba(30,80,180,0.9);color:white;border-radius:11px 11px 0 0;">
+                                    <i class="bi bi-funnel-fill me-1"></i><strong>Filtros</strong>
+                                </div>
+                                <div class="card-body py-3">
+                                    <div class="row g-3 align-items-end">
+                                        <div class="col-md-4 col-sm-6">
+                                            <label for="filtro_metodo" class="form-label fw-semibold small mb-1" style="color:#0d2149">Método de Pago</label>
+                                            <select id="filtro_metodo" class="form-select form-select-sm" style="background-color:rgba(255,255,255,0.9);border:1px solid rgba(30,80,180,0.3);color:#0d2149;border-radius:6px;">
+                                                <option value="">Todos</option>
+                                                <option value="EFECTIVO">Efectivo</option>
+                                                <option value="TRANSFERENCIA">Transferencia Bancaria</option>
+                                                <option value="TARJETA_CREDITO">Tarjeta de Crédito</option>
+                                                <option value="TARJETA_DEBITO">Tarjeta de Débito</option>
+                                                <option value="CHEQUE">Cheque</option>
+                                                <option value="CREDITO">Crédito Comercial / Cuenta Corriente</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 col-sm-6">
+                                            <label for="filtro_fecha_desde" class="form-label fw-semibold small mb-1" style="color:#0d2149">Desde (Fecha de Creación)</label>
+                                            <input type="date" id="filtro_fecha_desde" class="form-control form-control-sm" style="background-color:rgba(255,255,255,0.9);border:1px solid rgba(30,80,180,0.3);color:#0d2149;border-radius:6px;">
+                                        </div>
+                                        <div class="col-md-3 col-sm-6">
+                                            <label for="filtro_fecha_hasta" class="form-label fw-semibold small mb-1" style="color:#0d2149">Hasta (Fecha de Creación)</label>
+                                            <input type="date" id="filtro_fecha_hasta" class="form-control form-control-sm" style="background-color:rgba(255,255,255,0.9);border:1px solid rgba(30,80,180,0.3);color:#0d2149;border-radius:6px;">
+                                        </div>
+                                        <div class="col-md-2 col-sm-6 d-flex flex-column justify-content-end">
+                                            <div class="d-flex gap-1">
+                                                <button class="btn btn-sm btn-primary flex-fill" onclick="aplicarFiltros()">
+                                                    <i class="bi bi-funnel"></i> Filtrar
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-secondary flex-fill" onclick="limpiarFiltros()">
+                                                    <i class="bi bi-x-circle"></i> Limpiar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Sección de Métricas / Sumatoria -->
+                    <div class="row mb-3">
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card shadow-sm text-white" style="background:linear-gradient(135deg, #0d6efd 0%, #0a4ebd 100%);border-radius:12px;border:none;">
+                                <div class="card-body py-3 d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <h6 class="mb-1 text-uppercase fw-semibold small" style="opacity: 0.85; letter-spacing: 0.5px;">Total Pagado (Filtrado)</h6>
+                                        <h3 class="mb-0 fw-bold" id="suma_pagos">0 Gs.</h3>
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: rgba(255,255,255,0.15); border-radius: 50%;">
+                                        <i class="bi bi-cash-coin fs-3"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="row">
                         <table id="tabla_pagos" class="display compact" style="width:100%">
                         </table>
@@ -92,6 +152,21 @@
                             <option value="TARJETA_DEBITO">Tarjeta de Débito</option>
                             <option value="CHEQUE">Cheque</option>
                             <option value="CREDITO">Crédito Comercial / Cuenta Corriente</option>
+                        </select>
+                    </div>
+                    <div class="mb-2 d-none" id="div_banco">
+                        <label class="form-label">Banco</label>
+                        <select id="banco" class="form-select">
+                            <option value="">Seleccione Banco...</option>
+                            <option value="ITAU">Banco Itaú</option>
+                            <option value="CONTINENTAL">Banco Continental</option>
+                            <option value="ATLAS">Banco Atlas</option>
+                            <option value="GNB">Banco GNB</option>
+                            <option value="SUDAMERIS">Banco Sudameris</option>
+                            <option value="BASA">Banco Basa</option>
+                            <option value="BNF">Banco Nacional de Fomento (BNF)</option>
+                            <option value="UENO">Ueno Bank</option>
+                            <option value="FAMILIAR">Banco Familiar</option>
                         </select>
                     </div>
                     <div class="mb-2">
