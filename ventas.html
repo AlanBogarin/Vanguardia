@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Vanguardia - Ventas</title>
     <link rel="icon" href="img/logo_x16.jpg">
-    <link href="menu/styles.css" rel="stylesheet"/>
+    <link href="menu/styles.css" rel="stylesheet" />
     <link rel="stylesheet" href="bt/bootstrap.min.css">
     <link rel="stylesheet" href="bt-icons/bootstrap-icons.min.css">
     <link rel="stylesheet" href="alert/alertify.min.css">
@@ -15,6 +16,7 @@
     <link rel="stylesheet" href="dt/buttons.dataTables.min.css">
     <link rel="stylesheet" href="css/vanguardia.css">
 </head>
+
 <body class="sb-nav-fixed">
 
     <div id="contenedor-navbar"></div>
@@ -28,8 +30,7 @@
                     <!-- Encabezado -->
                     <div class="d-flex justify-content-between align-items-center mt-2 mb-2">
                         <h1 class="mb-0">Ventas</h1>
-                        <button class="btn btn-sm btn-primary"
-                                data-bs-toggle="modal" data-bs-target="#modalNuevaVenta">
+                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalNuevaVenta">
                             <i class="bi bi-cart-check-fill me-1"></i> Nueva Venta
                         </button>
                     </div>
@@ -48,8 +49,8 @@
     </div>
 
     <!-- MODAL NUEVA VENTA -->
-    <div class="modal fade modal-lg" id="modalNuevaVenta" tabindex="-1"
-         aria-labelledby="modalNuevaVentaLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal fade modal-lg" id="modalNuevaVenta" tabindex="-1" aria-labelledby="modalNuevaVentaLabel"
+        aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog">
             <form id="formNuevaVenta" class="modal-content">
                 <div class="modal-header bg-primary text-white">
@@ -64,16 +65,12 @@
                         <div class="col-md-6">
                             <label class="form-label">Cliente <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <input type="text" id="client_search"
-                                       class="form-control"
-                                       list="datalist_clientes"
-                                       placeholder="Buscar por nombre o RUC..."
-                                       autocomplete="off">
+                                <input type="text" id="client_search" class="form-control" list="datalist_clientes"
+                                    placeholder="Buscar por nombre o RUC..." autocomplete="off">
                                 <datalist id="datalist_clientes"></datalist>
                                 <input type="hidden" id="client_id">
-                                <button type="button" class="btn btn-outline-success"
-                                        title="Registrar nuevo cliente"
-                                        onclick="abrirModalNuevoCliente()">
+                                <button type="button" class="btn btn-outline-success" title="Registrar nuevo cliente"
+                                    onclick="abrirModalNuevoCliente()">
                                     <i class="bi bi-person-plus-fill"></i>
                                 </button>
                             </div>
@@ -93,11 +90,8 @@
                     <div class="row mb-3 g-2">
                         <div class="col-md-12">
                             <label class="form-label">Nro. de Factura</label>
-                            <input type="text" id="invoice"
-                                   class="form-control text-uppercase fw-bold"
-                                   readonly
-                                   title="Número generado automáticamente"
-                                   placeholder="001-001-XXXXXXX">
+                            <input type="text" id="invoice" class="form-control text-uppercase fw-bold" readonly
+                                title="Número generado automáticamente" placeholder="001-001-XXXXXXX">
                             <div class="form-text text-muted">Generado automáticamente.</div>
                         </div>
                     </div>
@@ -109,26 +103,24 @@
                     <div class="row mb-2 align-items-end g-2">
                         <div class="col-md-5">
                             <label class="form-label small mb-1">Producto</label>
-                            <input type="text" id="producto_search"
-                                   class="form-control form-control-sm"
-                                   list="datalist_productos"
-                                   placeholder="Buscar por nombre o código..."
-                                   autocomplete="off">
+                            <input type="text" id="producto_search" class="form-control form-control-sm"
+                                list="datalist_productos" placeholder="Buscar por nombre o código..."
+                                autocomplete="off">
                             <datalist id="datalist_productos"></datalist>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label small mb-1">Cantidad</label>
                             <input type="number" id="cantidad_input" class="form-control form-control-sm"
-                                   placeholder="Cantidad" min="1">
+                                placeholder="Cantidad" min="1">
                         </div>
                         <div class="col-md-3">
                             <label class="form-label small mb-1">Precio Unit. (Gs.)</label>
                             <input type="number" id="precio_input" class="form-control form-control-sm"
-                                   placeholder="Precio de venta" readonly>
+                                placeholder="Precio de venta" readonly>
                         </div>
                         <div class="col-md-1">
-                            <button type="button" class="btn btn-success btn-sm w-100"
-                                    id="btnAgregarDetalle" title="Agregar producto">
+                            <button type="button" class="btn btn-success btn-sm w-100" id="btnAgregarDetalle"
+                                title="Agregar producto">
                                 <i class="bi bi-plus-lg"></i>
                             </button>
                         </div>
@@ -178,16 +170,16 @@
                     <h5 class="modal-title">
                         <i class="bi bi-info-circle"></i> Detalles de la Venta #<span id="ver_venta_id"></span>
                     </h5>
-                    <button type="button" class="btn-close btn-close-white"
-                            data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row mb-3 g-2">
-                        <div class="col-md-6"><strong>Cliente:</strong>   <span id="ver_cliente"></span></div>
-                        <div class="col-md-6"><strong>Fecha:</strong>     <span id="ver_fecha"></span></div>
-                        <div class="col-md-6"><strong>Usuario:</strong>   <span id="ver_usuario"></span></div>
+                        <div class="col-md-6"><strong>Cliente:</strong> <span id="ver_cliente"></span></div>
+                        <div class="col-md-6"><strong>Fecha:</strong> <span id="ver_fecha"></span></div>
+                        <div class="col-md-6"><strong>Usuario:</strong> <span id="ver_usuario"></span></div>
                         <div class="col-md-6"><strong>Condición:</strong> <span id="ver_tipo_pago"></span></div>
-                        <div class="col-12"><strong>Nro. Factura:</strong>         <span id="ver_obs"></span></div>
+                        <div class="col-12"><strong>Nro. Factura:</strong> <span id="ver_obs"></span></div>
                     </div>
                     <table class="table table-sm table-bordered" id="tabla_ver_detalles">
                         <thead class="table-light">
@@ -217,8 +209,8 @@
     </div>
 
     <!-- MODAL NUEVO CLIENTE -->
-    <div class="modal fade" id="modalNuevoCliente" tabindex="-1"
-         aria-labelledby="modalNuevoClienteLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal fade" id="modalNuevoCliente" tabindex="-1" aria-labelledby="modalNuevoClienteLabel"
+        aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog">
             <form id="formNuevoCliente" class="modal-content" novalidate>
                 <div class="modal-header bg-success text-white">
@@ -229,44 +221,34 @@
                 <div class="modal-body">
                     <div class="mb-2">
                         <label class="form-label">Razón Social <span class="text-danger">*</span></label>
-                        <input type="text" id="nc_legal_name"
-                               class="form-control text-uppercase"
-                               minlength="5" maxlength="50"
-                               pattern="^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\s'\.,&\-]{5,50}$"
-                               placeholder="Nombre completo del cliente" required>
+                        <input type="text" id="nc_legal_name" class="form-control text-uppercase" minlength="5"
+                            maxlength="50" pattern="^[a-zA-ZñÑáéíóúÁÉÍÓÚüÜ\s'\.,&\-]{5,50}$"
+                            placeholder="Nombre completo del cliente" required>
                         <div class="invalid-feedback">Mínimo 5 letras, solo caracteres permitidos.</div>
                     </div>
                     <div class="mb-2">
                         <label class="form-label">RUC / Cédula <span class="text-danger">*</span></label>
-                        <input type="text" id="nc_ruc"
-                               class="form-control"
-                               pattern="^\d{5,8}[A-Z]?(-\d)?$"
-                               placeholder="Ej: 1234567 o 1234567-8" required>
+                        <input type="text" id="nc_ruc" class="form-control" pattern="^\d{5,8}[A-Z]?(-\d)?$"
+                            placeholder="Ej: 1234567 o 1234567-8" required>
                         <div class="invalid-feedback">Formato inválido (ej: 1234567 o 1234567-8).</div>
                     </div>
                     <div class="mb-2">
                         <label class="form-label">Teléfono <span class="text-danger">*</span></label>
-                        <input type="text" id="nc_tel"
-                               class="form-control"
-                               pattern="^09\d{8}$"
-                               placeholder="09XXXXXXXX" required>
+                        <input type="text" id="nc_tel" class="form-control" pattern="^09\d{8}$" placeholder="09XXXXXXXX"
+                            required>
                         <div class="invalid-feedback">Formato requerido: 09XXXXXXXX (10 dígitos).</div>
                     </div>
                     <div class="mb-2">
                         <label class="form-label">Correo Electrónico</label>
-                        <input type="text" id="nc_email"
-                               class="form-control"
-                               pattern="[^\s@]+@[^\s@]+\.[^\s@]{2,}"
-                               placeholder="correo@ejemplo.com (opcional)">
+                        <input type="text" id="nc_email" class="form-control" pattern="[^\s@]+@[^\s@]+\.[^\s@]{2,}"
+                            placeholder="correo@ejemplo.com (opcional)">
                         <div class="invalid-feedback">Correo electrónico inválido.</div>
                     </div>
                     <div class="mb-2">
                         <label class="form-label">Dirección <span class="text-danger">*</span></label>
-                        <input type="text" id="nc_address"
-                               class="form-control text-uppercase"
-                               minlength="5" maxlength="50"
-                               pattern="^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚüÜ\s,.:°#\/\-]{5,50}$"
-                               placeholder="Dirección del cliente" required>
+                        <input type="text" id="nc_address" class="form-control text-uppercase" minlength="5"
+                            maxlength="50" pattern="^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚüÜ\s,.:°#\/\-]{5,50}$"
+                            placeholder="Dirección del cliente" required>
                         <div class="invalid-feedback">Mínimo 5 caracteres.</div>
                     </div>
                 </div>
@@ -295,7 +277,8 @@
                         <div class="col-6 text-end" id="cobro_total_pagar">0 Gs.</div>
                     </div>
                     <div class="row mb-3">
-                        <div class="col-6"><strong>Restante:</strong></div>
+                        <div class="col-6"><strong>Vuelto:</strong></div>
+                        <!-- en vez de "Restante" le puse "Vuelto" asi pidio el profe -->
                         <div class="col-6 text-end text-danger fw-bold" id="cobro_restante">0 Gs.</div>
                     </div>
                     <hr>
@@ -333,7 +316,8 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-success" id="btnConfirmarCobro" disabled>Confirmar Venta y Cobro</button>
+                    <button type="button" class="btn btn-success" id="btnConfirmarCobro" disabled>Confirmar Venta y
+                        Cobro</button>
                 </div>
             </div>
         </div>
@@ -345,7 +329,8 @@
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title"><i class="bi bi-printer"></i> Venta Exitosa</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center">
                     <p>La venta se guardó correctamente.</p>
@@ -385,4 +370,5 @@
     <script src="js/tablas.js"></script>
     <script src="js/ventas.js"></script>
 </body>
+
 </html>

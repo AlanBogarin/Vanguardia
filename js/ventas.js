@@ -13,7 +13,7 @@
  * @property {number} subtotal 
  */
 
-const modalVerDetalles = new bootstrap.Modal(document.getElementById("modalVerDetalles"));
+const modalVerDetallesVenta = new bootstrap.Modal(document.getElementById("modalVerDetalles"));
 
 /** @type {DetalleTemp} */
 let detallesTemp = [];
@@ -323,7 +323,7 @@ function agregarCobroTemp() {
     const restante = ventaTotalTemp - totalPagado;
     
     if (amount > restante) {
-        mensajeWarn(`El monto no puede ser mayor al restante (${formatGs(restante)} Gs.)`);
+        mensajeWarn(`El monto no puede ser mayor al vuelto (${formatGs(restante)} Gs.)`);
         return;
     }
     
