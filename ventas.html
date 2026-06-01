@@ -36,6 +36,86 @@
                     </div>
 
                     <!-- Tabla principal -->
+                    <!-- ═══════════════════════════════════════ -->
+                    <!-- PANEL DE FILTROS                          -->
+                    <!-- ═══════════════════════════════════════ -->
+                    <div class="card mb-3">
+                        <div class="card-header py-2 d-flex justify-content-between align-items-center"
+                             style="cursor:pointer" data-bs-toggle="collapse" data-bs-target="#panelFiltros">
+                            <span><i class="bi bi-funnel-fill me-1"></i> Filtros</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                        <div class="collapse show" id="panelFiltros">
+                            <div class="card-body pb-2">
+                                <div class="row g-2 align-items-end">
+
+                                    <!-- Condición de cobro -->
+                                    <div class="col-md-2">
+                                        <label class="form-label small mb-1">Condición de cobro</label>
+                                        <select id="filtro_condicion" class="form-select form-select-sm">
+                                            <option value="">Todas</option>
+                                            <option value="CONTADO">CONTADO</option>
+                                            <option value="CREDITO">CRÉDITO</option>                                           
+                                        </select>
+                                    </div>
+
+                                    <!-- Cliente -->
+                                    <div class="col-md-3">
+                                        <label class="form-label small mb-1">Cliente</label>
+                                        <input type="text" id="filtro_cliente_search"
+                                               class="form-control form-control-sm"
+                                               list="datalist_filtro_clientes"
+                                               placeholder="Buscar por nombre o RUC..."
+                                               autocomplete="off">
+                                        <datalist id="datalist_filtro_clientes"></datalist>
+                                        <input type="hidden" id="filtro_cliente_id">
+                                    </div>
+
+                                    <!-- Total mínimo -->
+                                    <div class="col-md-2">
+                                        <label class="form-label small mb-1">Total mínimo (Gs.)</label>
+                                        <input type="number" id="filtro_total_min"
+                                               class="form-control form-control-sm"
+                                               placeholder="0" min="0">
+                                    </div>
+
+                                    <!-- Total máximo -->
+                                    <div class="col-md-2">
+                                        <label class="form-label small mb-1">Total máximo (Gs.)</label>
+                                        <input type="number" id="filtro_total_max"
+                                               class="form-control form-control-sm"
+                                               placeholder="0" min="0">
+                                    </div>
+
+                                    <!-- Fecha desde -->
+                                    <div class="col-md-1" style="min-width:130px">
+                                        <label class="form-label small mb-1">Fecha desde</label>
+                                        <input type="date" id="filtro_fecha_desde"
+                                               class="form-control form-control-sm">
+                                    </div>
+
+                                    <!-- Fecha hasta -->
+                                    <div class="col-md-1" style="min-width:130px">
+                                        <label class="form-label small mb-1">Fecha hasta</label>
+                                        <input type="date" id="filtro_fecha_hasta"
+                                               class="form-control form-control-sm">
+                                    </div>
+
+                                    <!-- Botones -->
+                                    <div class="col-auto d-flex gap-2">
+                                        <button class="btn btn-primary btn-sm" onclick="aplicarFiltros()">
+                                            <i class="bi bi-search"></i> Filtrar
+                                        </button>
+                                        <button class="btn btn-outline-secondary btn-sm" onclick="limpiarFiltros()">
+                                            <i class="bi bi-x-circle"></i> Limpiar
+                                        </button>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="row">
                         <table id="tabla_ventas" class="display compact" style="width:100%">
                         </table>

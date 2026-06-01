@@ -62,17 +62,80 @@ $(document).ready(function () {
 });
 
 function refrescarTablaVentas() {
-    cargarDataTable(tablaVentas, cargarVentas());
+    cargarDataTable(tablaVentas, obtenerVentasFiltradas());
+}
+
+function obtenerVentasFiltradas() {
+    let ventas = cargarVentas();
+
+    // Filtro: condición de cobro
+    const condicion = $("#filtro_condicion").val();
+    if (condicion) ventas = ventas.filter(v => v.condition === condicion);
+
+    // Filtro: cliente
+    const clienteId = parseInt($("#filtro_cliente_id").val());
+    if (clienteId) ventas = ventas.filter(v => v.client_id === clienteId);
+
+    // Filtro: total mínimo
+    const totalMin = parseFloat($("#filtro_total_min").val());
+    if (!isNaN(totalMin) && totalMin > 0) ventas = ventas.filter(v => v.amount >= totalMin);
+
+    // Filtro: total máximo
+    const totalMax = parseFloat($("#filtro_total_max").val());
+    if (!isNaN(totalMax) && totalMax > 0) ventas = ventas.filter(v => v.amount <= totalMax);
+
+    // Filtro: fecha desde
+    const fechaDesde = $("#filtro_fecha_desde").val();
+    if (fechaDesde) ventas = ventas.filter(v => new Date(v.created_at) >= new Date(fechaDesde));
+
+    // Filtro: fecha hasta
+    const fechaHasta = $("#filtro_fecha_hasta").val();
+    if (fechaHasta) {
+        const hasta = new Date(fechaHasta);
+        hasta.setHours(23, 59, 59, 999);
+        ventas = ventas.filter(v => new Date(v.created_at) <= hasta);
+    }
+
+    return ventas;
+}
+
+function aplicarFiltros() {
+    refrescarTablaVentas();
+}
+
+function limpiarFiltros() {
+    $("#filtro_condicion").val("");
+    $("#filtro_cliente_search").val("");
+    $("#filtro_cliente_id").val("");
+    $("#filtro_total_min").val("");
+    $("#filtro_total_max").val("");
+    $("#filtro_fecha_desde").val("");
+    $("#filtro_fecha_hasta").val("");
+    refrescarTablaVentas();
 }
 
 function cargarSelectClientes() {
-    // Llenar datalist para búsqueda de clientes
+    // Llenar datalist para búsqueda de clientes (modal nueva venta)
     const $dl = $("#datalist_clientes").empty();
+    // Llenar datalist del filtro de clientes
+    const $dlf = $("#datalist_filtro_clientes").empty();
     cargarClientes()
         .filter(c => c.active !== false)
-        .forEach(c => $dl.append(`<option data-id="${c.id}" value="${c.legal_name} — ${c.ruc}">`));
+        .forEach(c => {
+            const opt = `<option data-id="${c.id}" value="${c.legal_name} — ${c.ruc}">`;
+            $dl.append(opt);
+            $dlf.append(opt);
+        });
     $("#client_search").val("");
     $("#client_id").val("");
+}
+
+function resolverFiltroClienteDesdeInput() {
+    const texto = $("#filtro_cliente_search").val().trim();
+    const opt   = $("#datalist_filtro_clientes option").filter(function() {
+        return $(this).val() === texto;
+    });
+    $("#filtro_cliente_id").val(opt.length ? opt.data("id") : "");
 }
 
 function resolverClienteDesdeInput() {
@@ -123,6 +186,9 @@ function bindEventos() {
 
     // Autocompletar cliente al escribir/seleccionar del datalist
     $("#client_search").on("input change", resolverClienteDesdeInput);
+
+    // Filtro cliente
+    $("#filtro_cliente_search").on("input change", resolverFiltroClienteDesdeInput);
 
     // Botón agregar producto al detalle
     $("#btnAgregarDetalle").on("click", agregarDetalle);
