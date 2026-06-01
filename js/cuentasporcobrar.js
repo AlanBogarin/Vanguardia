@@ -9,6 +9,12 @@ const modalDetalle = new bootstrap.Modal(document.getElementById('modalDetalleCu
 function formatoMoneda(valor) {
     return 'Gs. ' + Number(valor).toLocaleString('es-PY');
 }
+function cargarDatalistClientes() {
+    document.getElementById('datalist_clientes').innerHTML =
+        cargarClientes()
+            .map(c => `<option value="${c.legal_name}">`)
+            .join('');
+}
 
 function verDetalle(e) {
     if (e.target.closest('.btn-detalle')) {
@@ -29,13 +35,17 @@ function verDetalle(e) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+
+    cargarDatalistClientes();
+
     cargarTablaCuentas();
+
     document.addEventListener("click", verDetalle);
 });
 
 function cargarTablaCuentas() {
     const clientes = cargarClientes();
-    const cuentas = cargarCuentasPorCobrar().map(c => {
+    const cuentas = obtenerCuentasFiltradas().map(c => {
         const cli = clientes.find(client => client.id === c.client_id);
         
         let badgeClase = 'bg-secondary';
@@ -85,25 +95,85 @@ function cargarTablaCuentas() {
             }
         ],
         dom: '<"d-flex justify-content-between align-items-center mb-2"Bf>rtip',
-        buttons: [
-            {
-                extend: 'print',
-                text: '<i class="bi bi-printer"></i> Imprimir',
-                exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6, 7] },
-            },
-            {
-                extend: 'excelHtml5',
-                text: '<i class="bi bi-filetype-xlsx"></i> Exportar a Excel',
-                exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6, 7] },
-            },
-            {
-                extend: 'pdfHtml5',
-                text: '<i class="bi bi-filetype-pdf"></i> Exportar a PDF',
-                exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6, 7] },
-            }
-        ],
+        buttons: botonesCorporativos(
+            "LISTADO DE CUENTAS POR COBRAR",
+            [0,1,2,3,4,5,6,7]
+        ),
         language: {
             url: "dt/es-ES.json"
         }
     });
+}
+
+function obtenerCuentasFiltradas() {
+
+    const hoy = new Date();
+    hoy.setHours(0,0,0,0);
+
+    const estado = document.getElementById("filtro_estado").value;
+    const fechaDesde = document.getElementById("filtro_fecha_desde").value;
+    const fechaHasta = document.getElementById("filtro_fecha_hasta").value;
+    const cliente = document.getElementById("filtro_cliente").value.trim().toLowerCase();
+
+    const clientes = cargarClientes();
+
+    return cargarCuentasPorCobrar().filter(c => {
+
+        const vencida =
+            c.status !== ESTADO_COBRADA &&
+            new Date(c.expire_at) < hoy;
+
+        if (estado === "VENCIDO" && !vencida)
+            return false;
+
+        if (
+            estado &&
+            estado !== "VENCIDO" &&
+            c.status !== estado
+        )
+            return false;
+
+        const fechaVenc = new Date(c.expire_at);
+
+        if (fechaDesde && fechaVenc < new Date(fechaDesde))
+            return false;
+
+        if (fechaHasta) {
+
+            const hasta = new Date(fechaHasta);
+            hasta.setHours(23,59,59,999);
+
+            if (fechaVenc > hasta)
+                return false;
+        }
+
+        if (cliente) {
+
+            const cli =
+                clientes.find(x => x.id === c.client_id);
+
+            if (
+                !cli ||
+                !cli.legal_name
+                    .toLowerCase()
+                    .includes(cliente)
+            )
+                return false;
+        }
+
+        return true;
+    });
+}
+function aplicarFiltros() {
+    cargarTablaCuentas();
+}
+
+function limpiarFiltros() {
+
+    document.getElementById("filtro_estado").value = "";
+    document.getElementById("filtro_fecha_desde").value = "";
+    document.getElementById("filtro_fecha_hasta").value = "";
+    document.getElementById("filtro_cliente").value = "";
+
+    cargarTablaCuentas();
 }

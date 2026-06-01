@@ -1180,7 +1180,7 @@ function guardarCobro(cobro) {
         sale_id: cobro.sale_id !== undefined ? cobro.sale_id : null,
         amount: cobro.amount,
         payment_method: cobro.payment_method,
-        obs: cobro.obs.toUpperCase(),
+        obs: (cobro.obs || "").toUpperCase(),
         created_at: cobro.created_at
     }
     if (index === -1) {

@@ -8,6 +8,110 @@ const modalNCompra = new bootstrap.Modal(document.getElementById('modalNuevaComp
 const modalVerDet = new bootstrap.Modal(document.getElementById('modalVerDetalles'));
 
 let detallesTemporales = [];
+function obtenerComprasFiltradas() {
+
+    const proveedor = document.getElementById("filtro_proveedor")?.value.toLowerCase() || "";
+    const tipoPago = document.getElementById("filtro_pago")?.value || "";
+    const fechaDesde = document.getElementById("filtro_fecha_desde")?.value;
+    const fechaHasta = document.getElementById("filtro_fecha_hasta")?.value;
+
+    const proveedores = cargarProveedores();
+    const usuarios = cargarUsuarios();
+
+    return cargarCompras()
+        .filter(compra => {
+
+            const prov = proveedores.find(p => p.id === compra.provider_id);
+
+            if (proveedor) {
+                const nombreProv = (prov?.legal_name || prov?.name || "")
+                    .toLowerCase();
+
+                if (!nombreProv.includes(proveedor))
+                    return false;
+            }
+
+            if (tipoPago && compra.payment_type !== tipoPago)
+                return false;
+
+            const fechaCompra = new Date(compra.created_at);
+
+            if (fechaDesde) {
+                if (fechaCompra < new Date(fechaDesde))
+                    return false;
+            }
+
+            if (fechaHasta) {
+                const hasta = new Date(fechaHasta);
+                hasta.setHours(23,59,59,999);
+
+                if (fechaCompra > hasta)
+                    return false;
+            }
+
+            return true;
+        })
+        .map(c => {
+
+            const prov = proveedores.find(p => p.id === c.provider_id);
+            const u = usuarios.find(user => user.id === c.user_id);
+
+            const detallesBD = cargarCompraDetalles().filter(d => d.purchase_id === c.id);
+            const productosBD = cargarProductos();
+
+            let ivasPresentes = [];
+
+            detallesBD.forEach(det => {
+
+                const p = productosBD.find(prod => prod.id === det.product_id);
+
+                let ivaTipo = det.iva_tipo !== undefined
+                    ? det.iva_tipo
+                    : (p ? parseInt(p.iva) : 0);
+
+                if (!ivasPresentes.includes(ivaTipo)) {
+                    ivasPresentes.push(ivaTipo);
+                }
+            });
+
+            ivasPresentes.sort((a, b) => b - a);
+
+            let ivaTexto = ivasPresentes
+                .map(iva => iva === 0 ? "Exenta" : iva + "%")
+                .join(", ");
+
+            if (ivasPresentes.length === 0) {
+                ivaTexto = "-";
+            }
+
+            return {
+                ...c,
+                proveedor_name: prov ? (prov.legal_name || prov.name) : 'Desconocido',
+                usuario_name: u ? u.username : 'Desconocido',
+                iva_fmt: ivaTexto,
+                total_fmt: formatoMoneda(c.amount),
+                fecha_fmt: new Date(c.created_at).toLocaleString()
+            };
+        });
+}
+function aplicarFiltrosCompras() {
+
+    tabla.clear();
+    tabla.rows.add(obtenerComprasFiltradas());
+    tabla.draw();
+}
+
+function limpiarFiltrosCompras() {
+
+    document.getElementById("filtro_proveedor").value = "";
+    document.getElementById("filtro_pago").value = "";
+    document.getElementById("filtro_fecha_desde").value = "";
+    document.getElementById("filtro_fecha_hasta").value = "";
+
+    tabla.clear();
+    tabla.rows.add(obtenerComprasFiltradas());
+    tabla.draw();
+}
 
 function formatoMoneda(valor) {
     return 'Gs. ' + Number(valor).toLocaleString('es-PY');
@@ -476,4 +580,5 @@ function cargarTablaCompras() {
             url: "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
         }
     });
+    tabla.buttons().container().appendTo('#contenedor-botones-exportar');
 }
