@@ -15,33 +15,19 @@ let _editandoProveedor = false;
 const REGEX_RUC_PROVEEDOR = /^(\d+-\d|\d+)$/;
 const REGEX_TEL_PROVEEDOR = /^\d{9,15}$/;
 
-const tablaProveedores = crearDataTable("tabla_proveedores", [
-    { data: "id",         title: "Id Proveedor", render: renderRaw,    width: "5%" },
-    { data: "legal_name", title: "Razón Social",  render: renderString, width: "18%" },
-    { data: "ruc",        title: "RUC / Cédula",  render: renderString, width: "10%" },
-    { data: "tel",        title: "Teléfono",       render: renderString, width: "10%" },
-    { data: "email",      title: "Correo",         render: data => data ? renderString(data).toLowerCase() : "", width: "13%" },
-    { data: "address",    title: "Dirección",      render: renderString, width: "22%" },
-    { data: "city",       title: "Ciudad",         render: renderString, width: "10%" },
-    { data: "active",     title: "Estado",         render: data => data
-        ? '<span class="badge bg-success">ACTIVO</span>'
-        : '<span class="badge bg-secondary">INACTIVO</span>', width: "7%" }
-], {
+const tablaProveedores = crearDataTable("tabla_proveedores", TABLAS.PROVEEDOR, {
     buttons: true,
     pageLength: 10,
     searching: true,
     exportTitle: "LISTADO DE PROVEEDORES",
     actions: tienePermisoSesion(PERMISOS.PROVEEDORES_EDITAR) ? (proveedor) => {
-        if (!proveedor.active) {
-            return {
-                edit: null,
-                delete: null,
-                enable: `reactivarProveedor(${proveedor.id})`
-            };
-        }
+        const anulable = cargarCompras().some(c => c.provider_id === proveedor.id) || cargarCuentasPorPagar()
+            .some(c => c.provider_id === proveedor.id);
         return {
             edit: `ventanaEditarProveedor(${proveedor.id})`,
-            disable: `ventanaEliminarProveedor(${proveedor.id})`
+            delete: anulable ? null : `ventanaEliminarProveedor(${proveedor.id})`,
+            enable: anulable && !proveedor.active ? `ventanaHabilitarProveedor(${proveedor.id})` : null,
+            disable: anulable && proveedor.active ? `ventanaAnularProveedor(${proveedor.id})` : null
         };
     } : null
 });
@@ -310,59 +296,88 @@ function btnEliminarProveedor() {
     const proveedor = cargarProveedor(id);
     if (!proveedor) return;
     confirmar(
-        "Desactivar Proveedor",
-        "¿Realmente deseas desactivar este proveedor? Podrás reactivarlo más adelante.",
+        "Eliminar Proveedor",
+        "¿Realmente deseas eliminar de forma permanente este proveedor?",
         () => {
             modalEliminar.hide();
-            proveedor.active = false;
-            proveedor.updated_at = new Date();
-            guardarProveedor(proveedor);
+            if (cargarCompras().some(c => c.provider_id === id)) {
+                mensajeError("No se puede eliminar el proveedor porque está asociado a una o más compras");
+                return;
+            }
+            eliminarProveedor(id);
             cargarDatos();
-            mensajeSuccess("Proveedor desactivado correctamente");
+            mensajeSuccess("Proveedor eliminado correctamente");
         },
         () => {
             modalEliminar.hide();
+            mensajeError("Eliminación cancelada");
         }
     ).set("labels", {
-        ok: "Sí, desactivar",
+        ok: "Sí, eliminar",
         cancel: "No, mantener"
     });
 }
 
+
 /**
- * @param {number} id
+ * @param {number} id 
  */
-function reactivarProveedor(id) {
-    const proveedor = cargarProveedor(id);
-    if (!proveedor) return;
-    proveedor.active = true;
-    proveedor.updated_at = new Date();
-    guardarProveedor(proveedor);
-    cargarDatos();
-    mensajeSuccess("Proveedor reactivado correctamente");
+function ventanaHabilitarProveedor(id) {
+    confirmar(
+        "Habilitar Proveedor",
+        "¿Deseas proceder con la habilitación?",
+        () => {
+            const proveedor = cargarProveedor(id);
+            proveedor.active = true;
+            proveedor.updated_at = new Date();
+            guardarProveedor(proveedor);
+            cargarDatos();
+            mensajeSuccess("Proveedor habilitado correctamente");
+        },
+        () => mensajeError("Habilitación cancelada")
+    );
 }
 
-function cargarSelectCiudades() {
-    const select = document.getElementById('filtro_ciudad_proveedor');
-    const ciudadActual = select.value;
-    const ciudades = [...new Set(cargarProveedores().map(p => p.city).filter(Boolean))].sort();
-    select.innerHTML = '<option value="">Todas</option>'
-        + ciudades.map(c => `<option value="${escapeHTML(c)}">${escapeHTML(c)}</option>`).join('');
-    if (ciudades.includes(ciudadActual)) select.value = ciudadActual;
+/**
+ * @param {number} id 
+ */
+function ventanaAnularProveedor(id) {
+    confirmar(
+        "Anular Proveedor",
+        "¿Deseas proceder con la anulación?",
+        () => {
+            if (cargarCuentasPorPagar().some(c => c.provider_id === id && c.status !== ESTADO_PAGADA)) {
+                mensajeError("No se puede anular al proveedor porque se tiene cuentas por pagar pendientes.");
+                return;
+            }
+            const proveedor = cargarProveedor(id);
+            proveedor.active = false;
+            proveedor.updated_at = new Date();
+            guardarProveedor(proveedor);
+            cargarDatos();
+            mensajeSuccess("Proveedor anulado correctamente");
+        },
+        () => mensajeError("Anulación cancelada")
+    );
 }
 
 function cargarDatos() {
-    cargarSelectCiudades();
-    const estado  = document.getElementById('filtro_estado_proveedor')?.value ?? 'ACTIVO';
-    const ciudad  = document.getElementById('filtro_ciudad_proveedor')?.value ?? '';
-    const todos   = cargarProveedores().reverse();
-    const filtrados = todos.filter(p => {
-        if (estado === 'ACTIVO'   && !p.active)  return false;
-        if (estado === 'INACTIVO' &&  p.active)  return false;
-        if (ciudad && p.city !== ciudad)          return false;
+    const estadoElem = document.getElementById('filtro_estado_proveedor');
+    const estado = estadoElem.value;
+    const ciudadElem = document.getElementById('filtro_ciudad_proveedor');
+    const ciudad = ciudadElem.value;
+    const provedores = cargarProveedores();
+    // Cargar Filtro de ciudades
+    const ciudades = [...new Set(provedores.map(p => p.city).filter(Boolean))].sort();
+    ciudadElem.innerHTML = '<option value="">Todas</option>'
+        + ciudades.map(c => `<option value="${escapeHTML(c)}">${escapeHTML(c)}</option>`).join('');
+    if (ciudades.includes(ciudad)) ciudadElem.value = ciudad;
+    cargarDataTable(tablaProveedores, provedores.filter(p => {
+        if (estado === 'ACTIVO' && !p.active) return false;
+        if (estado === 'INACTIVO' &&  p.active) return false;
+        if (ciudad && p.city !== ciudad) return false;
         return true;
-    });
-    cargarDataTable(tablaProveedores, filtrados);
+    }));
 }
 
 document.addEventListener('DOMContentLoaded', () => {
