@@ -325,7 +325,12 @@ function ventanaAnularCliente(id) {
 }
 
 function cargarDatos() {
-    cargarDataTable(tablaClientes, cargarClientes());
+    const estado = document.getElementById("filtro_estado")?.value;
+    cargarDataTable(tablaClientes, cargarClientes().filter(c => {
+        if (estado === "ACTIVO" && !c.active) return false;
+        if (estado === "INACTIVO" && c.active) return false;
+        return true;
+    }));
 }
 
 document.addEventListener('DOMContentLoaded', function () {

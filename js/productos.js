@@ -448,8 +448,30 @@ function ventanaAnularProducto(id) {
 }
 
 function cargarDatos() {
-    cargarDataTable(tablaProductos, cargarProductos());
-    const productos = cargarProductos();
+    const estado = document.getElementById("filtro_estado")?.value;
+    const categoriaIdFiltro = document.getElementById("filtro_categoria")?.value;
+    const marcaIdFiltro = document.getElementById("filtro_marca")?.value;
+    // Filtros
+    const filtroCategoriaElem = document.getElementById("filtro_categoria");
+    if (filtroCategoriaElem) {
+        filtroCategoriaElem.innerHTML = `<option value="">Todas</option>` +
+            cargarCategorias().map(c => `<option value="${c.id}">${escapeHTML(c.name)}</option>`).join("");
+        if (categoriaIdFiltro) filtroCategoriaElem.value = categoriaIdFiltro;
+    }
+    const filtroMarcaElem = document.getElementById("filtro_marca");
+    if (filtroMarcaElem) {
+        filtroMarcaElem.innerHTML = `<option value="">Todas</option>` +
+            cargarMarcas().map(m => `<option value="${m.id}">${escapeHTML(m.name)}</option>`).join("");
+        if (marcaIdFiltro) filtroMarcaElem.value = marcaIdFiltro;
+    }
+    const productos = cargarProductos().filter(p => {
+        if (estado === "ACTIVO" && !p.active) return false;
+        if (estado === "INACTIVO" && p.active) return false;
+        if (categoriaIdFiltro && p.category_id !== parseInt(categoriaIdFiltro)) return false;
+        if (marcaIdFiltro && p.brand_id !== parseInt(marcaIdFiltro)) return false;
+        return true;
+    });
+    cargarDataTable(tablaProductos, productos);
     document.getElementById("statTotal").innerText = productos.length;
     document.getElementById("statActivos").innerText = productos.filter(p => p.active).length;
 }

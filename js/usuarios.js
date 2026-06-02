@@ -413,12 +413,29 @@ function ventanaAnularUsuario(id) {
 }
 
 function cargarDatos() {
-    cargarDataTable(tablaUsuarios, cargarUsuarios());
+    const estado = document.getElementById("filtro_estado")?.value;
+    const rolIdFiltro = document.getElementById("filtro_rol")?.value;
+    const roles = cargarRoles();
+    // Modal
     const rolElem = document.getElementById("new_rol_id");
     const editRolElem = document.getElementById("edit_rol_id");
     const options = `<option value="">Seleccione Rol</option>` +
-        cargarRoles().map(r => `<option value="${r.id}">${r.name}</option>`).join("");
-    rolElem.innerHTML = editRolElem.innerHTML = options;
+        roles.map(r => `<option value="${r.id}">${escapeHTML(r.name)}</option>`).join("");
+    if (rolElem) rolElem.innerHTML = options;
+    if (editRolElem) editRolElem.innerHTML = options;
+    // Filtro
+    const filtroRolElem = document.getElementById("filtro_rol");
+    if (filtroRolElem) {
+        filtroRolElem.innerHTML = `<option value="">Todos</option>` +
+            roles.map(r => `<option value="${r.id}">${escapeHTML(r.name)}</option>`).join("");
+        if (rolIdFiltro) filtroRolElem.value = rolIdFiltro;
+    }
+    cargarDataTable(tablaUsuarios, cargarUsuarios().filter(u => {
+        if (estado === "ACTIVO" && !u.active) return false;
+        if (estado === "INACTIVO" && u.active) return false;
+        if (rolIdFiltro && u.rol_id !== parseInt(rolIdFiltro)) return false;
+        return true;
+    }));
 }
 
 document.addEventListener('DOMContentLoaded', () => {

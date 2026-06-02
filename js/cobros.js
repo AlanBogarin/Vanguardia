@@ -99,7 +99,23 @@ function btnGuardarCobro() {
 }
 
 function cargarDatos() {
-    cargarDataTable(tablaCobros, cargarCobros());
+    const metodo = document.getElementById("filtro_metodo")?.value;
+    const fechaDesde = document.getElementById("filtro_fecha_desde")?.value;
+    const fechaHasta = document.getElementById("filtro_fecha_hasta")?.value;
+    cargarDataTable(tablaCobros, cargarCobros().filter(c => {
+        if (metodo && c.payment_method !== metodo) return false;
+        if (fechaDesde && c.created_at) {
+            const fd = new Date(fechaDesde);
+            fd.setHours(0, 0, 0, 0);
+            if (new Date(c.created_at) < fd) return false;
+        }
+        if (fechaHasta && c.created_at) {
+            const fh = new Date(fechaHasta);
+            fh.setHours(23, 59, 59, 999);
+            if (new Date(c.created_at) > fh) return false;
+        }
+        return true;
+    }));
     // Cargar select
     const cuentaElem = document.getElementById("account_receivable_id");
     cuentaElem.innerHTML = '<option value="">Seleccione una cuenta pendiente...</option>'

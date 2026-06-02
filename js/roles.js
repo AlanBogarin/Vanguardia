@@ -41,12 +41,22 @@ const tablaRoles = crearDataTable("tabla_roles", [
  * Carga (o recarga) los datos en el DataTable
  */
 function cargarDatos() {
-    cargarDataTable(tablaRoles, cargarRoles());
+    const fechaDesde = document.getElementById('filtro_fecha_desde')?.value;
+    const fechaHasta = document.getElementById('filtro_fecha_hasta')?.value;
+    cargarDataTable(tablaRoles, cargarRoles().filter(r => {
+        if (fechaDesde && r.created_at) {
+            const fd = new Date(fechaDesde);
+            fd.setHours(0, 0, 0, 0);
+            if (new Date(r.created_at) < fd) return false;
+        }
+        if (fechaHasta && r.created_at) {
+            const fh = new Date(fechaHasta);
+            fh.setHours(23, 59, 59, 999);
+            if (new Date(r.created_at) > fh) return false;
+        }
+        return true;
+    }));
 }
-
-// =============================================
-//  MODAL NUEVO
-// =============================================
 
 /**
  * Abre el modal en modo "Nuevo"

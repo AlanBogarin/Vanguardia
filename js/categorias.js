@@ -140,7 +140,21 @@ function btnEliminarCategoria() {
 }
 
 function cargarDatos() {
-    cargarDataTable(tablaCategorias, cargarCategorias());
+    const fechaDesde = document.getElementById('filtro_fecha_desde')?.value;
+    const fechaHasta = document.getElementById('filtro_fecha_hasta')?.value;
+    cargarDataTable(tablaCategorias, cargarCategorias().filter(c => {
+        if (fechaDesde && c.created_at) {
+            const fd = new Date(fechaDesde);
+            fd.setHours(0, 0, 0, 0);
+            if (new Date(c.created_at) < fd) return false;
+        }
+        if (fechaHasta && c.created_at) {
+            const fh = new Date(fechaHasta);
+            fh.setHours(23, 59, 59, 999);
+            if (new Date(c.created_at) > fh) return false;
+        }
+        return true;
+    }));
 }
 
 document.addEventListener('DOMContentLoaded', () => {

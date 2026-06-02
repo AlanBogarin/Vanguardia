@@ -133,7 +133,21 @@ function btnEliminarMarca() {
 }
 
 function cargarDatos() {
-    cargarDataTable(tablaMarcas, cargarMarcas());
+    const fechaDesde = document.getElementById('filtro_fecha_desde')?.value;
+    const fechaHasta = document.getElementById('filtro_fecha_hasta')?.value;
+    cargarDataTable(tablaMarcas, cargarMarcas().filter(m => {
+        if (fechaDesde && m.created_at) {
+            const fd = new Date(fechaDesde);
+            fd.setHours(0, 0, 0, 0);
+            if (new Date(m.created_at) < fd) return false;
+        }
+        if (fechaHasta && m.created_at) {
+            const fh = new Date(fechaHasta);
+            fh.setHours(23, 59, 59, 999);
+            if (new Date(m.created_at) > fh) return false;
+        }
+        return true;
+    }));
 }
 
 document.addEventListener('DOMContentLoaded', () => {
