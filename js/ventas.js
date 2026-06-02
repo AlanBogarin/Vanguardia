@@ -54,63 +54,18 @@ const tablaVentas = crearDataTable("tabla_ventas", [
     })
 });
 
-$(document).ready(function () {
-    cargarDatos();
-    cargarSelectClientes();
-    cargarSelectProductos();
-    bindEventos();
-});
-
-function cargarDatos() {
-    cargarDataTable(tablaVentas, obtenerVentasFiltradas());
-}
-
-function obtenerVentasFiltradas() {
-    let ventas = cargarVentas();
-
-    // Filtro: condición de cobro
-    const condicion = $("#filtro_condicion").val();
-    if (condicion) ventas = ventas.filter(v => v.condition === condicion);
-
-    // Filtro: cliente
-    const clienteId = parseInt($("#filtro_cliente_id").val());
-    if (clienteId) ventas = ventas.filter(v => v.client_id === clienteId);
-
-    // Filtro: total mínimo
-    const totalMin = parseFloat($("#filtro_total_min").val());
-    if (!isNaN(totalMin) && totalMin > 0) ventas = ventas.filter(v => v.amount >= totalMin);
-
-    // Filtro: total máximo
-    const totalMax = parseFloat($("#filtro_total_max").val());
-    if (!isNaN(totalMax) && totalMax > 0) ventas = ventas.filter(v => v.amount <= totalMax);
-
-    // Filtro: fecha desde
-    const fechaDesde = $("#filtro_fecha_desde").val();
-    if (fechaDesde) ventas = ventas.filter(v => new Date(v.created_at) >= new Date(fechaDesde));
-
-    // Filtro: fecha hasta
-    const fechaHasta = $("#filtro_fecha_hasta").val();
-    if (fechaHasta) {
-        const hasta = new Date(fechaHasta);
-        hasta.setHours(23, 59, 59, 999);
-        ventas = ventas.filter(v => new Date(v.created_at) <= hasta);
-    }
-
-    return ventas;
-}
-
-function aplicarFiltros() {
+function btnAplicarFiltros() {
     cargarDatos();
 }
 
-function limpiarFiltros() {
-    $("#filtro_condicion").val("");
-    $("#filtro_cliente_search").val("");
-    $("#filtro_cliente_id").val("");
-    $("#filtro_total_min").val("");
-    $("#filtro_total_max").val("");
-    $("#filtro_fecha_desde").val("");
-    $("#filtro_fecha_hasta").val("");
+function btnLimpiarFiltros() {
+    document.getElementById("filtro_condicion").value = "";
+    document.getElementById("filtro_cliente_search").value = "";
+    document.getElementById("#filtro_cliente_id").value = "";
+    document.getElementById("#filtro_total_min").value = "";
+    document.getElementById("#filtro_total_max").value = "";
+    document.getElementById("#filtro_fecha_desde").value = "";
+    document.getElementById("#filtro_fecha_hasta").value = "";
     cargarDatos();
 }
 
@@ -294,8 +249,8 @@ function renderTablaDetalle() {
             <tr>
                 <td>${d.nombre}</td>
                 <td class="text-center">${d.amount}</td>
-                <td class="text-end">${formatGs(d.unit_price)}</td>
-                <td class="text-end">${formatGs(d.subtotal)}</td>
+                <td class="text-end">${renderMoneda(d.unit_price)}</td>
+                <td class="text-end">${renderMoneda(d.subtotal)}</td>
                 <td class="text-center">
                     <button type="button" class="btn btn-sm btn-danger" onclick="quitarDetalle(${d._uid})">
                         <i class="bi bi-trash"></i>
@@ -305,7 +260,7 @@ function renderTablaDetalle() {
         `);
     });
 
-    $("#total_venta").text(formatGs(total));
+    $("#total_venta").text(renderMoneda(total));
 }
 
 function guardarNuevaVenta() {
@@ -322,7 +277,7 @@ function guardarNuevaVenta() {
     } else {
         confirmar(
             "Confirmar Venta a Crédito",
-            `Total: <strong>Gs. ${formatGs(total)}</strong><br>Condición de cobro: CRÉDITO`,
+            `Total: <strong>Gs. ${renderMoneda(total)}</strong><br>Condición de cobro: CRÉDITO`,
             () => {
                 ejecutarGuardadoVenta(CONDICION_CREDITO, total, []);
             },
@@ -338,7 +293,7 @@ let ultimaVentaIdParaFactura = null;
 function abrirModalCobroContado(total) {
     cobrosTemp = [];
     ventaTotalTemp = total;
-    $("#cobro_total_pagar").text(formatGs(total) + " Gs.");
+    $("#cobro_total_pagar").text(renderMoneda(total) + " Gs.");
     $("#cobro_monto").val("");
     actualizarTablaCobrosTemp();
     $("#modalCobroContado").modal("show");
@@ -352,7 +307,7 @@ function actualizarTablaCobrosTemp() {
         $tbody.append(`
             <tr>
                 <td>${c.payment_method}</td>
-                <td class="text-end">${formatGs(c.amount)}</td>
+                <td class="text-end">${renderMoneda(c.amount)}</td>
                 <td class="text-center">
                     <button type="button" class="btn btn-sm btn-danger py-0" onclick="quitarCobroTemp(${idx})"><i class="bi bi-trash"></i></button>
                 </td>
@@ -360,7 +315,7 @@ function actualizarTablaCobrosTemp() {
         `);
     });
     const restante = ventaTotalTemp - totalPagado;
-    $("#cobro_restante").text(formatGs(restante) + " Gs.");
+    $("#cobro_restante").text(renderMoneda(restante) + " Gs.");
     
     if (restante === 0) {
         $("#btnConfirmarCobro").prop("disabled", false);
@@ -389,7 +344,7 @@ function agregarCobroTemp() {
     const restante = ventaTotalTemp - totalPagado;
     
     if (amount > restante) {
-        mensajeWarn(`El monto no puede ser mayor al vuelto (${formatGs(restante)} Gs.)`);
+        mensajeWarn(`El monto no puede ser mayor al vuelto (${renderMoneda(restante)} Gs.)`);
         return;
     }
     
@@ -536,20 +491,20 @@ function imprimirFacturaVenta(idVenta) {
 
         let exenta = '', cinco = '', diez = '';
         if (iva === 0) {
-            exenta = formatGs(d.subtotal);
+            exenta = renderMoneda(d.subtotal);
             totalExentas += d.subtotal;
         } else if (iva === 5) {
-            cinco = formatGs(d.subtotal);
+            cinco = renderMoneda(d.subtotal);
             total5 += d.subtotal;
         } else {
-            diez = formatGs(d.subtotal);
+            diez = renderMoneda(d.subtotal);
             total10 += d.subtotal;
         }
 
         bodyDetalles.push([
             { text: d.amount.toString(), alignment: 'center' },
             { text: nombre, alignment: 'left' },
-            { text: formatGs(d.unit_price), alignment: 'right' },
+            { text: renderMoneda(d.unit_price), alignment: 'right' },
             { text: exenta, alignment: 'right' },
             { text: cinco, alignment: 'right' },
             { text: diez, alignment: 'right' }
@@ -559,9 +514,9 @@ function imprimirFacturaVenta(idVenta) {
     // Fila de subtotales por columna IVA
     bodyDetalles.push([
         {}, {}, {},
-        { text: formatGs(totalExentas) || '', alignment: 'right', bold: true },
-        { text: formatGs(total5) || '', alignment: 'right', bold: true },
-        { text: formatGs(total10) || '', alignment: 'right', bold: true }
+        { text: renderMoneda(totalExentas) || '', alignment: 'right', bold: true },
+        { text: renderMoneda(total5) || '', alignment: 'right', bold: true },
+        { text: renderMoneda(total10) || '', alignment: 'right', bold: true }
     ]);
 
     // --- Liquidación del IVA ---
@@ -709,7 +664,7 @@ function imprimirFacturaVenta(idVenta) {
                     body: [
                         [
                             { text: 'TOTAL A PAGAR', bold: true, fontSize: 11, alignment: 'left' },
-                            { text: formatGs(v.amount), bold: true, fontSize: 11, alignment: 'right' }
+                            { text: renderMoneda(v.amount), bold: true, fontSize: 11, alignment: 'right' }
                         ]
                     ]
                 },
@@ -732,11 +687,11 @@ function imprimirFacturaVenta(idVenta) {
                                 text: [
                                     { text: 'LIQUIDACIÓN DEL IVA:   ', bold: true, fontSize: 9 },
                                     { text: '(5%)  ', fontSize: 9 },
-                                    { text: formatGs(iva5), bold: true, fontSize: 9 },
+                                    { text: renderMoneda(iva5), bold: true, fontSize: 9 },
                                     { text: '     (10%)  ', fontSize: 9 },
-                                    { text: formatGs(iva10), bold: true, fontSize: 9 },
+                                    { text: renderMoneda(iva10), bold: true, fontSize: 9 },
                                     { text: '          TOTAL IVA  ', fontSize: 9 },
-                                    { text: formatGs(totalIva), bold: true, fontSize: 9 }
+                                    { text: renderMoneda(totalIva), bold: true, fontSize: 9 }
                                 ]
                             }
                         ]
@@ -794,13 +749,13 @@ function abrirDetallesVenta(idVenta) {
             <tr>
                 <td>${prod ? prod.name : d.product_id}</td>
                 <td class="text-center">${d.amount}</td>
-                <td class="text-end">${formatGs(d.unit_price)}</td>
-                <td class="text-end">${formatGs(d.subtotal)}</td>
+                <td class="text-end">${renderMoneda(d.unit_price)}</td>
+                <td class="text-end">${renderMoneda(d.subtotal)}</td>
             </tr>
         `);
     });
 
-    $("#ver_total_venta").text(formatGs(total));
+    $("#ver_total_venta").text(renderMoneda(total));
     $("#modalVerDetalles").modal("show");
 }
 
@@ -863,19 +818,38 @@ function limpiarModalVenta() {
 }
 
 function generarVistaPreviewFactura() {
-    const ventas    = cargarVentas();
-    const siguiente = obtenerSiguienteId(ventas);
-    const preview   = `001-001-${String(siguiente).padStart(7, "0")}`;
+    const siguiente = obtenerSiguienteId(cargarVentas());
+    const preview = `001-001-${String(siguiente).padStart(7, "0")}`;
     $("#invoice").val(preview);
 }
 
-function formatGs(n) {
+function renderMoneda(n) {
     return new Intl.NumberFormat("es-PY", { minimumFractionDigits: 0 }).format(n || 0);
 }
 
+function cargarDatos() {
+    const condicion = document.getElementById("filtro_condicion").value;
+    const cliente = document.getElementById("filtro_cliente_id").value;
+    const totalMin = parseFloat(document.getElementById("filtro_total_min").value);
+    const totalMax = parseFloat(document.getElementById("filtro_total_max").value);
+    const fechaDesde = document.getElementById("filtro_fecha_desde").value;
+    const fechaHasta = document.getElementById("filtro_fecha_hasta").value;
+    cargarDataTable(tablaVentas, cargarVentas().filter(v => {
+        if (condicion && v.condition !== condicion) return false;
+        if (cliente && v.client_id !== cliente) return false;
+        if (!isNaN(totalMin) && totalMin > 0 && v.amount < totalMin) return false;
+        if (!isNaN(totalMax) && totalMax > 0 && v.amount > totalMax) return false;
+        if (fechaDesde && new Date(fechaDesde) > new Date(v.created_at)) return false;
+        if (fechaHasta && new Date(fechaHasta) < new Date(new Date(v.created_at).setHours(23, 59, 59, 999))) return false;
+        return true;
+    }));
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     if (!validarPermiso(PERMISOS.VENTAS_VER)) return;
     if (!tienePermisoSesion(PERMISOS.VENTAS_CREAR)) document.getElementById("btnModalNuevo").style.display = "none";
     cargarDatos();
+    cargarSelectClientes();
+    cargarSelectProductos();
+    bindEventos();
 });
