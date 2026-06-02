@@ -8,11 +8,14 @@
  * - dt/jszip.min.js
  * 
  * @typedef {import("../menu/scripts")}
+ * @typedef {import("./bd.js")}
  * 
  * @typedef {Object} DataTableColumn
- * @property {string?} data
- * @property {string} title
- * @property {(function(any): any) | undefined} render
+ * @property {string?} data Propiedad de cada registro a procesar, null todo el objeto
+ * @property {string} title Nombre de la columna
+ * @property {(function(any): any)?} render Funcion para transformar el valor
+ * @property {DataTableColumn[]?} subtable Subtabla para exportar
+ * @property {any[][]} subtableData Generado automaticamente al cargar datos
  * 
  * @typedef {Object} AccionCustom
  * @property {string} color Clase de Bootstrap para el botón (ej: 'btn-success')
@@ -39,31 +42,37 @@
 /** @type {Promise<string>} */
 const logoBase64 = descargarRecurso("img/logo_x128.jpg")
     .then(response => response.blob())
-    .then(blob => new Promise((resolve) => {
+    .then(blob => new Promise(resolve => {
         const reader = new FileReader();
         reader.onloadend = () => resolve(reader.result);
         reader.readAsDataURL(blob);
     }));
 
+/**
+ * @param {string | number | Date?} data 
+ * @returns {string}
+ */
 function renderDate(data) {
-    return new Date(data).toLocaleDateString(Intl.DateTimeFormat, { day: "2-digit", month: "2-digit", year: "numeric" });
-}
-
-function renderTime(data) {
-    return new Date(data).toLocaleTimeString(Intl.DateTimeFormat, { hour: "2-digit", minute: "2-digit", second: "2-digit"});
+    return data ? new Date(data).toLocaleDateString(Intl.DateTimeFormat, { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
 }
 
 /**
- * 
- * @param {string?} data 
+ * @param {string | number | Date?} data 
+ * @returns {string}
+ */
+function renderTime(data) {
+    return data ? new Date(data).toLocaleTimeString(Intl.DateTimeFormat, { hour: "2-digit", minute: "2-digit", second: "2-digit"}) : "";
+}
+
+/**
+ * @param {string | number | Date?} data 
  * @returns {string}
  */
 function renderFecha(data) {
-    return `${renderDate(data)} ${renderTime(data)}`;
+    return data ? `${renderDate(data)} ${renderTime(data)}` : "";
 }
 
 /**
- * 
  * @param {string | number?} data 
  * @returns {string}
  */
@@ -87,7 +96,6 @@ function escapeHTML(str) {
 }
 
 /**
- * 
  * @param {string?} data 
  * @returns {string}
  */
@@ -96,7 +104,14 @@ function renderString(data) {
 }
 
 /**
- * 
+ * @param {string?} data 
+ * @returns {string}
+ */
+function renderLowerString(data) {
+    return data ? escapeHTML(data.toString().toLowerCase()) : "";
+}
+
+/**
  * @param {number | string?} data 
  * @returns {string}
  */
@@ -105,21 +120,35 @@ function renderNumber(data) {
 }
 
 /**
- * 
  * @param {boolean} data 
  * @returns {string}
  */
 function renderBoolean(data) {
-    return data ? "SI" : "NO";
+    return data ? "ACTIVO" : "INACTIVO";
 }
 
 /**
- * 
  * @param {any} data 
  * @returns {string}
  */
 function renderRaw(data) {
     return data ? new String(data) : "";
+}
+
+/**
+ * @param {DataTableColumn} column 
+ */
+function interceptarFilas(column) {
+    const filas = [];
+    const render = column.render;
+    return {
+        rows: filas,
+        render: row => {
+            row = render ? render(row) : row;
+            filas.push(row);
+            return "";
+        }
+    };
 }
 
 /**
@@ -138,7 +167,7 @@ function crearDataTable(elementId, columns, config) {
         dom: "rtip",
         exportTitle: "REPORTE"
     }, config);
-    const exportColumns = Array.from({ length: columns.length }, (_, index) => index);
+    
     if (dtconfig.searching || dtconfig.actions) {
         dtconfig.dom = '<"d-'
             + (dtconfig.buttons ? 'flex' : 'grid')
@@ -147,6 +176,7 @@ function crearDataTable(elementId, columns, config) {
             + (dtconfig.searching ? 'f' : '')
             + `>${dtconfig.dom}`;
     }
+    // Acciones
     if (dtconfig.actions) {
         columns.push({
             data: null,
@@ -199,10 +229,22 @@ function crearDataTable(elementId, columns, config) {
             }
         });
     }
+    // Exportar
     if (dtconfig.buttons) {
-        dtconfig.buttons = botonesCorporativos(dtconfig.exportTitle, exportColumns);
+        dtconfig.buttons = botonesCorporativos(dtconfig.exportTitle, columns, elementId, Boolean(dtconfig.actions));
+    }
+    // Subtablas
+    const columnDefs = [];
+    for (let i = columns.length -1; i >= 0; i--) {
+        if (!columns[i].subtable) continue;
+        const { rows, render } = interceptarFilas(columns[i]);
+        columns[i].render = render;
+        columns[i].subtableData = rows;
+        // Ocultar subtabla
+        columnDefs.unshift({ targets: i, visible: false });
     }
     dtconfig.columns = columns;
+    dtconfig.columnDefs = columnDefs;
     return new DataTable(`#${elementId}`, dtconfig);
 }
 
@@ -227,7 +269,12 @@ function determinarOrientacion(tabla) {
     return 'portrait';
 }
 
-function estilizarImpresion(win, title) {
+/**
+ * @param {any} win 
+ * @param {string} title 
+ * @param {DataTableColumn[]} subtables 
+ */
+function estilizarImpresion(win, title, subtables) {
     const fecha = new Date().toLocaleString('es-PY');
     $(win.document.body).css({
         'font-family': 'Arial, sans-serif',
@@ -285,7 +332,12 @@ function estilizarImpresion(win, title) {
     `);
 }
 
-function estilizarExcel(xlsx, title) {
+/**
+ * @param {any} xlsx 
+ * @param {string} title 
+ * @param {DataTableColumn[]} subtables 
+ */
+function estilizarExcel(xlsx, title, subtables) {
     const sheet = xlsx.xl.worksheets['sheet1.xml'];
     const styles = xlsx.xl['styles.xml'];
 
@@ -361,9 +413,14 @@ function estilizarExcel(xlsx, title) {
     $('row[r="7"] c', sheet).attr('s', nuevoStyleIndex);
 }
 
-async function estilizarPDF(doc, title) {
+/**
+ * @param {any} doc 
+ * @param {string} title 
+ * @param {DataTableColumn[]} subtables 
+ */
+async function estilizarPDF(doc, title, subtables) {
     const logo = await logoBase64;
-    const fecha = new Date().toLocaleString('es-PY');
+    const fecha = renderFecha(new Date());
     // MARGENES
     doc.pageMargins = [30, 110, 30, 60];
     // ENCABEZADO
@@ -408,48 +465,124 @@ async function estilizarPDF(doc, title) {
     doc.content.unshift({ text: title, alignment: 'center', fontSize: 16, bold: true, margin: [0, 0, 0, 15], color: '#222' });
     // TABLA
     const tableIndex = doc.content.findIndex(c => c.table);
-    if (tableIndex !== -1) {
-        doc.content[tableIndex].layout = {
-            fillColor: rowIndex => rowIndex === 0 ? '#0d6efd' : (rowIndex % 2 === 0 ? '#f8f9fa' : null),
-            hLineColor: () => '#dee2e6',
-            vLineColor: () => '#dee2e6',
-            hLineWidth: () => 0.7,
-            vLineWidth: () => 0.7,
-            paddingLeft: () => 5,
-            paddingRight: () => 5,
-            paddingTop: () => 4,
-            paddingBottom: () => 4
-        };
-        doc.styles.tableHeader = { bold: true, color: 'white', alignment: 'center', fontSize: 9 };
-        doc.defaultStyle.fontSize = 8;
-        // TABLA 100% ANCHO
-        const body = doc.content[tableIndex].table.body;
-        const numCols = body[0]?.length || 1;
-        doc.content[tableIndex].table.widths = Array(numCols).fill('*');
-        // ALINEAR COLUMNAS NUMÉRICAS A LA DERECHA
-        // Detecta columnas donde todas las celdas de datos son solo números formateados
-        const reNumero = /^\s*[\d.,]+\s*$/;
-        for (let col = 0; col < numCols; col++) {
-            const esNumerica = body.slice(1).every(row => {
-                const celda = row[col];
-                const texto = typeof celda === 'object' ? (celda.text ?? '') : (celda ?? '');
-                return reNumero.test(String(texto));
+    if (!tableIndex) return;
+    doc.content[tableIndex].layout = {
+        fillColor: rowIndex => rowIndex === 0 ? '#0d6efd' : (rowIndex % 2 === 0 ? '#f8f9fa' : null),
+        hLineColor: () => '#dee2e6',
+        vLineColor: () => '#dee2e6',
+        hLineWidth: () => 0.7,
+        vLineWidth: () => 0.7,
+        paddingLeft: () => 5,
+        paddingRight: () => 5,
+        paddingTop: () => 4,
+        paddingBottom: () => 4
+    };
+    doc.styles.tableHeader = { bold: true, color: 'white', alignment: 'center', fontSize: 9 };
+    doc.defaultStyle.fontSize = 8;
+    // TABLA 100% ANCHO
+    const body = doc.content[tableIndex].table.body;
+    const numCols = body[0]?.length || 1;
+    doc.content[tableIndex].table.widths = Array(numCols).fill('*');
+    alinearColumnasNumericas(body);
+    if (subtables === -1) return;
+    const table = doc.content[tableIndex];
+    const mainLayout = table.layout;
+    const subLayout = {
+        fillColor: i => i === 0 ? '#198754' : (i % 2 === 0 ? '#f8f9fa' : null),
+        hLineColor: () => '#dee2e6',
+        vLineColor: () => '#dee2e6',
+        hLineWidth: () => 0.7,
+        vLineWidth: () => 0.7,
+        paddingLeft: () => 5,
+        paddingRight: () => 5,
+        paddingTop: () => 4,
+        paddingBottom: () => 4
+    };
+    // const body = table.table.body;
+    const header = body[0];
+    const content = [];
+    for (let idx = 1; idx < body.length; idx++) {
+        content.push({
+            table: {
+                headerRows: 1,
+                widths: Array(header.length).fill("*"),
+                body: [structuredClone(header), body[idx]]
+            },
+            layout: mainLayout,
+            margin: [0, 0, 0, 4]
+        })
+        for (const subtable of subtables) {
+            const tableData = subtable.subtableData[idx-1];
+            const subHeader = subtable.subtable;
+            const subBody = [
+                subtable.subtable.map(col => ({
+                    text: col.title,
+                    style: 'tableHeader'
+                })),
+                ...tableData.map(row => subtable.subtable.map(col => {
+                    let data = col.data ? row[col.data] : row;
+                    if (col.render) data = col.render(data);
+                    return {
+                        text: String(data ?? ""),
+                        style: "tableBodyOdd"
+                    };
+                }))
+            ];
+            alinearColumnasNumericas(subBody);
+            content.push({
+                table: {
+                    headerRows: 1,
+                    widths: Array(subHeader.length).fill("*"),
+                    body: subBody
+                },
+                layout: subLayout,
+                margin: [0, 0, 0, 8]
             });
-            if (esNumerica) {
-                body.forEach((row, rowIdx) => {
-                    const celda = row[col];
-                    if (typeof celda === 'object') {
-                        celda.alignment = rowIdx === 0 ? 'center' : 'right';
-                    } else {
-                        row[col] = { text: celda, alignment: rowIdx === 0 ? 'center' : 'right' };
-                    }
-                });
-            }
+            content.push({ text: '', margin: [0, 4, 0, 4] });
         }
+    }
+    doc.content.splice(tableIndex, 1, ...content);
+}
+
+/**
+ * @param {any[][]} body 
+ * @param {number} start 
+ */
+function alinearColumnasNumericas(body, start) {
+    const reNumero = /^(?=.*\d)[^\p{L}]+$/u;
+    for (let col = 0; col < body[0].length; col++) {
+        const numerico = body.slice(start ?? 1).every(row => {
+            const celda = row[col];
+            const texto = typeof celda === 'object' ? (celda.text ?? '') : (celda ?? '');
+            return String(texto).match(reNumero);
+        });
+        if (!numerico) continue;
+        body.forEach((row, rowIdx) => {
+            const celda = row[col];
+            if (typeof celda === 'object') {
+                celda.alignment = rowIdx === 0 ? 'center' : 'right';
+            } else {
+                row[col] = {
+                    text: String(celda ?? ''),
+                    alignment: rowIdx === 0 ? 'center' : 'right'
+                };
+            }
+        });
     }
 }
 
-function botonesCorporativos(exportTitle, exportColumns) {
+/**
+ * @param {string} exportTitle 
+ * @param {DataTableColumn[]} columns 
+ * @param {string} elementId 
+ * @param {boolean} actions 
+ * @returns {Object}
+ */
+function botonesCorporativos(exportTitle, columns, elementId, actions) {
+    const exportColumns = [];
+    const subtables = [];
+    columns.map((col, index) => col.subtable ? subtables.push(index) : exportColumns.push(index));
+    if (actions) exportColumns.pop();
     exportTitle = exportTitle.toUpperCase();
     return {
         dom: { button: { className: "btn" } },
@@ -460,7 +593,7 @@ function botonesCorporativos(exportTitle, exportColumns) {
                 titleAttr: "Imprimir",
                 className: "btn btn-sm btn-info",
                 exportOptions: { columns: exportColumns },
-                customize: win => estilizarImpresion(win, exportTitle)
+                customize: win => estilizarImpresion(win, exportTitle, subtables.map(i => columns[i]))
             },
             {
                 extend: "excelHtml5",
@@ -469,7 +602,7 @@ function botonesCorporativos(exportTitle, exportColumns) {
                 titleAttr: "Exportar a Excel",
                 className: "btn btn-sm btn-success",
                 exportOptions: { columns: exportColumns },
-                customize: xlsx => estilizarExcel(xlsx, exportTitle),
+                customize: xlsx => estilizarExcel(xlsx, exportTitle, subtables.map(i => columns[i])),
             },
             {
                 extend: "pdfHtml5",
@@ -481,8 +614,163 @@ function botonesCorporativos(exportTitle, exportColumns) {
                 // orientation: () => determinarOrientacion(`#${elementId}`),
                 orientation: 'landscape',
                 pageSize: 'A4',
-                customize: doc => estilizarPDF(doc, exportTitle)
+                customize: doc => {console.log();estilizarPDF(doc, exportTitle, subtables.map(i => columns[i]));}
             }
         ]
     };
 }
+
+const TABLAS = {
+    ROL: [
+        { data: "id", title: "Id Rol", render: renderRaw },
+        { data: "name", title: "Nombre", render: renderString },
+        { data: "description", title: "Descripción", render: renderString },
+        { data: "created_at", title: "Fecha Creación", render: renderFecha },
+        { data: "updated_at", title: "Fecha Modificación", render: renderFecha }
+    ],
+    USUARIO: [
+        { data: "id", title: "Id Usuario", render: renderRaw },
+        { data: "username", title: "Usuario", render: renderString },
+        { data: "name", title: "Nombre Completo", render: renderString },
+        { data: "ruc", title: "Cédula / RUC", render: renderString },
+        { data: "tel", title: "Teléfono", render: renderString },
+        { data: "email", title: "Correo Electrónico", render: renderLowerString },
+        { data: "address", title: "Dirección", render: renderString },
+        { data: "rol_id", title: "Rol", render: data => renderString(cargarRol(data).name) },
+        { data: "active", title: "Activo", render: renderBoolean },
+        { data: "created_at", title: "Fecha Creación", render: renderFecha },
+        { data: "updated_at", title: "Fecha Modificación", render: renderFecha }
+    ],
+    CLIENTE: [
+        { data: "id", title: "Id Cliente", render: renderRaw },
+        { data: "legal_name", title: "Razón Social", render: renderString },
+        { data: "ruc", title: "Cédula / RUC", render: renderString },
+        { data: "tel", title: "Teléfono", render: renderString },
+        { data: "email", title: "Correo Electrónico", render: renderLowerString },
+        { data: "address", title: "Dirección", render: renderString },
+        { data: "active", title: "Activo", render: renderBoolean },
+        { data: "created_at", title: "Fecha Creación", render: renderFecha },
+        { data: "updated_at", title: "Fecha Modificación", render: renderFecha }
+    ],
+    PROVEEDOR: [
+        { data: "id", title: "Id Proveedor", render: renderRaw },
+        { data: "legal_name", title: "Razón Social", render: renderString },
+        { data: "ruc", title: "Cédula / RUC", render: renderString },
+        { data: "tel", title: "Teléfono", render: renderString },
+        { data: "email", title: "Correo Electrónico", render: renderLowerString },
+        { data: "address", title: "Dirección", render: renderString },
+        { data: "city", title: "Ciudad", render: renderString },
+        { data: "active", title: "Activo", render: renderBoolean },
+        { data: "created_at", title: "Fecha Creación", render: renderFecha },
+        { data: "updated_at", title: "Fecha Modificación", render: renderFecha }
+    ],
+    CATEGORIA: [
+        { data: "id", title: "Id Categoría", render: renderRaw },
+        { data: "name", title: "Nombre", render: renderString },
+        { data: "description", title: "Descripción", render: renderString },
+        { data: "created_at", title: "Fecha Creación", render: renderFecha },
+        { data: "updated_at", title: "Fecha Modificación", render: renderFecha }
+    ],
+    MARCA: [
+        { data: "id", title: "Id Marca", render: renderRaw },
+        { data: "name", title: "Nombre", render: renderString },
+        { data: "created_at", title: "Fecha Creación", render: renderFecha },
+        { data: "updated_at", title: "Fecha Modificación", render: renderFecha }
+    ],
+    PRODUCTO: [
+        { data: "id", title: "Id Producto", render: renderRaw },
+        { data: "code", title: "Código de Barra", render: renderString },
+        { data: "name", title: "Nombre", render: renderString },
+        { data: "description", title: "Descripción", render: renderString },
+        { data: "purchase_price", title: "Precio Compra", render: renderMoneda },
+        { data: "selling_price", title: "Precio Venta", render: renderMoneda },
+        { data: "stock", title: "Stock", render: renderNumber },
+        { data: "min_stock", title: "Stock Mínimo", render: renderNumber },
+        { data: "category_id", title: "Categoría", render: data => cargarCategoria(data).name },
+        { data: "brand_id", title: "Marca", render: data => cargarMarca(data).name },
+        { data: "iva", title: "Tipo IVA", render: data => data ? `${data}%` : "EXENTA" },
+        { data: "active", title: "Activo", render: renderBoolean },
+        { data: "created_at", title: "Fecha Creación", render: renderFecha },
+        { data: "updated_at", title: "Fecha Modificación", render: renderFecha }
+    ],
+    COMPRA: [
+        { data: "id", title: "Id Compra", render: renderRaw },
+        { data: "provider_id", title: "Proveedor", render: data => cargarProveedor(data).legal_name },
+        { data: "user_id", title: "Id Usuario", render: data => cargarUsuario(data).username },
+        { data: "condition", title: "Condición", render: renderString },
+        { data: "amount", title: "Total Pago", render: renderMoneda },
+        { data: "invoice", title: "Nro. Factura", render: renderString },
+        { data: "stamping", title: "Nro. Timbrado", render: renderString },
+        { data: "created_at", title: "Fecha Compra", render: renderFecha }
+    ],
+    COMPRA_DETALLE: [
+        { data: "id", title: "Id Detalle", render: renderRaw },
+        { data: "purchase_id", title: "Id Compra", render: renderRaw },
+        { data: "product_id", title: "Producto", render: data => cargarProducto(data).name },
+        { data: "amount", title: "Cantidad", render: renderNumber },
+        { data: "unit_price", title: "Precio Unitario", render: renderMoneda },
+        { data: "subtotal", title: "Subtotal", render: renderMoneda },
+        { data: "iva", title: "Tipo IVA", render: data => data ? `${data}%` : "EXENTA" },
+        { data: "created_at", title: "Fecha Creación", render: renderFecha }
+    ],
+    VENTA: [
+        { data: "id", title: "Id Venta", render: renderRaw },
+        { data: "client_id", title: "Cliente", render: data => cargarCliente(data).legal_name },
+        { data: "user_id", title: "Usuario", render: data => cargarUsuario(data).username },
+        { data: "condition", title: "Condición", render: renderString },
+        { data: "amount", title: "Total Pago", render: renderMoneda },
+        { data: "invoice", title: "Nro. Factura", render: renderString },
+        { data: "created_at", title: "Fecha Venta", render: renderFecha }
+    ],
+    VENTA_DETALLE: [
+        { data: "id", title: "Id Detalle", render: renderRaw },
+        { data: "sale_id", title: "Id Venta", render: renderRaw },
+        { data: "product_id", title: "Producto", render: data => cargarProducto(data).name },
+        { data: "amount", title: "Cantidad", render: renderNumber },
+        { data: "unit_price", title: "Precio Unitario", render: renderMoneda },
+        { data: "subtotal", title: "Subtotal", render: renderMoneda },
+        { data: "iva", title: "Tipo IVA", render: data => data ? `${data}%` : "EXENTA" },
+        { data: "created_at", title: "Fecha Creación", render: renderFecha }
+    ],
+    CUENTA_POR_PAGAR: [
+        { data: "id", title: "Id Cuenta Pagar", render: renderRaw },
+        { data: "purchase_id", title: "Id Compra", render: renderRaw },
+        { data: "provider_id", title: "Proveedor", render: data => cargarProveedor(data).legal_name },
+        { data: "amount_total", title: "Total a Pagar", render: renderMoneda },
+        { data: "amount_paid", title: "Total Pagado", render: renderMoneda },
+        { data: "amount_due", title: "Pendiente", render: renderMoneda },
+        { data: "status", title: "Estado", render: renderString },
+        { data: "expire_at", title: "Fecha Vencimiento", render: renderFecha },
+        { data: "created_at", title: "Fecha Creación", render: renderFecha },
+        { data: "updated_at", title: "Fecha Modificación", render: renderFecha }
+    ],
+    CUENTA_POR_COBRAR: [
+        { data: "id", title: "Id Cuenta Cobrar", render: renderRaw },
+        { data: "sale_id", title: "Id Venta", render: renderRaw },
+        { data: "client_id", title: "Cliente", render: data => cargarCliente(data).legal_name },
+        { data: "amount_total", title: "Total a Cobrar", render: renderMoneda },
+        { data: "amount_paid", title: "Total Cobrado", render: renderMoneda },
+        { data: "amount_due", title: "Pendiente", render: renderMoneda },
+        { data: "status", title: "Estado", render: renderString },
+        { data: "expire_at", title: "Fecha Vencimiento", render: renderFecha },
+        { data: "created_at", title: "Fecha Creación", render: renderFecha },
+        { data: "updated_at", title: "Fecha Modificación", render: renderFecha }
+    ],
+    PAGO: [
+        { data: "id", title: "Id Pago", render: renderRaw },
+        { data: "account_payable_id", title: "Id Cuenta Pagar", render: renderRaw },
+        { data: "amount", title: "Monto Pagado", render: renderMoneda },
+        { data: "payment_method", title: "Método Pago", render: renderString },
+        { data: "obs", title: "Observaciones / Ref.", render: renderString },
+        { data: "created_at", title: "Fecha Pago", render: renderFecha }
+    ],
+    COBRO: [
+        { data: "id", title: "Id Cobro", render: renderRaw },
+        { data: "account_receivable_id", title: "Id Cuenta", render: renderRaw },
+        { data: "sale_id", title: "Id Venta", render: renderRaw },
+        { data: "amount", title: "Monto Cobrado", render: renderMoneda },
+        { data: "payment_method", title: "Método Cobro", render: renderString },
+        { data: "obs", title: "Factura / Comprobante", render: renderString },
+        { data: "created_at", title: "Fecha Cobro", render: renderFecha }
+    ]
+};
