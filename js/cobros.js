@@ -77,6 +77,7 @@ function btnGuardarCobro() {
         amount: monto,
         payment_method: metodo,
         invoice: factura,
+        obs: "",
         created_at: new Date()
     });
 

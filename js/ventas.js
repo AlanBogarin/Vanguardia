@@ -407,16 +407,16 @@ function ejecutarGuardadoVenta(condition, total, cobrosArray) {
     if (condition === CONDICION_CREDITO) {
         const cuentas = cargarCuentasPorCobrar();
         guardarCuentaPorCobrar({
-            id:           obtenerSiguienteId(cuentas),
-            sale_id:      idVenta,
-            client_id:    clientId,
+            id: obtenerSiguienteId(cuentas),
+            sale_id: idVenta,
+            client_id: clientId,
             amount_total: total,
-            amount_paid:  0,
-            amount_due:   total,
-            status:       ESTADO_PENDIENTE,
-            expire_at:    new Date(ahora.getTime() + 86400000 * 30),
-            created_at:   ahora,
-            updated_at:   null
+            amount_paid: 0,
+            amount_due: total,
+            status: ESTADO_PENDIENTE,
+            expire_at: new Date(ahora.getTime() + 86400000 * 30),
+            created_at: ahora,
+            updated_at: null
         });
     } else if (condition === CONDICION_CONTADO) {
         cobrosArray.forEach(c => {
