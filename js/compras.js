@@ -37,6 +37,13 @@ const tablaCompras = crearDataTable("tabla_compras", [
     })
 });
 
+function ventanaNuevaCompra() {
+    const facturaElem = document.getElementById("invoice");
+    const id = obtenerSiguienteId(cargarCompras());
+    facturaElem.value = `001-001-${String(id).padStart(7, "0")}`;
+    modalNCompra.show();
+}
+
 /**
  * @param {number} id 
  */
@@ -235,27 +242,36 @@ function renderizarDetalles() {
 
 function btnGuardarNuevaCompra() {
     const proveedorElem = document.getElementById("provider_id");
-    const proveedor_id = parseInt(proveedorElem.value);
     const condicionElem = document.getElementById("condition");
     const condicion = condicionElem.value;
     const facturaElem = document.getElementById("invoice");
     const factura = facturaElem.value.trim();
     const timbrado = document.getElementById("timbrado").value.trim();
-
-    if (isNaN(proveedor_id)) {
+    const proveedor = cargarProveedor(parseInt(proveedorElem.value));
+    if (!proveedor) {
         mensajeError("Debe seleccionar un proveedor.");
         proveedorElem.focus();
         return;
-    }
-    if (!timbrado.match(REGEX_TIMBRADO)) {
+    } else if (!condicion) {
+        mensajeError("La condicion es obligatoria");
+        condicionElem.focus();
+        return;
+    } else if (!CONDICION_PAGO.includes(condicion)) {
+        mensajeError("Condición invalida");
+        condicionElem.focus();
+        return;
+    } else if (!factura.match(REGEX_FACTURA)) {
+        mensajeError("El número de factura debe tener el formato 000-000-000.");
+        facturaElem.focus();
+        return;
+    } else if (cargarCompras().some(c => c.invoice === factura)) {
+        mensajeError("Ya existe una compra con la misma factura");
+        facturaElem.focus();
+        return;
+    } else if (!timbrado.match(REGEX_TIMBRADO)) {
         mensajeError("El número de timbrado debe tener 8 dígitos.");
         return;
-    }
-    if (!factura.match(REGEX_FACTURA)) {
-        mensajeError("El número de factura debe tener el formato 000-000-000.");
-        return;
-    }
-    if (detallesTemporales.length === 0) {
+    } else if (detallesTemporales.length === 0) {
         mensajeError("Debe agregar al menos un producto a la compra.");
         return;
     }
@@ -264,7 +280,7 @@ function btnGuardarNuevaCompra() {
     const currentUser = 1; // Asumimos usuario 1 por ahora hasta que haya sesión
     guardarCompra({
         id: nuevaCompraId,
-        provider_id: proveedor_id,
+        provider_id: proveedor.id,
         user_id: currentUser,
         condition: condicion,
         amount: amount,
@@ -300,7 +316,7 @@ function btnGuardarNuevaCompra() {
         guardarCuentaPorPagar({
             id: obtenerSiguienteId(cargarCuentasPorPagar()),
             purchase_id: nuevaCompraId,
-            provider_id: proveedor_id,
+            provider_id: proveedor.id,
             amount_total: amount,
             amount_paid: 0,
             amount_due: amount,
@@ -313,8 +329,7 @@ function btnGuardarNuevaCompra() {
     } else {
         mensajeSuccess("Compra al contado registrada correctamente.");
     }
-
-    detallesTemporales = [];
+    detallesTemporales.splice(0);
     renderizarDetalles();
     cargarDatos();
     modalNCompra.hide();
@@ -344,7 +359,7 @@ function onInputProveedor() {
     const datalistElem = document.getElementById('lista_proveedores');
     const proveedorElem = document.getElementById("provider_id");
     const term = buscarElem.value.trim().toUpperCase();
-    const proveedores = !term ? [] : cargarProveedores().filter(
+    const proveedores = !term ? [] : cargarProveedores().filter(p => p.active).filter(
         p => p.legal_name.toUpperCase().includes(term) || p.ruc.includes(term)).slice(0, 10);
     // select
     proveedorElem.innerHTML = '<option value="">Seleccione un proveedor...</option>'

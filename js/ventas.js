@@ -324,7 +324,7 @@ function guardarNuevaVenta() {
             "Confirmar Venta a Crédito",
             `Total: <strong>Gs. ${formatGs(total)}</strong><br>Condición de cobro: CRÉDITO`,
             () => {
-                ejecutarGuardadoVenta("CREDITO", total, []);
+                ejecutarGuardadoVenta(CONDICION_CREDITO, total, []);
             },
             () => {}
         );
@@ -449,7 +449,7 @@ function ejecutarGuardadoVenta(condition, total, cobrosArray) {
         }
     });
 
-    if (condition === "CREDITO") {
+    if (condition === CONDICION_CREDITO) {
         const cuentas = cargarCuentasPorCobrar();
         guardarCuentaPorCobrar({
             id:           obtenerSiguienteId(cuentas),
@@ -463,7 +463,7 @@ function ejecutarGuardadoVenta(condition, total, cobrosArray) {
             created_at:   ahora,
             updated_at:   null
         });
-    } else if (condition === "CONTADO") {
+    } else if (condition === CONDICION_CONTADO) {
         cobrosArray.forEach(c => {
             guardarCobro({
                 id: obtenerSiguienteId(cargarCobros()),
@@ -491,58 +491,277 @@ function simularImpresionPDF() {
     $("#modalImprimirFactura").modal("hide");
 }
 
+/**
+ * @param {number} idVenta 
+ */
 function imprimirFacturaVenta(idVenta) {
     const v = cargarVenta(idVenta);
     if (!v) return;
 
     const cli = cargarCliente(v.client_id);
     const detalles = cargarVentaDetalles(v.id);
+    const fechaEmision = new Date(v.created_at);
 
+    // Timbrado ficticio basado en el año
+    const timbrado = '798765432';
+    const vigencia = 'VÁLIDO HASTA DICIEMBRE ' + (fechaEmision.getFullYear() + 1);
+    const rucEmpresa = '80012345-6';
+
+    // --- Construir tabla de detalles con columnas IVA ---
     const bodyDetalles = [
+        // Fila de encabezado (2 filas de header para el sub-header de "VALOR DE VENTA")
         [
-            {text: 'Producto', bold: true},
-            {text: 'Cant', bold: true, alignment: 'center'},
-            {text: 'Precio Unit.', bold: true, alignment: 'right'},
-            {text: 'Subtotal', bold: true, alignment: 'right'}
+            { text: 'CANT.', bold: true, alignment: 'center', rowSpan: 2, margin: [0, 6, 0, 0] },
+            { text: 'DESCRIPCIÓN', bold: true, alignment: 'center', rowSpan: 2, margin: [0, 6, 0, 0] },
+            { text: 'PRECIO\nUNITARIO', bold: true, alignment: 'center', rowSpan: 2 },
+            { text: 'VALOR DE VENTA', bold: true, alignment: 'center', colSpan: 3 },
+            {}, {}
+        ],
+        [
+            {}, {},  {},
+            { text: 'EXENTAS', bold: true, alignment: 'center' },
+            { text: '5%', bold: true, alignment: 'center' },
+            { text: '10%', bold: true, alignment: 'center' }
         ]
     ];
 
+    let totalExentas = 0;
+    let total5 = 0;
+    let total10 = 0;
+
     detalles.forEach(d => {
         const p = cargarProducto(d.product_id);
+        const iva = d.iva !== undefined ? d.iva : (p ? p.iva : 10);
+        const nombre = p ? p.name : 'Producto';
+
+        let exenta = '', cinco = '', diez = '';
+        if (iva === 0) {
+            exenta = formatGs(d.subtotal);
+            totalExentas += d.subtotal;
+        } else if (iva === 5) {
+            cinco = formatGs(d.subtotal);
+            total5 += d.subtotal;
+        } else {
+            diez = formatGs(d.subtotal);
+            total10 += d.subtotal;
+        }
+
         bodyDetalles.push([
-            p ? p.name : 'Producto',
-            {text: d.amount.toString(), alignment: 'center'},
-            {text: formatGs(d.unit_price), alignment: 'right'},
-            {text: formatGs(d.subtotal), alignment: 'right'}
+            { text: d.amount.toString(), alignment: 'center' },
+            { text: nombre, alignment: 'left' },
+            { text: formatGs(d.unit_price), alignment: 'right' },
+            { text: exenta, alignment: 'right' },
+            { text: cinco, alignment: 'right' },
+            { text: diez, alignment: 'right' }
         ]);
     });
 
+    // Fila de subtotales por columna IVA
+    bodyDetalles.push([
+        {}, {}, {},
+        { text: formatGs(totalExentas) || '', alignment: 'right', bold: true },
+        { text: formatGs(total5) || '', alignment: 'right', bold: true },
+        { text: formatGs(total10) || '', alignment: 'right', bold: true }
+    ]);
+
+    // --- Liquidación del IVA ---
+    const iva5 = Math.round(total5 / 21);    // 5/105
+    const iva10 = Math.round(total10 / 11);   // 10/110
+    const totalIva = iva5 + iva10;
+
+    // --- Condición de venta con marcas ---
+    const esContado = v.condition === 'CONTADO';
+    const esCredito = v.condition === 'CREDITO';
+
     const docDefinition = {
+        pageSize: 'LETTER',
+        pageMargins: [40, 30, 40, 30],
         content: [
-            { text: 'VANGUARDIA', style: 'header', alignment: 'center' },
-            { text: 'FACTURA DE VENTA', style: 'subheader', alignment: 'center' },
-            { text: '\n' },
-            {
-                columns: [
-                    { text: [ {text: 'Fecha: ', bold: true}, new Date(v.created_at).toLocaleString("es-PY") ] },
-                    { text: [ {text: 'Nro Factura: ', bold: true}, v.invoice ], alignment: 'right' }
-                ]
-            },
-            { text: [ {text: 'Cliente: ', bold: true}, cli ? cli.legal_name : '' ], margin: [0, 5, 0, 0] },
-            { text: [ {text: 'Condición: ', bold: true}, v.condition ], margin: [0, 2, 0, 10] },
+            // ========== ENCABEZADO ==========
             {
                 table: {
-                    headerRows: 1,
-                    widths: ['*', 'auto', 'auto', 'auto'],
-                    body: bodyDetalles
+                    widths: ['55%', '45%'],
+                    body: [
+                        [
+                            {
+                                stack: [
+                                    { text: 'VANGUARDIA', bold: true, fontSize: 16, margin: [0, 0, 0, 3] },
+                                    { text: 'Distribuidora de Mercadería', italics: true, fontSize: 9, margin: [0, 0, 0, 2] },
+                                    { text: 'Av. España 1420, Asunción', fontSize: 8 },
+                                    { text: 'Tel. 021-424035', fontSize: 8, margin: [0, 0, 0, 0] }
+                                ],
+                                border: [true, true, false, true]
+                            },
+                            {
+                                stack: [
+                                    { text: 'TIMBRADO ' + timbrado, bold: true, fontSize: 9, alignment: 'center' },
+                                    { text: vigencia, fontSize: 8, alignment: 'center' },
+                                    { text: 'RUC: ' + rucEmpresa, bold: true, fontSize: 9, alignment: 'center', margin: [0, 2, 0, 0] },
+                                    { text: 'FACTURA', bold: true, fontSize: 12, alignment: 'center', margin: [0, 3, 0, 0] },
+                                    { text: 'Nº ' + v.invoice, bold: true, fontSize: 11, alignment: 'center' }
+                                ],
+                                border: [false, true, true, true]
+                            }
+                        ]
+                    ]
+                },
+                layout: {
+                    hLineWidth: () => 1,
+                    vLineWidth: () => 1,
+                    hLineColor: () => '#000',
+                    vLineColor: () => '#000'
                 }
             },
-            { text: '\n' },
-            { text: [ {text: 'TOTAL: ', bold: true, fontSize: 14}, {text: 'Gs. ' + formatGs(v.amount), fontSize: 14} ], alignment: 'right' }
+
+            // ========== FECHA Y CONDICIÓN ==========
+            {
+                table: {
+                    widths: ['40%', '60%'],
+                    body: [
+                        [
+                            {
+                                text: [
+                                    { text: 'FECHA DE EMISIÓN:  ', bold: true, fontSize: 9 },
+                                    { text: fechaEmision.toLocaleDateString('es-PY', { day: '2-digit', month: 'long', year: 'numeric' }), fontSize: 9 }
+                                ]
+                            },
+                            {
+                                text: [
+                                    { text: 'CONDICIÓN DE VENTA:   ', bold: true, fontSize: 9 },
+                                    { text: 'CONTADO ', fontSize: 9 },
+                                    { text: esContado ? '/X/' : '/  /', fontSize: 9, bold: true },
+                                    { text: '   CRÉDITO ', fontSize: 9 },
+                                    { text: esCredito ? '/X/' : '/  /', fontSize: 9, bold: true }
+                                ]
+                            }
+                        ]
+                    ]
+                },
+                layout: {
+                    hLineWidth: () => 1,
+                    vLineWidth: (i, node) => (i === 0 || i === node.table.widths.length) ? 1 : 0,
+                    hLineColor: () => '#000',
+                    vLineColor: () => '#000'
+                },
+                margin: [0, 0, 0, 0]
+            },
+
+            // ========== DATOS DEL CLIENTE ==========
+            {
+                table: {
+                    widths: ['100%'],
+                    body: [
+                        [
+                            {
+                                stack: [
+                                    {
+                                        text: [
+                                            { text: 'RUC: ', bold: true, fontSize: 9 },
+                                            { text: cli ? cli.ruc : '', fontSize: 9 }
+                                        ]
+                                    },
+                                    {
+                                        text: [
+                                            { text: 'NOMBRE O RAZÓN SOCIAL: ', bold: true, fontSize: 9 },
+                                            { text: cli ? cli.legal_name : '', fontSize: 9 }
+                                        ],
+                                        margin: [0, 2, 0, 0]
+                                    }
+                                ]
+                            }
+                        ]
+                    ]
+                },
+                layout: {
+                    hLineWidth: () => 1,
+                    vLineWidth: () => 1,
+                    hLineColor: () => '#000',
+                    vLineColor: () => '#000'
+                },
+                margin: [0, 0, 0, 0]
+            },
+
+            // ========== TABLA DE DETALLES ==========
+            {
+                table: {
+                    headerRows: 2,
+                    widths: [35, '*', 65, 70, 70, 70],
+                    body: bodyDetalles
+                },
+                layout: {
+                    hLineWidth: (i, node) => {
+                        if (i === 0 || i === 2 || i === node.table.body.length - 1 || i === node.table.body.length) return 1;
+                        return 0;
+                    },
+                    vLineWidth: () => 1,
+                    hLineColor: () => '#000',
+                    vLineColor: () => '#000',
+                    paddingTop: () => 2,
+                    paddingBottom: () => 2
+                },
+                margin: [0, 0, 0, 0]
+            },
+
+            // ========== TOTAL A PAGAR ==========
+            {
+                table: {
+                    widths: ['70%', '30%'],
+                    body: [
+                        [
+                            { text: 'TOTAL A PAGAR', bold: true, fontSize: 11, alignment: 'left' },
+                            { text: formatGs(v.amount), bold: true, fontSize: 11, alignment: 'right' }
+                        ]
+                    ]
+                },
+                layout: {
+                    hLineWidth: () => 1,
+                    vLineWidth: () => 1,
+                    hLineColor: () => '#000',
+                    vLineColor: () => '#000'
+                },
+                margin: [0, 0, 0, 0]
+            },
+
+            // ========== LIQUIDACIÓN DEL IVA ==========
+            {
+                table: {
+                    widths: ['100%'],
+                    body: [
+                        [
+                            {
+                                text: [
+                                    { text: 'LIQUIDACIÓN DEL IVA:   ', bold: true, fontSize: 9 },
+                                    { text: '(5%)  ', fontSize: 9 },
+                                    { text: formatGs(iva5), bold: true, fontSize: 9 },
+                                    { text: '     (10%)  ', fontSize: 9 },
+                                    { text: formatGs(iva10), bold: true, fontSize: 9 },
+                                    { text: '          TOTAL IVA  ', fontSize: 9 },
+                                    { text: formatGs(totalIva), bold: true, fontSize: 9 }
+                                ]
+                            }
+                        ]
+                    ]
+                },
+                layout: {
+                    hLineWidth: () => 1,
+                    vLineWidth: () => 1,
+                    hLineColor: () => '#000',
+                    vLineColor: () => '#000'
+                },
+                margin: [0, 0, 0, 0]
+            },
+
+            // ========== PIE DE FACTURA ==========
+            {
+                columns: [
+                    { text: 'ORIGINAL: COMPRADOR', fontSize: 7, alignment: 'right', margin: [0, 8, 10, 0] },
+                    { text: 'COPIA: ARCHIVO TRIBUTARIO', fontSize: 7, alignment: 'right', margin: [0, 8, 0, 0] }
+                ]
+            }
         ],
-        styles: {
-            header: { fontSize: 22, bold: true },
-            subheader: { fontSize: 14, bold: true, margin: [0, 5, 0, 5] }
+        defaultStyle: {
+            font: 'Roboto',
+            fontSize: 9
         }
     };
 

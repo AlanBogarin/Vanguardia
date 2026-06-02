@@ -83,7 +83,7 @@ function onchangeMetodoPago() {
     const divBanco = document.getElementById("div_banco");
     const bancoElem = document.getElementById("banco");
 
-    if (metodo === "TRANSFERENCIA" || metodo === "CHEQUE") {
+    if (metodo === METODO_TRANSFERENCIA || metodo === METODO_CHEQUE) {
         divBanco.classList.remove("d-none");
         bancoElem.required = true;
     } else {
@@ -91,16 +91,15 @@ function onchangeMetodoPago() {
         bancoElem.value = "";
         bancoElem.required = false;
     }
-
-    if (metodo === "TARJETA_CREDITO" || metodo === "TARJETA_DEBITO") {
+    if (metodo === METODO_TARJETA_CREDITO || metodo === METODO_TARJETA_CREDITO) {
         obsElem.placeholder = "EJ: ÚLTIMOS 4 DÍGITOS + NRO DE AUTORIZACIÓN";
-    } else if (metodo === "TRANSFERENCIA") {
+    } else if (metodo === METODO_TRANSFERENCIA) {
         obsElem.placeholder = "EJ: NRO DE TRANSACCIÓN";
-    } else if (metodo === "CHEQUE") {
+    } else if (metodo === METODO_CHEQUE) {
         obsElem.placeholder = "EJ: NRO DE CHEQUE";
-    } else if (metodo === "CREDITO") {
-        obsElem.placeholder = "EJ: NRO DE CUENTA CORRIENTE O CONVENIO";
-    } else if (metodo === "EFECTIVO") {
+    // } else if (metodo === CONDICION_CREDITO) {
+    //     obsElem.placeholder = "EJ: NRO DE CUENTA CORRIENTE O CONVENIO";
+    } else if (metodo === METODO_EFECTIVO) {
         obsElem.placeholder = "EJ: EFECTIVO EN CAJA / NRO RECIBO";
     } else {
         obsElem.placeholder = "";
@@ -139,7 +138,7 @@ function btnGuardarPago() {
         mensajeError("Debe ingresar un método de pago para poder realizar el pago");
         metodoElem.focus();
         return;
-    } else if ((metodo === "TRANSFERENCIA" || metodo === "CHEQUE") && !banco) {
+    } else if ((metodo === METODO_TRANSFERENCIA || metodo === METODO_CHEQUE) && !banco) {
         mensajeError("Debe seleccionar un banco para poder realizar el pago");
         bancoElem.focus();
         return;
@@ -162,7 +161,7 @@ function btnGuardarPago() {
         amount: monto,
         payment_method: metodo,
         // bank no es una propiedad definida en bd
-        bank: (metodo === "TRANSFERENCIA" || metodo === "CHEQUE") ? banco : null,
+        bank: (metodo === METODO_TRANSFERENCIA || metodo === METODO_CHEQUE) ? banco : null,
         obs: obs,
         created_at: new Date()
     });
