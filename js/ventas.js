@@ -656,7 +656,7 @@ function formatGs(n) {
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (!validarPermiso(PERMISOS.USUARIOS_VER)) return;
-    if (!tienePermisoSesion(PERMISOS.USUARIOS_CREAR)) document.getElementById("btnModalNuevo").style.display = "none";
+    if (!validarPermiso(PERMISOS.VENTAS_VER)) return;
+    if (!tienePermisoSesion(PERMISOS.VENTAS_CREAR)) document.getElementById("btnModalNuevo").style.display = "none";
     cargarDatos();
 });
