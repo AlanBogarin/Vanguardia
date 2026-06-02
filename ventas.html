@@ -64,11 +64,12 @@
                                         <label class="form-label small mb-1">Cliente</label>
                                         <input type="text" id="filtro_cliente_search"
                                                class="form-control form-control-sm"
+                                               oninput="onInputFiltroCliente()"
                                                list="datalist_filtro_clientes"
                                                placeholder="Buscar por nombre o RUC..."
                                                autocomplete="off">
                                         <datalist id="datalist_filtro_clientes"></datalist>
-                                        <input type="hidden" id="filtro_cliente_id">
+                                        <!-- <input type="hidden" id="filtro_cliente_id"> -->
                                     </div>
 
                                     <!-- Total mínimo -->
@@ -145,7 +146,7 @@
                         <div class="col-md-6">
                             <label class="form-label">Cliente <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <input type="text" id="client_search" class="form-control" list="datalist_clientes"
+                                <input type="text" id="client_search" oninput="onInputCliente()" class="form-control" list="datalist_clientes"
                                     placeholder="Buscar por nombre o RUC..." autocomplete="off">
                                 <datalist id="datalist_clientes"></datalist>
                                 <input type="hidden" id="client_id">
@@ -183,7 +184,7 @@
                     <div class="row mb-2 align-items-end g-2">
                         <div class="col-md-5">
                             <label class="form-label small mb-1">Producto</label>
-                            <input type="text" id="producto_search" class="form-control form-control-sm"
+                            <input type="text" id="producto_search" oninput="onInputProducto()" class="form-control form-control-sm"
                                 list="datalist_productos" placeholder="Buscar por nombre o código..."
                                 autocomplete="off">
                             <datalist id="datalist_productos"></datalist>
@@ -199,8 +200,7 @@
                                 placeholder="Precio de venta" readonly>
                         </div>
                         <div class="col-md-1">
-                            <button type="button" class="btn btn-success btn-sm w-100" id="btnAgregarDetalle"
-                                title="Agregar producto">
+                            <button type="button" class="btn btn-success btn-sm w-100" onclick="btnAgregarDetalle()" title="Agregar producto">
                                 <i class="bi bi-plus-lg"></i>
                             </button>
                         </div>
@@ -234,7 +234,7 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         <i class="bi bi-x-circle"></i> Cancelar
                     </button>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="button" class="btn btn-primary" onclick="btnGuardarNuevaVenta()">
                         <i class="bi bi-floppy"></i> Guardar Venta
                     </button>
                 </div>
@@ -356,6 +356,10 @@
                         <div class="col-6"><strong>Total a Pagar:</strong></div>
                         <div class="col-6 text-end" id="cobro_total_pagar">0 Gs.</div>
                     </div>
+                    <div class="row mb-2">
+                        <div class="col-6"><strong>Total Pagado:</strong></div>
+                        <div class="col-6 text-end" id="cobro_total_pagado">0 Gs.</div>
+                    </div>
                     <div class="row mb-3">
                         <div class="col-6"><strong>Vuelto:</strong></div>
                         <!-- en vez de "Restante" le puse "Vuelto" asi pidio el profe -->
@@ -378,7 +382,7 @@
                             <input type="number" id="cobro_monto" class="form-control form-control-sm" min="1">
                         </div>
                         <div class="col-md-2">
-                            <button type="button" class="btn btn-sm btn-primary w-100" id="btnAgregarCobro">
+                            <button type="button" class="btn btn-sm btn-primary w-100" onclick="btnAgregarCobro()" id="btnAgregarCobro">
                                 <i class="bi bi-plus-lg"></i>
                             </button>
                         </div>
@@ -396,8 +400,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-success" id="btnConfirmarCobro" disabled>Confirmar Venta y
-                        Cobro</button>
+                    <button type="button" class="btn btn-success" id="btnConfirmarCobro" onclick="btnConfirmarCobro()" disabled>Confirmar Venta y Cobro</button>
                 </div>
             </div>
         </div>

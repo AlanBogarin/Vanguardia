@@ -61,39 +61,33 @@ function btnAplicarFiltros() {
 function btnLimpiarFiltros() {
     document.getElementById("filtro_condicion").value = "";
     document.getElementById("filtro_cliente_search").value = "";
-    document.getElementById("#filtro_cliente_id").value = "";
-    document.getElementById("#filtro_total_min").value = "";
-    document.getElementById("#filtro_total_max").value = "";
-    document.getElementById("#filtro_fecha_desde").value = "";
-    document.getElementById("#filtro_fecha_hasta").value = "";
+    document.getElementById("filtro_total_min").value = "";
+    document.getElementById("filtro_total_max").value = "";
+    document.getElementById("filtro_fecha_desde").value = "";
+    document.getElementById("filtro_fecha_hasta").value = "";
     cargarDatos();
 }
 
 function cargarSelectClientes() {
-    // Llenar datalist para búsqueda de clientes (modal nueva venta)
-    const $dl = $("#datalist_clientes").empty();
-    // Llenar datalist del filtro de clientes
-    const $dlf = $("#datalist_filtro_clientes").empty();
-    cargarClientes()
-        .filter(c => c.active !== false)
-        .forEach(c => {
-            const opt = `<option data-id="${c.id}" value="${c.legal_name} — ${c.ruc}">`;
-            $dl.append(opt);
-            $dlf.append(opt);
-        });
-    $("#client_search").val("");
-    $("#client_id").val("");
+    const clientesElem = document.getElementById("datalist_clientes");
+    const filtroClientesElem = document.getElementById("datalist_filtro_clientes");
+    const ventas = cargarVentas();
+    clientesElem.innerHTML = filtroClientesElem.innerHTML = cargarClientes()
+        .filter(c => c.active && ventas.some(v => v.client_id === c.id))
+        .map(c => `<option data-id="${c.id}" value="${c.legal_name}">${c.ruc}</option>`).join("");
+    document.getElementById("client_search").value = "";
+    document.getElementById("client_id").value = "";
 }
 
-function resolverFiltroClienteDesdeInput() {
-    const texto = $("#filtro_cliente_search").val().trim();
-    const opt   = $("#datalist_filtro_clientes option").filter(function() {
-        return $(this).val() === texto;
-    });
-    $("#filtro_cliente_id").val(opt.length ? opt.data("id") : "");
+function onInputFiltroCliente() {
+    // const texto = $("#filtro_cliente_search").val().trim();
+    // const opt = $("#datalist_filtro_clientes option").filter(function() {
+    //     return $(this).val() === texto;
+    // });
+    // $("#filtro_cliente_id").val(opt.length ? opt.data("id") : "");
 }
 
-function resolverClienteDesdeInput() {
+function onInputCliente() {
     const texto = $("#client_search").val().trim();
     const opt   = $("#datalist_clientes option").filter(function() {
         return $(this).val() === texto;
@@ -118,7 +112,7 @@ function cargarSelectProductos() {
     $("#precio_input").val("");
 }
 
-function resolverProductoDesdeInput() {
+function onInputProducto() {
     const texto = $("#producto_search").val().trim();
     const opt   = $("#datalist_productos option").filter(function() {
         return $(this).val() === texto;
@@ -135,45 +129,7 @@ function resolverProductoDesdeInput() {
     }
 }
 
-function bindEventos() {
-    // Autocompletar precio al escribir/seleccionar producto del datalist
-    $("#producto_search").on("input change", resolverProductoDesdeInput);
-
-    // Autocompletar cliente al escribir/seleccionar del datalist
-    $("#client_search").on("input change", resolverClienteDesdeInput);
-
-    // Filtro cliente
-    $("#filtro_cliente_search").on("input change", resolverFiltroClienteDesdeInput);
-
-    // Botón agregar producto al detalle
-    $("#btnAgregarDetalle").on("click", agregarDetalle);
-
-    // Enter en cantidad → agregar
-    $("#cantidad_input").on("keydown", function (e) {
-        if (e.key === "Enter") { e.preventDefault(); agregarDetalle(); }
-    });
-
-    // Submit del formulario
-    $("#formNuevaVenta").on("submit", function (e) {
-        e.preventDefault();
-        guardarNuevaVenta();
-    });
-
-    // Limpiar al cerrar modal
-    $("#modalNuevaVenta").on("hidden.bs.modal", limpiarModalVenta);
-
-    // Refrescar datalists al abrir modal y previsualizar nro factura
-    $("#modalNuevaVenta").on("show.bs.modal", function () {
-        cargarSelectClientes();
-        cargarSelectProductos();
-        generarVistaPreviewFactura();
-    });
-
-    $("#btnAgregarCobro").on("click", agregarCobroTemp);
-    $("#btnConfirmarCobro").on("click", confirmarVentaYCobro);
-}
-
-function agregarDetalle() {
+function btnAgregarDetalle() {
     const productId = parseInt($("#producto_search").data("selected-id"));
     const stock = parseInt($("#producto_search").data("selected-stock")) || 0;
     const cantidad = parseInt($("#cantidad_input").val());
@@ -218,7 +174,6 @@ function agregarDetalle() {
             subtotal:   cantidad * precio
         });
     }
-
     renderTablaDetalle();
     $("#producto_search").val("").data("selected-id", "").data("selected-stock", "");
     $("#precio_input").val("");
@@ -263,7 +218,7 @@ function renderTablaDetalle() {
     $("#total_venta").text(renderMoneda(total));
 }
 
-function guardarNuevaVenta() {
+function btnGuardarNuevaVenta() {
     const clientId = parseInt($("#client_id").val());
     const condition = $("#condition").val();
 
@@ -314,15 +269,18 @@ function actualizarTablaCobrosTemp() {
             </tr>
         `);
     });
-    const restante = ventaTotalTemp - totalPagado;
-    $("#cobro_restante").text(renderMoneda(restante) + " Gs.");
-    
-    if (restante === 0) {
+    $("#cobro_total_pagado").text(renderMoneda(totalPagado) + " Gs.");
+    const diferencia = totalPagado - ventaTotalTemp;
+    if (diferencia >= 0) {
+        $("#cobro_restante").text(
+            `Vuelto: ${renderMoneda(diferencia)} Gs.`
+        );
         $("#btnConfirmarCobro").prop("disabled", false);
-        $("#btnAgregarCobro").prop("disabled", true);
     } else {
+        $("#cobro_restante").text(
+            `Faltante: ${renderMoneda(Math.abs(diferencia))} Gs.`
+        );
         $("#btnConfirmarCobro").prop("disabled", true);
-        $("#btnAgregarCobro").prop("disabled", false);
     }
 }
 
@@ -331,35 +289,28 @@ function quitarCobroTemp(idx) {
     actualizarTablaCobrosTemp();
 }
 
-function agregarCobroTemp() {
+function btnAgregarCobro() {
     const method = $("#cobro_metodo").val();
     const amount = parseFloat($("#cobro_monto").val());
-    
     if (!amount || amount <= 0) {
         mensajeWarn("Ingrese un monto válido.");
         return;
     }
-    
-    const totalPagado = cobrosTemp.reduce((sum, c) => sum + c.amount, 0);
-    const restante = ventaTotalTemp - totalPagado;
-    
-    if (amount > restante) {
-        mensajeWarn(`El monto no puede ser mayor al vuelto (${renderMoneda(restante)} Gs.)`);
-        return;
-    }
-    
     cobrosTemp.push({ payment_method: method, amount: amount });
     $("#cobro_monto").val("");
     actualizarTablaCobrosTemp();
 }
 
-function confirmarVentaYCobro() {
+function btnConfirmarCobro() {
     const totalPagado = cobrosTemp.reduce((sum, c) => sum + c.amount, 0);
-    if (totalPagado !== ventaTotalTemp) {
-        mensajeWarn("El monto total pagado debe ser igual al total de la venta.");
+    if (totalPagado < ventaTotalTemp) {
+        mensajeWarn("El monto pagado es insuficiente.");
         return;
     }
-    
+    const vuelto = totalPagado - ventaTotalTemp;
+    if (vuelto > 0) {
+        mensajeSuccess(`Vuelto: ${renderMoneda(vuelto)} Gs.`);
+    }
     $("#modalCobroContado").modal("hide");
     ejecutarGuardadoVenta("CONTADO", ventaTotalTemp, cobrosTemp);
 }
@@ -829,15 +780,16 @@ function renderMoneda(n) {
 }
 
 function cargarDatos() {
-    const condicion = document.getElementById("filtro_condicion").value;
-    const cliente = document.getElementById("filtro_cliente_id").value;
+    const condicion = document.getElementById("filtro_condicion").value.toUpperCase();
+    const cliente = document.getElementById("filtro_cliente_search").value.toUpperCase();
     const totalMin = parseFloat(document.getElementById("filtro_total_min").value);
     const totalMax = parseFloat(document.getElementById("filtro_total_max").value);
     const fechaDesde = document.getElementById("filtro_fecha_desde").value;
     const fechaHasta = document.getElementById("filtro_fecha_hasta").value;
     cargarDataTable(tablaVentas, cargarVentas().filter(v => {
+        const c = cargarCliente(v.client_id);
         if (condicion && v.condition !== condicion) return false;
-        if (cliente && v.client_id !== cliente) return false;
+        if (cliente && !c.legal_name.includes(cliente) && !c.ruc.includes(cliente)) return false;
         if (!isNaN(totalMin) && totalMin > 0 && v.amount < totalMin) return false;
         if (!isNaN(totalMax) && totalMax > 0 && v.amount > totalMax) return false;
         if (fechaDesde && new Date(fechaDesde) > new Date(v.created_at)) return false;
@@ -852,5 +804,16 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarDatos();
     cargarSelectClientes();
     cargarSelectProductos();
-    bindEventos();
+    // Enter en cantidad → agregar
+    // $("#cantidad_input").on("keydown", function (e) {
+    //     if (e.key === "Enter") { e.preventDefault(); btnAgregarDetalle(); }
+    // });
+    // Limpiar al cerrar modal
+    $("#modalNuevaVenta").on("hidden.bs.modal", limpiarModalVenta);
+    // Refrescar datalists al abrir modal y previsualizar nro factura
+    $("#modalNuevaVenta").on("show.bs.modal", function () {
+        cargarSelectClientes();
+        cargarSelectProductos();
+        generarVistaPreviewFactura();
+    });
 });
