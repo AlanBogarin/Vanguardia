@@ -720,7 +720,8 @@ function imprimirFacturaVenta(idVenta) {
         }
     };
 
-    pdfMake.createPdf(docDefinition).download(`Factura_${v.invoice}.pdf`);
+    pdfMake.createPdf(docDefinition).print();
+    // .download(`Factura_${v.invoice}.pdf`);
     mensajeSuccess("Generando y descargando PDF...");
 }
 
