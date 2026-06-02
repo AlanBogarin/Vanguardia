@@ -328,33 +328,33 @@ function habilitarBusquedaProveedor(habilitar) {
 }
 
 function onChangeProducto() {
-    const ivaSelect = document.getElementById("iva_select_manual");
-    const selectedOption = this.options[this.selectedIndex];
-    if (selectedOption && selectedOption.value) {
-        const iva = selectedOption.getAttribute('data-iva');
-        if (iva !== null && iva !== undefined) {
-            ivaSelect.value = iva;
-        }
-    } else {
-        ivaSelect.value = "";
-    }
+    const ivaElem = document.getElementById("iva_select_manual");
+    const cantidadElem = document.getElementById("cantidad_input");
+    const precioElem = document.getElementById("precio_input");
+    const producto = cargarProducto(parseInt(document.getElementById("producto_select").value));
+    if (!producto) return;
+    ivaElem.value = producto.iva || "";
+    cantidadElem.value = Math.max(producto.min_stock - producto.stock, 1);
+    precioElem.value = producto.purchase_price;
 }
 
 // Filtrado Interactivo
 function onInputProveedor() {
-    console.log(this);
-    const term = this.value.toLowerCase().trim();
-    console.log(term);
-    const proveedores = cargarProveedores();
-    let provOptions = '<option value="">Seleccione un proveedor...</option>';
-    proveedores.forEach(p => {
-        const name = p.legal_name || p.name || 'Proveedor';
-        const ruc = p.ruc || '';
-        if (name.toLowerCase().includes(term) || ruc.toLowerCase().includes(term)) {
-            provOptions += `<option value="${p.id}">${name} (${ruc})</option>`;
-        }
-    });
-    document.getElementById("provider_id").innerHTML = provOptions;
+    const buscarElem = document.getElementById("buscar_proveedor");
+    const datalistElem = document.getElementById('lista_proveedores');
+    const proveedorElem = document.getElementById("provider_id");
+    const term = buscarElem.value.trim().toUpperCase();
+    const proveedores = !term ? [] : cargarProveedores().filter(
+        p => p.legal_name.toUpperCase().includes(term) || p.ruc.includes(term)).slice(0, 10);
+    // select
+    proveedorElem.innerHTML = '<option value="">Seleccione un proveedor...</option>'
+        + proveedores.map(p => `<option value="${p.id}">${p.legal_name} (${p.ruc})</option>`).join("");
+    // datalist
+    datalistElem.innerHTML = proveedores.map(p => `<option value="${p.legal_name}">${p.ruc}</option>`).join("")
+    // datalistElem.showPicker();
+    // buscarElem.focus();
+    const match = proveedores.find(p => p.legal_name === term);
+    if (match) proveedorElem.value = match.id;
 }
 
 function onShowModalNuevaCompra() {

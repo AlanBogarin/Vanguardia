@@ -142,7 +142,8 @@
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label">Proveedor</label>
-                            <input type="text" id="buscar_proveedor" oninput="onInputProveedor()" class="form-control mb-2" placeholder="Buscar RUC o Razón Social...">
+                            <input class="form-control mb-2" id="buscar_proveedor" type="text" list="lista_proveedores" oninput="onInputProveedor()" placeholder="Buscar RUC o Razón Social...">
+                            <datalist id="lista_proveedores"></datalist>
                             <select id="provider_id" class="form-select" required></select>
                         </div>
                         <div class="col-md-6">
@@ -190,7 +191,7 @@
                     <div class="col-md-2">
                         <label class="form-label small text-muted">IVA</label>
                         <select id="iva_select_manual" class="form-select fw-bold text-center" disabled>
-                            <option value=""></option>
+                            <option value="">EXENTA</option>
                             <option value="10">10%</option>
                             <option value="5">5%</option>
                         </select>
