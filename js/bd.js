@@ -197,19 +197,19 @@ const REGEX_MARCA = /^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ\s-.]{2,50}$/;
 const REGEX_CATEGORIA = /^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ\s-.]{3,}$/;
 const REGEX_PRODUCTO = /^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ\s-.]{5,}$/;
 const REGEX_TIMBRADO = /^\d{8}$/;
-const REGEX_FACTURA = /^\d{3}-\d{3}-\d{3}$/;
+const REGEX_FACTURA = /^\d{3}-\d{3}-\d{7}$/; // Establecimiento, Punto de Expedicion, Numero Secuencial
 const REGEX_TEXTO = /^[A-Z0-9ÑÁÉÍÓÚÜ\s\-\.\,\/\(\)\%\+\*\&\#\[\]]{5,50}$/;
 
 const METODO_TRANSFERENCIA = "TRANSFERENCIA";
-const TARJETA_CREDITO = "TARJETA_CREDITO";
-const TARJETA_DEBITO = "TARJETA_DEBITO";
+const METODO_TARJETA_CREDITO = "TARJETA_CREDITO";
+const METODO_TARJETA_DEBITO = "TARJETA_DEBITO";
 const METODO_EFECTIVO = "EFECTIVO";
 const METODO_CHEQUE = "CHEQUE";
-const METODO_PAGO = [METODO_TRANSFERENCIA, TARJETA_CREDITO, TARJETA_DEBITO, METODO_EFECTIVO, METODO_CHEQUE]
+const METODO_PAGO = [METODO_TRANSFERENCIA, METODO_TARJETA_CREDITO, METODO_TARJETA_DEBITO, METODO_EFECTIVO, METODO_CHEQUE]
 
-const CONDICION_EFECTIVO = "EFECTIVO";
+const CONDICION_CONTADO = "CONTADO";
 const CONDICION_CREDITO = "CREDITO";
-const CONDICION_PAGO = [CONDICION_EFECTIVO, CONDICION_CREDITO];
+const CONDICION_PAGO = [CONDICION_CONTADO, CONDICION_CREDITO];
 
 const ESTADO_PENDIENTE = "PENDIENTE";
 const ESTADO_PARCIAL = "PARCIAL";
@@ -1377,16 +1377,16 @@ function cargarDatosPrueba() {
     guardarProducto({ id: 10, code: "78401000", name: "XBOX SERIES X", description: "CONSOLA MICROSOFT 1TB", purchase_price: 3500000, selling_price: 4500000, stock: 18, min_stock: 5, category_id: 6, brand_id: 10, iva: 10, active: true, created_at: new Date(), updated_at: null });
 
     // 8. Compras
-    guardarCompra({ id: 1, provider_id: 1, user_id: 4, condition: "CONTADO", amount: 120000000, invoice: "001-001-0000001", stamping: "12345678", created_at: new Date(Date.now() - 86400000 * 5) });
-    guardarCompra({ id: 2, provider_id: 3, user_id: 4, condition: "CREDITO", amount: 65000000, invoice: "001-001-0000002", stamping: "16782345", created_at: new Date(Date.now() - 86400000 * 4) });
-    guardarCompra({ id: 3, provider_id: 5, user_id: 4, condition: "CONTADO", amount: 85000000, invoice: "001-001-0000003", stamping: "15403921", created_at: new Date(Date.now() - 86400000 * 3) });
-    guardarCompra({ id: 4, provider_id: 8, user_id: 4, condition: "CREDITO", amount: 54000000, invoice: "001-001-0000004", stamping: "11223344", created_at: new Date(Date.now() - 86400000 * 2) });
-    guardarCompra({ id: 5, provider_id: 9, user_id: 4, condition: "CONTADO", amount: 20000000, invoice: "001-001-0000005", stamping: "14920511", created_at: new Date(Date.now() - 86400000 * 1) });
-    guardarCompra({ id: 6, provider_id: 2, user_id: 4, condition: "CREDITO", amount: 150000000, invoice: "001-001-0000006", stamping: "13049582", created_at: new Date() });
-    guardarCompra({ id: 7, provider_id: 10, user_id: 4, condition: "CONTADO", amount: 35000000, invoice: "001-001-0000007", stamping: "18504193", created_at: new Date() });
-    guardarCompra({ id: 8, provider_id: 7, user_id: 4, condition: "CREDITO", amount: 42500000, invoice: "001-001-0000008", stamping: "17492043", created_at: new Date() });
-    guardarCompra({ id: 9, provider_id: 6, user_id: 4, condition: "CONTADO", amount: 14000000, invoice: "001-001-0000009", stamping: "19203847", created_at: new Date() });
-    guardarCompra({ id: 10, provider_id: 4, user_id: 4, condition: "CREDITO", amount: 12000000, invoice: "001-001-0000010", stamping: "15382910", created_at: new Date() });
+    guardarCompra({ id: 1, provider_id: 1, user_id: 4, condition: CONDICION_CONTADO, amount: 120000000, invoice: "001-001-0000001", stamping: "12345678", created_at: new Date(Date.now() - 86400000 * 5) });
+    guardarCompra({ id: 2, provider_id: 3, user_id: 4, condition: CONDICION_CREDITO, amount: 65000000, invoice: "001-001-0000002", stamping: "16782345", created_at: new Date(Date.now() - 86400000 * 4) });
+    guardarCompra({ id: 3, provider_id: 5, user_id: 4, condition: CONDICION_CONTADO, amount: 85000000, invoice: "001-001-0000003", stamping: "15403921", created_at: new Date(Date.now() - 86400000 * 3) });
+    guardarCompra({ id: 4, provider_id: 8, user_id: 4, condition: CONDICION_CREDITO, amount: 54000000, invoice: "001-001-0000004", stamping: "11223344", created_at: new Date(Date.now() - 86400000 * 2) });
+    guardarCompra({ id: 5, provider_id: 9, user_id: 4, condition: CONDICION_CONTADO, amount: 20000000, invoice: "001-001-0000005", stamping: "14920511", created_at: new Date(Date.now() - 86400000 * 1) });
+    guardarCompra({ id: 6, provider_id: 2, user_id: 4, condition: CONDICION_CREDITO, amount: 150000000, invoice: "001-001-0000006", stamping: "13049582", created_at: new Date() });
+    guardarCompra({ id: 7, provider_id: 10, user_id: 4, condition: CONDICION_CONTADO, amount: 35000000, invoice: "001-001-0000007", stamping: "18504193", created_at: new Date() });
+    guardarCompra({ id: 8, provider_id: 7, user_id: 4, condition: CONDICION_CREDITO, amount: 42500000, invoice: "001-001-0000008", stamping: "17492043", created_at: new Date() });
+    guardarCompra({ id: 9, provider_id: 6, user_id: 4, condition: CONDICION_CONTADO, amount: 14000000, invoice: "001-001-0000009", stamping: "19203847", created_at: new Date() });
+    guardarCompra({ id: 10, provider_id: 4, user_id: 4, condition: CONDICION_CREDITO, amount: 12000000, invoice: "001-001-0000010", stamping: "15382910", created_at: new Date() });
 
     // 9. CompraDetalles
     guardarCompraDetalle({ id: 1, purchase_id: 1, product_id: 1, amount: 15, unit_price: 8000000, subtotal: 120000000, iva: 10, created_at: new Date(Date.now() - 86400000 * 5) });
@@ -1403,16 +1403,16 @@ function cargarDatosPrueba() {
     guardarCompraDetalle({ id: 12, purchase_id: 10, product_id: 4, amount: 2, unit_price: 6000000, subtotal: 12000000, iva: 10, created_at: new Date() });
 
     // 10. Ventas
-    guardarVenta({ id: 1, client_id: 2, user_id: 2, condition: "CONTADO", amount: 20000000, invoice: "001-001-000001", created_at: new Date(Date.now() - 86400000 * 3), updated_at: null });
-    guardarVenta({ id: 2, client_id: 3, user_id: 3, condition: "CREDITO", amount: 6500000, invoice: "001-001-000002", created_at: new Date(Date.now() - 86400000 * 2), updated_at: null });
-    guardarVenta({ id: 3, client_id: 5, user_id: 2, condition: "CONTADO", amount: 10500000, invoice: "001-001-000003", created_at: new Date(Date.now() - 86400000 * 1), updated_at: null });
-    guardarVenta({ id: 4, client_id: 7, user_id: 3, condition: "CREDITO", amount: 16100000, invoice: "001-001-000004", created_at: new Date(), updated_at: null });
-    guardarVenta({ id: 5, client_id: 9, user_id: 2, condition: "CONTADO", amount: 4500000, invoice: "001-001-000005", created_at: new Date(), updated_at: null });
-    guardarVenta({ id: 6, client_id: 1, user_id: 3, condition: "CONTADO", amount: 9500000, invoice: "001-001-000006", created_at: new Date(), updated_at: null });
-    guardarVenta({ id: 7, client_id: 4, user_id: 2, condition: "CREDITO", amount: 14500000, invoice: "001-001-000007", created_at: new Date(), updated_at: null });
-    guardarVenta({ id: 8, client_id: 6, user_id: 3, condition: "CONTADO", amount: 10000000, invoice: "001-001-000008", created_at: new Date(), updated_at: null });
-    guardarVenta({ id: 9, client_id: 8, user_id: 2, condition: "CREDITO", amount: 8000000, invoice: "001-001-000009", created_at: new Date(), updated_at: null });
-    guardarVenta({ id: 10, client_id: 10, user_id: 3, condition: "CONTADO", amount: 4500000, invoice: "001-001-000010", created_at: new Date(), updated_at: null });
+    guardarVenta({ id: 1, client_id: 2, user_id: 2, condition: CONDICION_CONTADO, amount: 20000000, invoice: "001-001-000001", created_at: new Date(Date.now() - 86400000 * 3), updated_at: null });
+    guardarVenta({ id: 2, client_id: 3, user_id: 3, condition: CONDICION_CREDITO, amount: 6500000, invoice: "001-001-000002", created_at: new Date(Date.now() - 86400000 * 2), updated_at: null });
+    guardarVenta({ id: 3, client_id: 5, user_id: 2, condition: CONDICION_CONTADO, amount: 10500000, invoice: "001-001-000003", created_at: new Date(Date.now() - 86400000 * 1), updated_at: null });
+    guardarVenta({ id: 4, client_id: 7, user_id: 3, condition: CONDICION_CREDITO, amount: 16100000, invoice: "001-001-000004", created_at: new Date(), updated_at: null });
+    guardarVenta({ id: 5, client_id: 9, user_id: 2, condition: CONDICION_CONTADO, amount: 4500000, invoice: "001-001-000005", created_at: new Date(), updated_at: null });
+    guardarVenta({ id: 6, client_id: 1, user_id: 3, condition: CONDICION_CONTADO, amount: 9500000, invoice: "001-001-000006", created_at: new Date(), updated_at: null });
+    guardarVenta({ id: 7, client_id: 4, user_id: 2, condition: CONDICION_CREDITO, amount: 14500000, invoice: "001-001-000007", created_at: new Date(), updated_at: null });
+    guardarVenta({ id: 8, client_id: 6, user_id: 3, condition: CONDICION_CONTADO, amount: 10000000, invoice: "001-001-000008", created_at: new Date(), updated_at: null });
+    guardarVenta({ id: 9, client_id: 8, user_id: 2, condition: CONDICION_CREDITO, amount: 8000000, invoice: "001-001-000009", created_at: new Date(), updated_at: null });
+    guardarVenta({ id: 10, client_id: 10, user_id: 3, condition: CONDICION_CONTADO, amount: 4500000, invoice: "001-001-000010", created_at: new Date(), updated_at: null });
 
     // 11. VentaDetalles
     guardarVentaDetalle({ id: 1, sale_id: 1, product_id: 1, amount: 2, unit_price: 10000000, subtotal: 20000000, iva: 10, created_at: new Date(Date.now() - 86400000 * 3) });
@@ -1436,13 +1436,13 @@ function cargarDatosPrueba() {
     guardarCuentaPorPagar({ id: 5, purchase_id: 10, provider_id: 4, amount_total: 12000000, amount_paid: 5000000, amount_due: 7000000, status: "PARCIAL", expire_at: new Date(Date.now() + 86400000 * 30), created_at: new Date(), updated_at: null });
 
     // 13. Pagos
-    guardarPago({ id: 1, account_payable_id: 1, amount: 15000000, payment_method: "TRANSFERENCIA", obs: "TRF. BANCO ATLAS NRO 54321", created_at: new Date(Date.now() - 86400000 * 3) });
-    guardarPago({ id: 2, account_payable_id: 1, amount: 20000000, payment_method: "EFECTIVO", obs: "RECIBO OFICIAL NRO 001-001", created_at: new Date(Date.now() - 86400000 * 1) });
-    guardarPago({ id: 3, account_payable_id: 2, amount: 20000000, payment_method: "CHEQUE", obs: "CHQ. BASA NRO 987654 AL DIA", created_at: new Date(Date.now() - 86400000 * 1) });
-    guardarPago({ id: 4, account_payable_id: 2, amount: 34000000, payment_method: "EFECTIVO", obs: "RECIBO OFICIAL NRO 005-001", created_at: new Date() });
-    guardarPago({ id: 5, account_payable_id: 5, amount: 5000000, payment_method: "TRANSFERENCIA", obs: "TRF. ITAU NRO TRANS 10293", created_at: new Date() });
-    guardarPago({ id: 6, account_payable_id: 3, amount: 1200000, payment_method: "TARJETA_CREDITO", obs: "TARJETA VISA - AUT: 456789", created_at: new Date() });
-    guardarPago({ id: 7, account_payable_id: 4, amount: 850000, payment_method: "TARJETA_DEBITO", obs: "MASTERCARD DEB - AUT: 123456", created_at: new Date() });
+    guardarPago({ id: 1, account_payable_id: 1, amount: 15000000, payment_method: METODO_TRANSFERENCIA, obs: "TRF. BANCO ATLAS NRO 54321", created_at: new Date(Date.now() - 86400000 * 3) });
+    guardarPago({ id: 2, account_payable_id: 1, amount: 20000000, payment_method: METODO_EFECTIVO, obs: "RECIBO OFICIAL NRO 001-001", created_at: new Date(Date.now() - 86400000 * 1) });
+    guardarPago({ id: 3, account_payable_id: 2, amount: 20000000, payment_method: METODO_CHEQUE, obs: "CHQ. BASA NRO 987654 AL DIA", created_at: new Date(Date.now() - 86400000 * 1) });
+    guardarPago({ id: 4, account_payable_id: 2, amount: 34000000, payment_method: METODO_EFECTIVO, obs: "RECIBO OFICIAL NRO 005-001", created_at: new Date() });
+    guardarPago({ id: 5, account_payable_id: 5, amount: 5000000, payment_method: METODO_TRANSFERENCIA, obs: "TRF. ITAU NRO TRANS 10293", created_at: new Date() });
+    guardarPago({ id: 6, account_payable_id: 3, amount: 1200000, payment_method: METODO_TARJETA_CREDITO, obs: "TARJETA VISA - AUT: 456789", created_at: new Date() });
+    guardarPago({ id: 7, account_payable_id: 4, amount: 850000, payment_method: METODO_TARJETA_DEBITO, obs: "MASTERCARD DEB - AUT: 123456", created_at: new Date() });
 
     // 14. CuentasPorCobrar (ventas a credito fueron id 2, 4, 7, 9)
     guardarCuentaPorCobrar({ id: 1, sale_id: 2, client_id: 3, amount_total: 6500000, amount_paid: 3500000, amount_due: 3000000, status: "PARCIAL", expire_at: new Date(Date.now() + 86400000 * 28), created_at: new Date(Date.now() - 86400000 * 2), updated_at: null });
@@ -1451,15 +1451,15 @@ function cargarDatosPrueba() {
     guardarCuentaPorCobrar({ id: 4, sale_id: 9, client_id: 8, amount_total: 8000000, amount_paid: 0, amount_due: 8000000, status: "PENDIENTE", expire_at: new Date(Date.now() + 86400000 * 30), created_at: new Date(), updated_at: null });
 
     // 15. Cobros
-    guardarCobro({ id: 1, account_receivable_id: 1, sale_id: null, amount: 3500000, payment_method: "EFECTIVO", obs: "Caja", created_at: new Date(Date.now() - 86400000 * 1) });
-    guardarCobro({ id: 2, account_receivable_id: 2, sale_id: null, amount: 10000000, payment_method: "EFECTIVO", obs: "Caja", created_at: new Date() });
-    guardarCobro({ id: 3, account_receivable_id: 2, sale_id: null, amount: 6100000, payment_method: "TRANSFERENCIA", obs: "Trf. Ueno", created_at: new Date() });
-    guardarCobro({ id: 4, account_receivable_id: null, sale_id: 1, amount: 20000000, payment_method: "EFECTIVO", obs: "Caja", created_at: new Date(Date.now() - 86400000 * 3) });
-    guardarCobro({ id: 5, account_receivable_id: null, sale_id: 3, amount: 10500000, payment_method: "TRANSFERENCIA", obs: "Caja", created_at: new Date(Date.now() - 86400000 * 1) });
-    guardarCobro({ id: 6, account_receivable_id: null, sale_id: 5, amount: 4500000, payment_method: "EFECTIVO", obs: "Caja", created_at: new Date() });
-    guardarCobro({ id: 7, account_receivable_id: null, sale_id: 6, amount: 9500000, payment_method: "TARJETA_CREDITO", obs: "Caja", created_at: new Date() });
-    guardarCobro({ id: 8, account_receivable_id: null, sale_id: 8, amount: 10000000, payment_method: "EFECTIVO", obs: "Caja", created_at: new Date() });
-    guardarCobro({ id: 9, account_receivable_id: null, sale_id: 10, amount: 4500000, payment_method: "TRANSFERENCIA", obs: "Caja", created_at: new Date() });
+    guardarCobro({ id: 1, account_receivable_id: 1, sale_id: null, amount: 3500000, payment_method: METODO_EFECTIVO, obs: "Caja", created_at: new Date(Date.now() - 86400000 * 1) });
+    guardarCobro({ id: 2, account_receivable_id: 2, sale_id: null, amount: 10000000, payment_method: METODO_EFECTIVO, obs: "Caja", created_at: new Date() });
+    guardarCobro({ id: 3, account_receivable_id: 2, sale_id: null, amount: 6100000, payment_method: METODO_TRANSFERENCIA, obs: "Trf. Ueno", created_at: new Date() });
+    guardarCobro({ id: 4, account_receivable_id: null, sale_id: 1, amount: 20000000, payment_method: METODO_EFECTIVO, obs: "Caja", created_at: new Date(Date.now() - 86400000 * 3) });
+    guardarCobro({ id: 5, account_receivable_id: null, sale_id: 3, amount: 10500000, payment_method: METODO_TRANSFERENCIA, obs: "Caja", created_at: new Date(Date.now() - 86400000 * 1) });
+    guardarCobro({ id: 6, account_receivable_id: null, sale_id: 5, amount: 4500000, payment_method: METODO_EFECTIVO, obs: "Caja", created_at: new Date() });
+    guardarCobro({ id: 7, account_receivable_id: null, sale_id: 6, amount: 9500000, payment_method: METODO_TARJETA_CREDITO, obs: "Caja", created_at: new Date() });
+    guardarCobro({ id: 8, account_receivable_id: null, sale_id: 8, amount: 10000000, payment_method: METODO_EFECTIVO, obs: "Caja", created_at: new Date() });
+    guardarCobro({ id: 9, account_receivable_id: null, sale_id: 10, amount: 4500000, payment_method: METODO_TRANSFERENCIA, obs: "Caja", created_at: new Date() });
 }
 
 /**
