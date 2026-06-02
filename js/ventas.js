@@ -425,8 +425,7 @@ function ejecutarGuardadoVenta(condition, total, cobrosArray) {
         condition:    condition,
         amount:       total,
         invoice:      nroFactura,
-        created_at:   ahora,
-        updated_at:   null
+        created_at:   ahora
     });
 
     detallesTemp.forEach(d => {

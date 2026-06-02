@@ -60,9 +60,6 @@ function abrirModalNuevo() {
     modal.show();
 }
 
-// =============================================
-//  MODAL EDITAR
-// =============================================
 
 /**
  * Abre el modal en modo "Editar" con los datos del rol
@@ -71,7 +68,7 @@ function abrirModalNuevo() {
 function abrirModalEditar(id) {
     const rol = cargarRol(id);
     if (!rol) {
-        alertify.error("No se encontró el rol.");
+        mensajeError("No se encontró el rol.");
         return;
     }
     limpiarFormulario();
@@ -127,7 +124,7 @@ function guardarRolForm() {
             created_at: new Date(),
             updated_at: null
         });
-        alertify.success("Rol creado correctamente.");
+        mensajeSuccess("Rol creado correctamente.");
     } else {
         const rolExistente = cargarRol(parseInt(idRaw));
         guardarRol({
@@ -138,7 +135,7 @@ function guardarRolForm() {
             created_at: rolExistente.created_at,
             updated_at: new Date()
         });
-        alertify.success("Rol actualizado correctamente.");
+        mensajeSuccess("Rol actualizado correctamente.");
     }
 
     bootstrap.Modal.getInstance(document.getElementById("modalRol")).hide();
@@ -156,7 +153,7 @@ function guardarRolForm() {
 function abrirModalEliminar(id) {
     const rol = cargarRol(id);
     if (!rol) {
-        alertify.error("No se encontró el rol.");
+        mensajeError("No se encontró el rol.");
         return;
     }
     document.getElementById("id_a_eliminar").value = id;
@@ -175,13 +172,13 @@ function confirmarEliminar() {
     const tieneUsuarios = usuarios.some(u => u.rol_id === id);
     if (tieneUsuarios) {
         bootstrap.Modal.getInstance(document.getElementById("modalEliminar")).hide();
-        alertify.error("No se puede eliminar: hay usuarios asignados a este rol.");
+        mensajeError("No se puede eliminar: hay usuarios asignados a este rol.");
         return;
     }
 
     eliminarRol(id);
     bootstrap.Modal.getInstance(document.getElementById("modalEliminar")).hide();
-    alertify.success("Rol eliminado correctamente.");
+    mensajeSuccess("Rol eliminado correctamente.");
     cargarDatos();
 }
 

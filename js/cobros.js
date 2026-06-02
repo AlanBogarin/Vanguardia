@@ -9,16 +9,11 @@ const modalNuevo = new bootstrap.Modal(document.getElementById('modalNuevoCobro'
 
 // Nro. Timbrado?
 const tablaCobros = crearDataTable("tabla_cobros", [
-    { data: "id", title: "Id Cobro", render: renderRaw },
-    { data: "account_receivable_id", title: "Id Cuenta", render: renderRaw },
-    { data: "sale_id", title: "Id Venta", render: renderRaw },
+    ...TABLAS.COBRO.slice(0, 3),
     { data: null, title: "Cliente", render: data => renderString(cargarCliente(
         (data.sale_id ? cargarVenta(data.sale_id) : cargarCuentaPorCobrar(data.account_receivable_id)).client_id
     ).legal_name) },
-    { data: "amount", title: "Monto Cobrado", render: renderMoneda },
-    { data: "payment_method", title: "Método de pago", render: renderString },
-    { data: "invoice", title: "Nro. Factura / Comprobante", render: renderString },
-    { data: "created_at", title: "Fecha de Cobro", render: renderFecha }
+    ...TABLAS.COBRO.slice(3)
 ], {
     buttons: true,
     pageLength: 10,

@@ -9,17 +9,7 @@ const modalNuevo = new bootstrap.Modal(document.getElementById('modalNuevoClient
 const modalEditar = new bootstrap.Modal(document.getElementById('modalEditarCliente'));
 const modalEliminar = new bootstrap.Modal(document.getElementById('modalEliminarCliente'));
 
-const tablaClientes = crearDataTable("tabla_clientes", [
-    { data: 'id', title: 'Id Cliente' },
-    { data: 'legal_name', title: 'Razón Social', render: renderString },
-    { data: 'ruc', title: 'RUC', render: renderString },
-    { data: 'tel', title: 'Teléfono', render: renderString },
-    { data: 'email', title: 'Correo', render: renderString },
-    { data: 'address', title: 'Dirección', render: renderString },
-    { data: 'active', title: 'Activo', render: renderBoolean },
-    { data: 'created_at', title: 'Fecha de creación', render: renderFecha },
-    { data: 'updated_at', title: 'Fecha de modificación', render: renderFecha },
-], {
+const tablaClientes = crearDataTable("tabla_clientes", TABLAS.CLIENTE, {
     buttons: true,
     pageLength: 10,
     searching: true,

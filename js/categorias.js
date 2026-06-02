@@ -9,13 +9,7 @@ const modalNuevo = new bootstrap.Modal(document.getElementById('modalNuevaCatego
 const modalEditar = new bootstrap.Modal(document.getElementById('modalEditarCategoria'));
 const modalEliminar = new bootstrap.Modal(document.getElementById('modalEliminarCategoria'));
 
-const tablaCategorias = crearDataTable("tabla_categorias", [
-    { data: "id", title: "Id Categoria", render: renderRaw },
-    { data: "name", title: "Nombre", render: renderString },
-    { data: "description", title: "Descripción", render: renderString },
-    { data: "created_at", title: "Fecha de Creación", render: renderFecha },
-    { data: "updated_at", title: "Fecha de Modificación", render: renderFecha }
-], {
+const tablaCategorias = crearDataTable("tabla_categorias", TABLAS.CATEGORIA, {
     buttons: true,
     pageLength: 10,
     searching: true,
