@@ -155,21 +155,16 @@ function btnGuardarPago() {
     cuenta.amount_due = cuenta.amount_total - cuenta.amount_paid;
     cuenta.status = cuenta.amount_due ? ESTADO_PARCIAL : ESTADO_PAGADA;
     cuenta.updated_at = new Date();
-
-
-    const pagos = cargarPagos();
-    const nuevoPago = {
-    id: obtenerSiguienteId(pagos),
-    account_payable_id: cuenta.id,
-    amount: monto,
-    payment_method: metodo,
-    obs: (metodo === "TRANSFERENCIA" || metodo === "CHEQUE") && banco
-        ? "Banco: " + banco + (obs ? " | " + obs : "")
-        : obs,
-    created_at: new Date()
-};
-    guardarPago(nuevoPago);
-
+    guardarPago({
+        id: obtenerSiguienteId(cargarPagos()),
+        account_payable_id: cuenta.id,
+        amount: monto,
+        payment_method: metodo,
+        obs: (metodo === METODO_TRANSFERENCIA || metodo === METODO_CHEQUE) && banco
+            ? "Banco: " + banco + (obs ? " | " + obs : "")
+            : obs,
+        created_at: new Date()
+    });
     guardarCuentaPorPagar(cuenta);
     cargarDatos();
     modalNuevoPago.hide();
