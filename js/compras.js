@@ -1,147 +1,135 @@
-/** @typedef {import('alertify')} */
-/** @typedef {import('jquery')} */
-/** @typedef {import('./bd')} */
-/** @typedef {import('./alertas')} */
+/**
+ * @typedef {import('jquery')}
+ * @typedef {import('./bd')}
+ * @typedef {import('./alertas')}
+ * @typedef {import('./tablas')}
+ * 
+ * @typedef {Object} DetalleTemporal
+ */
 
-var tabla = null;
 const modalNCompra = new bootstrap.Modal(document.getElementById('modalNuevaCompra'));
-const modalVerDet = new bootstrap.Modal(document.getElementById('modalVerDetalles'));
+const modalVerDetalle = new bootstrap.Modal(document.getElementById('modalVerDetalles'));
 
-let detallesTemporales = [];
-function obtenerComprasFiltradas() {
+/** @type {DetalleTemporal[]} */
+const detallesTemporales = [];
 
-    const proveedor = document.getElementById("filtro_proveedor")?.value.toLowerCase() || "";
-    const tipoPago = document.getElementById("filtro_pago")?.value || "";
-    const fechaDesde = document.getElementById("filtro_fecha_desde")?.value;
-    const fechaHasta = document.getElementById("filtro_fecha_hasta")?.value;
-
-    const proveedores = cargarProveedores();
-    const usuarios = cargarUsuarios();
-
-    return cargarCompras()
-        .filter(compra => {
-
-            const prov = proveedores.find(p => p.id === compra.provider_id);
-
-            if (proveedor) {
-                const nombreProv = (prov?.legal_name || prov?.name || "")
-                    .toLowerCase();
-
-                if (!nombreProv.includes(proveedor))
-                    return false;
+const tablaCompras = crearDataTable("tabla_compras", [
+    ...TABLAS.COMPRA,
+    { data: null, title: "DETALLES", subtable: TABLAS.COMPRA_DETALLE, render: data => cargarCompraDetalles(data.id) }
+], {
+    buttons: true, 
+    pageLength: 10,
+    searching: true,
+    exportTitle: "LISTADO DE COMPRAS",
+    actions: (compra) => ({
+        edit: null,
+        delete: null,
+        enable: null,
+        disable: null,
+        customs: [
+            {
+                color: "btn-info btn-ver-detalles",
+                content: "<i class=\"bi bi-eye\"></i>",
+                properties: `onclick="ventanaVerDetalles(${compra.id})"`,
+                title: "Ver Detalles",
             }
+        ]
+    })
+});
 
-            if (tipoPago && compra.payment_type !== tipoPago)
-                return false;
+/**
+ * @param {number} id 
+ */
+function ventanaVerDetalles(id) {
+    const compra = cargarCompra(id);
+    if (!compra) {
+        mensajeError(`La compra con ID ${id} no existe`);
+        return;
+    };
+    const compraElem = document.getElementById("ver_compra_id");
+    const proveedorElem = document.getElementById("ver_proveedor");
+    const usuarioElem = document.getElementById("ver_usuario");
+    const fechaElem = document.getElementById("ver_fecha");
+    const condicionElem = document.getElementById("ver_condicion");
+    const facturaElem = document.getElementById("ver_invoice");
+    const timbradoElem = document.getElementById("ver_timbrado");
+    const proveedor = cargarProveedor(compra.provider_id);
+    const usuario = cargarUsuario(compra.user_id);
+    compraElem.textContent = compra.id;
+    proveedorElem.textContent = proveedor.legal_name;
+    usuarioElem.textContent = usuario.username;
+    fechaElem.textContent = renderFecha(compra.created_at);
+    condicionElem.textContent = compra.condition;
+    facturaElem.textContent = compra.invoice;
+    timbradoElem.textContent = compra.stamping;
 
-            const fechaCompra = new Date(compra.created_at);
+    const detalles = cargarCompraDetalles().filter(d => d.purchase_id === compra.id);
+    const productos = cargarProductos();
 
-            if (fechaDesde) {
-                if (fechaCompra < new Date(fechaDesde))
-                    return false;
-            }
+    const tbody = document.querySelector("#tabla_ver_detalles tbody");
+    tbody.innerHTML = "";
 
-            if (fechaHasta) {
-                const hasta = new Date(fechaHasta);
-                hasta.setHours(23,59,59,999);
+    // AGREGA ESTAS 3 LÍNEAS PARA CONTABILIZAR EL IVA ABAJO:
+    let verAcumExenta = 0;
+    let verAcumIva5 = 0;
+    let verAcumIva10 = 0;
 
-                if (fechaCompra > hasta)
-                    return false;
-            }
+    detalles.forEach(det => {
+        const p = productos.find(prod => prod.id === det.product_id);
+        const pName = p ? p.name : 'Desconocido';
+        
+        // Garantizamos leer la cantidad real (corrige el error de que salga 0)
+        const cant = det.quantity !== undefined ? det.quantity : (det.amount || 1); 
 
-            return true;
-        })
-        .map(c => {
+        // Si es una compra vieja sin IVA, lo busca del producto actual
+        let ivaTipo = det.iva;
+        if (ivaTipo === undefined || ivaTipo === null) {
+            ivaTipo = p ? parseInt(p.iva) : 0;
+        }
 
-            const prov = proveedores.find(p => p.id === c.provider_id);
-            const u = usuarios.find(user => user.id === c.user_id);
+        // Clasifica el subtotal según el tipo de IVA
+        if (ivaTipo === 5) {
+            verAcumIva5 += det.subtotal;
+        } else if (ivaTipo === 10) {
+            verAcumIva10 += det.subtotal;
+        } else {
+            verAcumExenta += det.subtotal;
+        }
 
-            const detallesBD = cargarCompraDetalles().filter(d => d.purchase_id === c.id);
-            const productosBD = cargarProductos();
-
-            let ivasPresentes = [];
-
-            detallesBD.forEach(det => {
-
-                const p = productosBD.find(prod => prod.id === det.product_id);
-
-                let ivaTipo = det.iva_tipo !== undefined
-                    ? det.iva_tipo
-                    : (p ? parseInt(p.iva) : 0);
-
-                if (!ivasPresentes.includes(ivaTipo)) {
-                    ivasPresentes.push(ivaTipo);
-                }
-            });
-
-            ivasPresentes.sort((a, b) => b - a);
-
-            let ivaTexto = ivasPresentes
-                .map(iva => iva === 0 ? "Exenta" : iva + "%")
-                .join(", ");
-
-            if (ivasPresentes.length === 0) {
-                ivaTexto = "-";
-            }
-
-            return {
-                ...c,
-                proveedor_name: prov ? (prov.legal_name || prov.name) : 'Desconocido',
-                usuario_name: u ? u.username : 'Desconocido',
-                iva_fmt: ivaTexto,
-                total_fmt: formatoMoneda(c.amount),
-                fecha_fmt: new Date(c.created_at).toLocaleString()
-            };
-        });
-}
-function aplicarFiltrosCompras() {
-
-    tabla.clear();
-    tabla.rows.add(obtenerComprasFiltradas());
-    tabla.draw();
-}
-
-function limpiarFiltrosCompras() {
-
-    document.getElementById("filtro_proveedor").value = "";
-    document.getElementById("filtro_pago").value = "";
-    document.getElementById("filtro_fecha_desde").value = "";
-    document.getElementById("filtro_fecha_hasta").value = "";
-
-    tabla.clear();
-    tabla.rows.add(obtenerComprasFiltradas());
-    tabla.draw();
-}
-
-function formatoMoneda(valor) {
-    return 'Gs. ' + Number(valor).toLocaleString('es-PY');
-}
-
-function obtenerSiguienteId(arr) {
-    if (arr.length === 0) return 1;
-    return Math.max(...arr.map(item => item.id)) + 1;
-}
-
-function cargarSelects() {
-    const proveedores = cargarProveedores();
-    const productos = cargarProductos().filter(p => p.active);
-    
-    let provOptions = '<option value="">Seleccione un proveedor...</option>';
-    proveedores.forEach(p => {
-        const name = p.legal_name || p.name || 'Proveedor';
-        provOptions += `<option value="${p.id}">${name} (${p.ruc})</option>`;
+        tbody.innerHTML += `
+            <tr>
+                <td>${pName}</td>
+                <td class="text-center fw-bold">${cant}</td>
+                <td>${renderMoneda(det.unit_price)}</td>
+                <td class="text-center fw-bold text-secondary">${ivaTipo}%</td> <td class="fw-bold">${renderMoneda(det.subtotal)}</td>
+            </tr>
+        `;
     });
-    document.getElementById("provider_id").innerHTML = provOptions;
 
-    let prodOptions = '<option value="">Seleccione un producto...</option>';
-    productos.forEach(p => {
-        const iva = p.iva !== undefined ? p.iva : 10;
-        prodOptions += `<option value="${p.id}" data-precio="${p.sale_price}" data-iva="${iva}">${p.name} (Stock: ${p.stock})</option>`;
-    });
-    document.getElementById("producto_select").innerHTML = prodOptions;
+    // Fórmulas matemáticas de liquidación de IVA
+    const liquidacionVerIva5 = Math.round(verAcumIva5 / 21);
+    const liquidacionVerIva10 = Math.round(verAcumIva10 / 11);
+
+    // Inserta los totales en sus respectivas etiquetas del HTML
+    const elTotal = document.getElementById("ver_total_compra");
+    if (elTotal) elTotal.textContent = renderMoneda(compra.amount);
+
+    const elExenta = document.getElementById("ver_total_exenta");
+    if (elExenta) elExenta.textContent = renderMoneda(verAcumExenta);
+
+    const elIva5 = document.getElementById("ver_total_iva5") || document.getElementById("total_ver_iva5");
+    if (elIva5) elIva5.textContent = renderMoneda(liquidacionVerIva5);
+
+    const elIva10 = document.getElementById("ver_total_iva10");
+    if (elIva10) elIva10.textContent = renderMoneda(liquidacionVerIva10);
+
+    const elIvaSum = document.getElementById("ver_total_iva_sum");
+    if (elIvaSum) elIvaSum.textContent = renderMoneda(liquidacionVerIva5 + liquidacionVerIva10);
+
+    modalVerDetalle.show();
 }
 
-function agregarDetalle() {
+function btnAgregarDetalle() {
     const prodSelect = document.getElementById("producto_select");
     const cantidadInput = document.getElementById("cantidad_input");
     const precioInput = document.getElementById("precio_input");
@@ -151,7 +139,7 @@ function agregarDetalle() {
     const precio = parseFloat(precioInput.value);
 
     if (isNaN(producto_id) || isNaN(cantidad) || cantidad <= 0 || isNaN(precio) || precio <= 0) {
-        alertify.error("Debe seleccionar un producto, ingresar una cantidad válida y un precio unitario.");
+        mensajeError("Debe seleccionar un producto, ingresar una cantidad válida y un precio unitario.");
         return;
     }
 
@@ -172,7 +160,7 @@ function agregarDetalle() {
             quantity: cantidad,
             unit_price: precio,
             subtotal: cantidad * precio,
-            iva_tipo: tipoIva // <-- Guardamos el IVA en el carrito temporal
+            iva: tipoIva
         });
     }
 
@@ -201,9 +189,9 @@ function renderizarDetalles() {
         total += det.subtotal;
 
         // Clasifica los subtotales según el IVA del producto
-        if (det.iva_tipo === 5) {
+        if (det.iva === 5) {
             acumIva5 += det.subtotal;
-        } else if (det.iva_tipo === 10) {
+        } else if (det.iva === 10) {
             acumIva10 += det.subtotal;
         } else {
             acumExenta += det.subtotal;
@@ -213,10 +201,10 @@ function renderizarDetalles() {
             <tr>
                 <td>${det.productoName}</td>
                 <td class="text-center fw-bold">${det.quantity}</td>
-                <td>${formatoMoneda(det.unit_price)}</td>
+                <td>${renderMoneda(det.unit_price)}</td>
                 <!-- Nueva columna visual de IVA por fila -->
-                <td class="text-center fw-bold text-secondary">${det.iva_tipo}%</td>
-                <td class="fw-bold">${formatoMoneda(det.subtotal)}</td>
+                <td class="text-center fw-bold text-secondary">${det.iva}%</td>
+                <td class="fw-bold">${renderMoneda(det.subtotal)}</td>
                 <td class="text-center">
                     <button type="button" class="btn btn-sm btn-danger" onclick="eliminarDetalle(${det.product_id})"><i class="bi bi-trash"></i></button>
                 </td>
@@ -230,72 +218,63 @@ function renderizarDetalles() {
 
     // Muestra los resultados en el nuevo diseño del pie de tabla
     const elTotalCompra = document.getElementById("total_compra");
-    if (elTotalCompra) elTotalCompra.textContent = formatoMoneda(total);
+    if (elTotalCompra) elTotalCompra.textContent = renderMoneda(total);
+
+    // const elTotalExenta = document.getElementById("total_exenta");
+    // if (elTotalExenta) elTotalExenta.textContent = renderMoneda(acumExenta);
 
     const elTotalIva5 = document.getElementById("total_iva5");
-    if (elTotalIva5) elTotalIva5.textContent = formatoMoneda(liquidacionIva5);
+    if (elTotalIva5) elTotalIva5.textContent = renderMoneda(liquidacionIva5);
 
     const elTotalIva10 = document.getElementById("total_iva10");
-    if (elTotalIva10) elTotalIva10.textContent = formatoMoneda(liquidacionIva10);
+    if (elTotalIva10) elTotalIva10.textContent = renderMoneda(liquidacionIva10);
 
     const elTotalIvaSum = document.getElementById("total_iva_sum_nueva");
-    if (elTotalIvaSum) elTotalIvaSum.textContent = formatoMoneda(liquidacionIva5 + liquidacionIva10);
+    if (elTotalIvaSum) elTotalIvaSum.textContent = renderMoneda(liquidacionIva5 + liquidacionIva10);
 }
 
-
-
-function guardarNuevaCompra(e) {
-    e.preventDefault();
-    const proveedor_id = parseInt(document.getElementById("provider_id").value);
-    const tipo_pago = document.getElementById("payment_type").value;
-    const invoice = document.getElementById("invoice").value.trim();
+function btnGuardarNuevaCompra() {
+    const proveedorElem = document.getElementById("provider_id");
+    const proveedor_id = parseInt(proveedorElem.value);
+    const condicionElem = document.getElementById("condition");
+    const condicion = condicionElem.value;
+    const facturaElem = document.getElementById("invoice");
+    const factura = facturaElem.value.trim();
     const timbrado = document.getElementById("timbrado").value.trim();
 
     if (isNaN(proveedor_id)) {
-        alertify.error("Debe seleccionar un proveedor.");
+        mensajeError("Debe seleccionar un proveedor.");
+        proveedorElem.focus();
         return;
     }
-
-    const regexTimbrado = /^\d{8}$/;
-    if (!regexTimbrado.test(timbrado)) {
-        alertify.error("El número de timbrado debe tener 8 dígitos.");
+    if (!timbrado.match(REGEX_TIMBRADO)) {
+        mensajeError("El número de timbrado debe tener 8 dígitos.");
         return;
     }
-
-    const regexInvoice = /^\d{3}-\d{3}-\d{3}$/;
-    if (!regexInvoice.test(invoice)) {
-        alertify.error("El número de factura debe tener el formato 000-000-000.");
+    if (!factura.match(REGEX_FACTURA)) {
+        mensajeError("El número de factura debe tener el formato 000-000-000.");
         return;
     }
-
     if (detallesTemporales.length === 0) {
-        alertify.error("Debe agregar al menos un producto a la compra.");
+        mensajeError("Debe agregar al menos un producto a la compra.");
         return;
     }
-
-    const compras = cargarCompras();
-    const nuevaCompraId = obtenerSiguienteId(compras);
+    const nuevaCompraId = obtenerSiguienteId(cargarCompras());
     let amount = detallesTemporales.reduce((acc, curr) => acc + curr.subtotal, 0);
     const currentUser = 1; // Asumimos usuario 1 por ahora hasta que haya sesión
-
-    const nuevaCompra = {
+    guardarCompra({
         id: nuevaCompraId,
         provider_id: proveedor_id,
         user_id: currentUser,
-        payment_type: tipo_pago,
+        condition: condicion,
         amount: amount,
-        invoice: invoice,
-        timbrado: timbrado,
-        created_at: new Date(),
-        updated_at: null
-    };
-
-    guardarCompra(nuevaCompra);
-
+        invoice: factura,
+        stamping: timbrado,
+        created_at: new Date()
+    });
     const detallesBD = cargarCompraDetalles();
     let detalleId = obtenerSiguienteId(detallesBD);
     const productos = cargarProductos();
-
     detallesTemporales.forEach(det => {
         guardarCompraDetalle({
            id: detalleId++,
@@ -304,9 +283,8 @@ function guardarNuevaCompra(e) {
             quantity: det.quantity,
             unit_price: det.unit_price,
             subtotal: det.subtotal,
-            iva_tipo: det.iva_tipo 
+            iva: det.iva
         });
-
         // Actualizar stock del producto
         const p = productos.find(prod => prod.id === det.product_id);
         if (p) {
@@ -315,133 +293,31 @@ function guardarNuevaCompra(e) {
             guardarProducto(p);
         }
     });
-
     // Generar Cuenta por Pagar si es a CRÉDITO
-    if (tipo_pago === 'CREDITO') {
-        const cuentasPagar = cargarCuentasPorPagar();
+    if (condicion === CONDICION_CREDITO) {
         const vto = new Date();
         vto.setDate(vto.getDate() + 30); // 30 días de vencimiento por defecto
-
         guardarCuentaPorPagar({
-            id: obtenerSiguienteId(cuentasPagar),
+            id: obtenerSiguienteId(cargarCuentasPorPagar()),
             purchase_id: nuevaCompraId,
             provider_id: proveedor_id,
             amount_total: amount,
             amount_paid: 0,
             amount_due: amount,
-            status: 'PENDIENTE',
+            status: ESTADO_PENDIENTE,
             expire_at: vto,
             created_at: new Date(),
             updated_at: null
         });
-        alertify.success("Compra a crédito guardada. Se generó Cuenta por Pagar.");
+        mensajeSuccess("Compra a crédito guardada. Se generó Cuenta por Pagar.");
     } else {
-        alertify.success("Compra al contado registrada correctamente.");
+        mensajeSuccess("Compra al contado registrada correctamente.");
     }
 
-    // Reset Form
-    e.target.reset();
     detallesTemporales = [];
     renderizarDetalles();
-    cargarTablaCompras();
-    cargarSelects(); // Recargar opciones por defecto y resetear filtrado
+    cargarDatos();
     modalNCompra.hide();
-}
-
-function verDetallesCompra(e) {
-    if (e.target.closest('.btn-ver-detalles')) {
-        const id = parseInt(e.target.closest('.btn-ver-detalles').dataset.id);
-        const compra = cargarCompra(id);
-        if (!compra) return;
-
-        const proveedores = cargarProveedores();
-        const usuarios = cargarUsuarios();
-        
-        const prov = proveedores.find(p => p.id === compra.provider_id);
-        const user = usuarios.find(u => u.id === compra.user_id);
-
-        const elId = document.getElementById("ver_compra_id");
-        const elProv = document.getElementById("ver_proveedor");
-        const elUser = document.getElementById("ver_usuario");
-        const elFecha = document.getElementById("ver_fecha");
-        const elPago = document.getElementById("ver_tipo_pago");
-        const elInvoice = document.getElementById("ver_invoice");
-        const elTimbrado = document.getElementById("ver_timbrado");
-
-        if (elId) elId.textContent = compra.id;
-        if (elProv) elProv.textContent = prov ? (prov.legal_name || prov.name || 'Proveedor') : 'Desconocido';
-        if (elUser) elUser.textContent = user ? user.username : 'Desconocido';
-        if (elFecha) elFecha.textContent = new Date(compra.created_at).toLocaleString();
-        if (elPago) elPago.textContent = compra.payment_type;
-        if (elInvoice) elInvoice.textContent = compra.invoice || 'SIN FACTURA';
-        if (elTimbrado) elTimbrado.textContent = compra.timbrado || 'SIN TIMBRADO';
-
-        const detalles = cargarCompraDetalles().filter(d => d.purchase_id === compra.id);
-        const productos = cargarProductos();
-
-        const tbody = document.querySelector("#tabla_ver_detalles tbody");
-        tbody.innerHTML = "";
-
-        // AGREGA ESTAS 3 LÍNEAS PARA CONTABILIZAR EL IVA ABAJO:
-        let verAcumExenta = 0;
-        let verAcumIva5 = 0;
-        let verAcumIva10 = 0;
-
-    detalles.forEach(det => {
-        const p = productos.find(prod => prod.id === det.product_id);
-        const pName = p ? p.name : 'Desconocido';
-        
-        // Garantizamos leer la cantidad real (corrige el error de que salga 0)
-        const cant = det.quantity !== undefined ? det.quantity : (det.amount || 1); 
-
-        // Si es una compra vieja sin IVA, lo busca del producto actual
-        let ivaTipo = det.iva_tipo;
-        if (ivaTipo === undefined || ivaTipo === null) {
-            ivaTipo = p ? parseInt(p.iva) : 0;
-        }
-
-        // Clasifica el subtotal según el tipo de IVA
-        if (ivaTipo === 5) {
-            verAcumIva5 += det.subtotal;
-        } else if (ivaTipo === 10) {
-            verAcumIva10 += det.subtotal;
-        } else {
-            verAcumExenta += det.subtotal;
-        }
-
-        tbody.innerHTML += `
-            <tr>
-                <td>${pName}</td>
-                <td class="text-center fw-bold">${cant}</td>
-                <td>${formatoMoneda(det.unit_price)}</td>
-                <td class="text-center fw-bold text-secondary">${ivaTipo}%</td> <td class="fw-bold">${formatoMoneda(det.subtotal)}</td>
-            </tr>
-        `;
-    });
-
-        // Fórmulas matemáticas de liquidación de IVA
-        const liquidacionVerIva5 = Math.round(verAcumIva5 / 21);
-        const liquidacionVerIva10 = Math.round(verAcumIva10 / 11);
-
-        // Inserta los totales en sus respectivas etiquetas del HTML
-        const elTotal = document.getElementById("ver_total_compra");
-        if (elTotal) elTotal.textContent = formatoMoneda(compra.amount);
-
-        const elExenta = document.getElementById("ver_total_exenta");
-        if (elExenta) elExenta.textContent = formatoMoneda(verAcumExenta);
-
-        const elIva5 = document.getElementById("ver_total_iva5") || document.getElementById("total_ver_iva5");
-        if (elIva5) elIva5.textContent = formatoMoneda(liquidacionVerIva5);
-
-        const elIva10 = document.getElementById("ver_total_iva10");
-        if (elIva10) elIva10.textContent = formatoMoneda(liquidacionVerIva10);
-
-        const elIvaSum = document.getElementById("ver_total_iva_sum");
-        if (elIvaSum) elIvaSum.textContent = formatoMoneda(liquidacionVerIva5 + liquidacionVerIva10);
-
-        // Abre la ventana flotante pase lo que pase
-        modalVerDet.show();
-    }
 }
 
 function habilitarBusquedaProveedor(habilitar) {
@@ -451,134 +327,84 @@ function habilitarBusquedaProveedor(habilitar) {
     if (elSelect) elSelect.disabled = !habilitar;
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-    cargarSelects();
-    cargarTablaCompras();
-
-    document.getElementById("btnAgregarDetalle").addEventListener("click", agregarDetalle);
-    document.getElementById("formNuevaCompra").addEventListener("submit", guardarNuevaCompra);
-    document.addEventListener("click", verDetallesCompra);
-
-    const productoSelect = document.getElementById("producto_select");
-    if (productoSelect) {
-        productoSelect.addEventListener("change", function() {
-            const selectedOption = this.options[this.selectedIndex];
-            const ivaSelect = document.getElementById("iva_select_manual");
-            if (selectedOption && selectedOption.value) {
-                const iva = selectedOption.getAttribute('data-iva');
-                if (iva !== null && iva !== undefined) {
-                    ivaSelect.value = iva;
-                }
-            } else {
-                ivaSelect.value = "";
-            }
-        });
-    }
-
-    // Filtrado interactivo de proveedor
-    const elBuscarProv = document.getElementById("buscar_proveedor");
-    if (elBuscarProv) {
-        elBuscarProv.addEventListener("input", function () {
-            const term = this.value.toLowerCase().trim();
-            const proveedores = cargarProveedores();
-            let provOptions = '<option value="">Seleccione un proveedor...</option>';
-            proveedores.forEach(p => {
-                const name = p.legal_name || p.name || 'Proveedor';
-                const ruc = p.ruc || '';
-                if (name.toLowerCase().includes(term) || ruc.toLowerCase().includes(term)) {
-                    provOptions += `<option value="${p.id}">${name} (${ruc})</option>`;
-                }
-            });
-            document.getElementById("provider_id").innerHTML = provOptions;
-        });
-    }
-
-    // Al abrir el modal de nueva compra, asegurar que el buscador está activo y limpio
-    const elModalNCompra = document.getElementById('modalNuevaCompra');
-    if (elModalNCompra) {
-        elModalNCompra.addEventListener('show.bs.modal', function () {
-            const elBuscar = document.getElementById("buscar_proveedor");
-            if (elBuscar) elBuscar.value = "";
-            habilitarBusquedaProveedor(true);
-            cargarSelects();
-        });
-    }
-});
-function cargarTablaCompras() {
-    const proveedores = cargarProveedores();
-    const usuarios = cargarUsuarios();
-
-    const compras = cargarCompras().map(c => {
-    const prov = proveedores.find(p => p.id === c.provider_id);
-    const u = usuarios.find(user => user.id === c.user_id);
-
-    // Buscamos los detalles de esta compra para obtener los distintos tipos de IVA aplicados
-    const detallesBD = cargarCompraDetalles().filter(d => d.purchase_id === c.id);
-    const productosBD = cargarProductos();
-    
-    let ivasPresentes = [];
-    detallesBD.forEach(det => {
-        const p = productosBD.find(prod => prod.id === det.product_id);
-        let ivaTipo = det.iva_tipo !== undefined ? det.iva_tipo : (p ? parseInt(p.iva) : 0);
-        if (!ivasPresentes.includes(ivaTipo)) {
-            ivasPresentes.push(ivaTipo);
+function onChangeProducto() {
+    const ivaSelect = document.getElementById("iva_select_manual");
+    const selectedOption = this.options[this.selectedIndex];
+    if (selectedOption && selectedOption.value) {
+        const iva = selectedOption.getAttribute('data-iva');
+        if (iva !== null && iva !== undefined) {
+            ivaSelect.value = iva;
         }
-    });
-
-    // Ordenar de mayor a menor (ej. 10%, luego 5%, luego 0)
-    ivasPresentes.sort((a, b) => b - a);
-
-    // Formatear como porcentaje o "Exenta"
-    let ivaTexto = ivasPresentes.map(iva => iva === 0 ? "Exenta" : iva + "%").join(", ");
-    if (ivasPresentes.length === 0) {
-        ivaTexto = "-";
+    } else {
+        ivaSelect.value = "";
     }
-
-    return {
-        ...c,
-        proveedor_name: prov ? (prov.legal_name || prov.name) : 'Desconocido',
-        usuario_name: u ? u.username : 'Desconocido',
-        iva_fmt: ivaTexto, // <-- Ahora guardamos el texto de los tipos de IVA aplicados
-        total_fmt: formatoMoneda(c.amount),
-        fecha_fmt: new Date(c.created_at).toLocaleString()
-    };
-});
-
-    if (tabla) {
-        tabla.clear().rows.add(compras).draw();
-        return;
-    }
-
-    tabla = new DataTable("#tabla_compras", {
-        data: compras,
-        order: [[0, 'desc']],
-        columns: [
-            { data: 'id' },
-            { data: 'proveedor_name' },
-            { data: 'usuario_name' },
-            { data: 'payment_type' },
-            { data: 'iva_fmt' }, 
-            { data: 'total_fmt' },
-            { data: 'fecha_fmt' },
-            {
-                data: null,
-                render: function (data, type, row) {
-                    return `<button class="btn btn-sm btn-info btn-ver-detalles" data-id="${row.id}" title="Ver Detalles"><i class="bi bi-eye"></i></button>`;
-                }
-            }
-        ],
-        dom: '<"d-flex justify-content-between align-items-center mb-2"Bf>rtip',
-        // ... dentro de la función cargarTablaCompras ...
-        // Busca esta parte en tu archivo compras.js y ajústala:
-
-        // ... dentro de la función cargarTablaCompras ...
-        buttons: botonesCorporativos("REPORTE DE COMPRAS", ':visible'),
-        
-        // ... resto del código
-// ... resto del código
-        language: {
-            url: "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
-        }
-    });
-    tabla.buttons().container().appendTo('#contenedor-botones-exportar');
 }
+
+// Filtrado Interactivo
+function onInputProveedor() {
+    console.log(this);
+    const term = this.value.toLowerCase().trim();
+    console.log(term);
+    const proveedores = cargarProveedores();
+    let provOptions = '<option value="">Seleccione un proveedor...</option>';
+    proveedores.forEach(p => {
+        const name = p.legal_name || p.name || 'Proveedor';
+        const ruc = p.ruc || '';
+        if (name.toLowerCase().includes(term) || ruc.toLowerCase().includes(term)) {
+            provOptions += `<option value="${p.id}">${name} (${ruc})</option>`;
+        }
+    });
+    document.getElementById("provider_id").innerHTML = provOptions;
+}
+
+function onShowModalNuevaCompra() {
+    document.getElementById("buscar_proveedor").value = "";
+    habilitarBusquedaProveedor(true);
+    cargarDatos();
+}
+
+function btnAplicarFiltros() {
+    cargarDatos();
+}
+
+function btnLimpiarFiltros() {
+    document.getElementById("filtro_proveedor").value = "";
+    document.getElementById("filtro_condicion").value = "";
+    document.getElementById("filtro_fecha_desde").value = "";
+    document.getElementById("filtro_fecha_hasta").value = "";
+    cargarDatos();
+}
+
+function cargarDatos() {
+    const proveedor = document.getElementById("filtro_proveedor").value.trim().toUpperCase();
+    const tipoCondicion = document.getElementById("filtro_condicion").value.trim().toUpperCase();
+    const fechaDesde = document.getElementById("filtro_fecha_desde").value.trim();
+    const fechaHasta = document.getElementById("filtro_fecha_hasta").value.trim();
+    cargarDataTable(tablaCompras, cargarCompras().filter(compra => {
+        if (!cargarProveedor(compra.provider_id).legal_name.includes(proveedor)) return false;
+        if (tipoCondicion && compra.condition !== tipoCondicion) return false;
+        const fechaCompra = new Date(compra.created_at);
+        if (fechaDesde && fechaCompra < new Date(fechaDesde)) return false;
+        if (fechaHasta) {
+            const hasta = new Date(fechaHasta);
+            hasta.setHours(23,59,59,999);
+            if (fechaCompra > hasta) return false;
+        }
+        return true;
+    }));
+    const selectProductos = document.getElementById("producto_select");
+    const selectProveedores = document.getElementById("provider_id");
+    const productos = cargarProductos().filter(p => p.active);
+    const proveedores = cargarProveedores().filter(p => p.active);
+    selectProveedores.innerHTML = "<option value=\"\">Seleccione un proveedor...</option>"
+        + proveedores.map(p => `<option value="${p.id}">${p.legal_name} (${p.ruc})</option>`).join("");
+    selectProductos.innerHTML = "<option value=\"\">Seleccione un producto...</option>"
+        + productos.map(p => `<option value="${p.id}">${p.name} (Stock: ${p.stock})</option>`).join("");
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (!validarPermiso(PERMISOS.COMPRAS_VER)) return;
+    if (!tienePermisoSesion(PERMISOS.COMPRAS_CREAR)) document.getElementById("btnModalNuevo").style.display = "none";
+    cargarDatos();
+    document.getElementById('modalNuevaCompra').addEventListener('show.bs.modal', onShowModalNuevaCompra);
+});
