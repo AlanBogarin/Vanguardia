@@ -55,13 +55,13 @@ const tablaVentas = crearDataTable("tabla_ventas", [
 });
 
 $(document).ready(function () {
-    refrescarTablaVentas();
+    cargarDatos();
     cargarSelectClientes();
     cargarSelectProductos();
     bindEventos();
 });
 
-function refrescarTablaVentas() {
+function cargarDatos() {
     cargarDataTable(tablaVentas, obtenerVentasFiltradas());
 }
 
@@ -100,7 +100,7 @@ function obtenerVentasFiltradas() {
 }
 
 function aplicarFiltros() {
-    refrescarTablaVentas();
+    cargarDatos();
 }
 
 function limpiarFiltros() {
@@ -111,7 +111,7 @@ function limpiarFiltros() {
     $("#filtro_total_max").val("");
     $("#filtro_fecha_desde").val("");
     $("#filtro_fecha_hasta").val("");
-    refrescarTablaVentas();
+    cargarDatos();
 }
 
 function cargarSelectClientes() {
@@ -481,7 +481,7 @@ function ejecutarGuardadoVenta(condition, total, cobrosArray) {
 
     $("#modalNuevaVenta").modal("hide");
     limpiarModalVenta();
-    refrescarTablaVentas();
+    cargarDatos();
     $("#modalImprimirFactura").modal("show");
 }
 
