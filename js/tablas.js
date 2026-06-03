@@ -39,14 +39,7 @@
  * @property {(function(any): Acciones)?} actions Determinar acciones para cada fila
  */
 
-/** @type {Promise<string>} */
-const logoBase64 = descargarRecurso("img/logo_x128.jpg")
-    .then(response => response.blob())
-    .then(blob => new Promise(resolve => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.readAsDataURL(blob);
-    }));
+const logoBase64 = descargarImagen("img/logo_x128.jpg");
 
 /**
  * @param {string | number | Date?} data 
@@ -488,7 +481,7 @@ async function estilizarPDF(doc, title, subtables) {
     const table = doc.content[tableIndex];
     const mainLayout = table.layout;
     const subLayout = {
-        fillColor: i => i === 0 ? '#198754' : (i % 2 === 0 ? '#f8f9fa' : null),
+        fillColor: i => i === 0 ? '#4e524f' : (i % 2 === 0 ? '#f8f9fa' : null),
         hLineColor: () => '#dee2e6',
         vLineColor: () => '#dee2e6',
         hLineWidth: () => 0.7,
@@ -733,7 +726,7 @@ const TABLAS = {
         { data: "created_at", title: "Fecha Creación", render: renderFecha }
     ],
     CUENTA_POR_PAGAR: [
-        { data: "id", title: "Id Cuenta Pagar", render: renderRaw },
+        { data: "id", title: "Id Cuenta", render: renderRaw },
         { data: "purchase_id", title: "Id Compra", render: renderRaw },
         { data: "provider_id", title: "Proveedor", render: data => cargarProveedor(data).legal_name },
         { data: "amount_total", title: "Total a Pagar", render: renderMoneda },
@@ -745,12 +738,12 @@ const TABLAS = {
         { data: "updated_at", title: "Fecha Modificación", render: renderFecha }
     ],
     CUENTA_POR_COBRAR: [
-        { data: "id", title: "Id Cuenta Cobrar", render: renderRaw },
+        { data: "id", title: "Id Cuenta", render: renderRaw },
         { data: "sale_id", title: "Id Venta", render: renderRaw },
         { data: "client_id", title: "Cliente", render: data => cargarCliente(data).legal_name },
-        { data: "amount_total", title: "Total a Cobrar", render: renderMoneda },
-        { data: "amount_paid", title: "Total Cobrado", render: renderMoneda },
-        { data: "amount_due", title: "Pendiente", render: renderMoneda },
+        { data: "amount_total", title: "Monto Total", render: renderMoneda },
+        { data: "amount_paid", title: "Monto Cobrado", render: renderMoneda },
+        { data: "amount_due", title: "Monto Pendiente", render: renderMoneda },
         { data: "status", title: "Estado", render: renderString },
         { data: "expire_at", title: "Fecha Vencimiento", render: renderFecha },
         { data: "created_at", title: "Fecha Creación", render: renderFecha },
