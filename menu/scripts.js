@@ -15,6 +15,22 @@ async function descargarRecurso(path) {
 }
 
 /**
+ * Descargar una imagen del sistema
+ * @param {string} path 
+ * @returns {Promise<string>}
+ */
+async function descargarImagen(path) {
+    const response = await descargarRecurso("img/logo_x128.jpg");
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error("Error al convertir el blob a Base64"));
+        reader.readAsDataURL(blob);
+    });
+}
+
+/**
  * Funcion para cargar componentes especificos en el html
  * @param {string} id ID de la etiqueta html
  * @param {string} path Ruta del archivo html a cargar
