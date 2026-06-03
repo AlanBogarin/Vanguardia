@@ -119,45 +119,45 @@
  * @property {number} purchase_id Identificador de la compra
  * @property {number} provider_id Identificador del proveedor
  * @property {number} amount_total Cantidad total a pagar
- * @property {number} installments
- * @property {TipoCuota} installment_type Frecuencia de la cuota
- * @property {EstadoPago} status Estado de la cuenta
- * @property {Date} created_at Fecha de creacion de la compra
- * @property {Date?} updated_at Fecha de modificacion de la compra
+ * @property {number} installments Cantidad de cuotas pactadas
+ * @property {TipoCuota} installment_type Frecuencia de vencimiento de las cuotas
+ * @property {EstadoPago} status Estado actual de la cuenta
+ * @property {Date} created_at Fecha de creacion de la cuenta
+ * @property {Date?} updated_at Fecha de modificacion de la cuenta
  * 
  * @typedef {Object} CuentaPorCobrar
  * @property {number} id Identificador unico de la cuenta a cobrar
  * @property {number} sale_id Identificador de la venta
  * @property {number} client_id Identificador del cliente
  * @property {number} amount_total Cantidad total a cobrar
- * @property {number} installments
- * @property {TipoCuota} installment_type
- * @property {EstadoPago} status Estado de la cuenta
- * @property {Date} created_at Fecha de creacion de la compra
- * @property {Date?} updated_at Fecha de modificacion de la compra
+ * @property {number} installments Cantidad de cuotas pactadas
+ * @property {TipoCuota} installment_type Frecuencia de vencimiento de las cuotas
+ * @property {EstadoPago} status Estado actual de la cuenta
+ * @property {Date} created_at Fecha de creacion de la cuenta
+ * @property {Date?} updated_at Fecha de modificacion de la cuenta
  * 
  * @typedef {Object} CuotaPorPagar
- * @property {number} id
- * @property {number} account_payable_id
- * @property {number} installment_number
- * @property {number} amount
- * @property {number} amount_paid
- * @property {EstadoPago} status
- * @property {Date} due_date
- * @property {Date} created_at
- * @property {Date?} updated_at
+ * @property {number} id Identificador unico de la cuota
+ * @property {number} account_payable_id Identificador de la cuenta por pagar
+ * @property {number} installment_number Numero secuencial de la cuota
+ * @property {number} amount Importe correspondiente a la cuota
+ * @property {number} amount_paid Monto abonado a la cuota
+ * @property {EstadoPago} status Estado actual de la cuota
+ * @property {Date} due_date Fecha de vencimiento de la cuota
+ * @property {Date} created_at Fecha de creacion de la cuota
+ * @property {Date?} updated_at Fecha de modificacion de la cuota
  * 
  * @typedef {Object} CuotaPorCobrar
- * @property {number} id
- * @property {number} account_receivable_id
- * @property {number} installment_number
- * @property {number} amount
- * @property {number} amount_paid
- * @property {EstadoPago} status
- * @property {Date} due_date
- * @property {Date} created_at
- * @property {Date?} updated_at
- * 
+ * @property {number} id Identificador unico de la cuota
+ * @property {number} account_receivable_id Identificador de la cuenta por cobrar
+ * @property {number} installment_number Numero secuencial de la cuota
+ * @property {number} amount Importe correspondiente a la cuota
+ * @property {number} amount_paid Monto cobrado de la cuota
+ * @property {EstadoPago} status Estado actual de la cuota
+ * @property {Date} due_date Fecha de vencimiento de la cuota
+ * @property {Date} created_at Fecha de creacion de la cuota
+ * @property {Date?} updated_at Fecha de modificacion de la cuota
+ *
  * @typedef {Object} Pago
  * @property {number} id Identificador unico del pago
  * @property {number} account_payable_id Identificador de la cuenta por pagar
