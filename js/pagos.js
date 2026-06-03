@@ -134,7 +134,7 @@ function btnGuardarPago() {
         mensajeError("El monto a pagar no puede ser mayor al saldo pendiente.");
         montoElem.focus();
         return;
-    } else if (!metodo || !METODO_PAGO.includes(metodo)) {
+    } else if (!metodo || !METODOS.includes(metodo)) {
         mensajeError("Debe ingresar un método de pago para poder realizar el pago");
         metodoElem.focus();
         return;
