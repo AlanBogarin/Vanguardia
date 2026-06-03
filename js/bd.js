@@ -160,6 +160,14 @@
  * @property {Date} expire_at Fecha de expiración de la sesión
  * @property {Date} created_at Fecha de creacion de la sesión
  * 
+ * @typedef {Object} Empresa
+ * @property {string} legal_name Razón Social de la empresa
+ * @property {string} slogan Slogan de la empresa
+ * @property {string} address Dirección del local
+ * @property {string} tel Teléfono del local
+ * @property {string} stamping Nro. Timbrado de la compra
+ * @property {string} ruc RUC de la empresa
+ * 
  * @typedef {"TRANSFERENCIA" | "TARJETA_CREDITO" | "TARJETA_DEBITO" | "EFECTIVO" | "CREDITO" | "CHEQUE"} MetodoPago
  * @typedef {"PENDIENTE" | "PARCIAL" | "PAGADA"} EstadoPago
  * @typedef {"EFECTIVO" | "CREDITO"} Condicion
@@ -182,6 +190,7 @@ const KEY_CUENTASPORCOBRAR = "cuentasporcobrar";
 const KEY_PAGOS = "pagos";
 const KEY_COBROS = "cobros";
 const KEY_SESION = "sesion";
+const KEY_EMPRESA = "empresa";
 
 const REGEX_USUARIO = /^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚüÜ._\-]{5,20}$/;
 const REGEX_CONTRASENA = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[$@$!%*?&._\-])[A-Za-z\d$@$!%*?&._\-]{8,}$/;
@@ -375,7 +384,7 @@ function guardarRol(rol) {
         updated_at: rol.updated_at || null
     }
     if (index === -1) {
-        roles.push(data)
+        roles.unshift(data)
     } else {
         roles[index] = data
     }
@@ -439,7 +448,7 @@ function guardarUsuario(usuario) {
         updated_at: usuario.updated_at
     }
     if (index === -1) {
-        usuarios.push(data)
+        usuarios.unshift(data)
     } else {
         usuarios[index] = data
     }
@@ -496,7 +505,7 @@ function guardarCliente(cliente) {
         updated_at: cliente.updated_at
     }
     if (index === -1) {
-        clientes.push(data)
+        clientes.unshift(data)
     } else {
         clientes[index] = data
     }
@@ -554,7 +563,7 @@ function guardarProveedor(proveedor) {
         updated_at: proveedor.updated_at
     }
     if (index === -1) {
-        proveedores.push(data)
+        proveedores.unshift(data)
     } else {
         proveedores[index] = data
     }
@@ -607,7 +616,7 @@ function guardarCategoria(categoria) {
         updated_at: categoria.updated_at
     }
     if (index === -1) {
-        categorias.push(data)
+        categorias.unshift(data)
     } else {
         categorias[index] = data
     }
@@ -659,7 +668,7 @@ function guardarMarca(marca) {
         updated_at: marca.updated_at
     }
     if (index === -1) {
-        marcas.push(data)
+        marcas.unshift(data)
     } else {
         marcas[index] = data
     }
@@ -721,7 +730,7 @@ function guardarProducto(producto) {
         updated_at: producto.updated_at
     }
     if (index === -1) {
-        productos.push(data)
+        productos.unshift(data)
     } else {
         productos[index] = data
     }
@@ -777,7 +786,7 @@ function guardarCompra(compra) {
         created_at: compra.created_at
     }
     if (index === -1) {
-        compras.push(data)
+        compras.unshift(data)
     } else {
         compras[index] = data
     }
@@ -837,7 +846,7 @@ function guardarCompraDetalle(detalle) {
         created_at: detalle.created_at
     }
     if (index === -1) {
-        detalles.push(data)
+        detalles.unshift(data)
     } else {
         detalles[index] = data
     }
@@ -892,7 +901,7 @@ function guardarVenta(venta) {
         created_at: venta.created_at
     }
     if (index === -1) {
-        ventas.push(data)
+        ventas.unshift(data)
     } else {
         ventas[index] = data
     }
@@ -952,7 +961,7 @@ function guardarVentaDetalle(detalle) {
         created_at: detalle.created_at
     }
     if (index === -1) {
-        detalles.push(data)
+        detalles.unshift(data)
     } else {
         detalles[index] = data
     }
@@ -1013,7 +1022,7 @@ function guardarCuentaPorPagar(cuenta) {
         updated_at: cuenta.updated_at
     }
     if (index === -1) {
-        cuentas.push(data)
+        cuentas.unshift(data)
     } else {
         cuentas[index] = data
     }
@@ -1074,7 +1083,7 @@ function guardarCuentaPorCobrar(cuenta) {
         updated_at: cuenta.updated_at
     }
     if (index === -1) {
-        cuentas.push(data)
+        cuentas.unshift(data)
     } else {
         cuentas[index] = data
     }
@@ -1128,7 +1137,7 @@ function guardarPago(pago) {
         created_at: pago.created_at
     }
     if (index === -1) {
-        pagos.push(data)
+        pagos.unshift(data)
     } else {
         pagos[index] = data
     }
@@ -1183,7 +1192,7 @@ function guardarCobro(cobro) {
         created_at: cobro.created_at
     }
     if (index === -1) {
-        cobros.push(data)
+        cobros.unshift(data)
     } else {
         cobros[index] = data
     }
@@ -1249,6 +1258,37 @@ function tienePermisoSesion(permiso) {
     return tienePermiso(rol.flags, permiso);
 }
 
+/**
+ * Recuperar datos de la empresa
+ * @returns {Empresa?} Sesion actual 
+ */
+function cargarEmpresa() {
+    return cargarBD(KEY_EMPRESA);
+}
+
+/**
+ * Guarda datos de la empresa
+ * @param {Empresa} empresa
+ */
+function guardarEmpresa(empresa) {
+    const data = {
+        legal_name: empresa.legal_name,
+        slogan: empresa.slogan,
+        address: empresa.address,
+        tel: empresa.tel,
+        stamping: empresa.stamping,
+        ruc: empresa.ruc 
+    }
+    guardarBD(KEY_EMPRESA, data);
+}
+
+/**
+ * Elimina los datos de la empresa actual
+ */
+function eliminarEmpresa() {
+    localStorage.removeItem(KEY_EMPRESA);
+}
+
 function initDB() {
     for (const key of [KEY_ROLES, KEY_USUARIOS, KEY_CLIENTES, KEY_PROVEEDORES, KEY_CATEGORIAS,
             KEY_MARCAS, KEY_PRODUCTOS, KEY_COMPRAS, KEY_COMPRADETALLES, KEY_VENTAS,
@@ -1256,6 +1296,7 @@ function initDB() {
         guardarBD(key, []);
     }
     eliminarSesion();
+    eliminarEmpresa();
     guardarRol({
         id: 1,
         name: "ADMIN",
@@ -1292,7 +1333,14 @@ function initDB() {
         created_at: new Date(),
         updated_at: null
     });
-
+    guardarEmpresa({
+        address: "Previstero Juan Carlos García / Madrinas de Guerra - Bo. Villa Armando - Concepción",
+        legal_name: "Vanguardia",
+        ruc: "87654321-1",
+        slogan: "Comercialización de Productos Informáticos y Tecnológicos",
+        stamping: "12345678",
+        tel: "0985495253"
+    });
 }
 
 function cargarDatosPrueba() {
