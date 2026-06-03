@@ -136,6 +136,28 @@
  * @property {Date} created_at Fecha de creacion de la compra
  * @property {Date?} updated_at Fecha de modificacion de la compra
  * 
+ * @typedef {Object} CuotaPorPagar
+ * @property {number} id
+ * @property {number} account_payable_id
+ * @property {number} installment_number
+ * @property {number} amount
+ * @property {number} amount_paid
+ * @property {EstadoPago} status
+ * @property {Date} due_date
+ * @property {Date} created_at
+ * @property {Date?} updated_at
+ * 
+ * @typedef {Object} CuotaPorCobrar
+ * @property {number} id
+ * @property {number} account_receivable_id
+ * @property {number} installment_number
+ * @property {number} amount
+ * @property {number} amount_paid
+ * @property {EstadoPago} status
+ * @property {Date} due_date
+ * @property {Date} created_at
+ * @property {Date?} updated_at
+ * 
  * @typedef {Object} Pago
  * @property {number} id Identificador unico del pago
  * @property {number} account_payable_id Identificador de la cuenta por pagar
@@ -168,7 +190,7 @@
  * 
  * @typedef {"TRANSFERENCIA" | "TARJETA_CREDITO" | "TARJETA_DEBITO" | "EFECTIVO" | "CREDITO" | "CHEQUE"} MetodoPago
  * @typedef {"PENDIENTE" | "PARCIAL" | "PAGADA"} EstadoPago
- * @typedef {"EFECTIVO" | "CREDITO"} Condicion
+ * @typedef {"CONTADO" | "CREDITO"} Condicion
  * @typedef {"SEMANAL" | "QUINCENAL" | "MENSUAL"} TipoCuota
  */
 
@@ -186,6 +208,8 @@ const KEY_VENTAS = "ventas";
 const KEY_VENTADETALLES = "ventadetalles";
 const KEY_CUENTASPORPAGAR = "cuentasporpagar";
 const KEY_CUENTASPORCOBRAR = "cuentasporcobrar";
+const KEY_CUOTASPAGAR = "cuotaspagar";
+const KEY_CUOTASCOBRAR = "cuotascobrar";
 const KEY_PAGOS = "pagos";
 const KEY_COBROS = "cobros";
 const KEY_SESION = "sesion";
@@ -916,7 +940,7 @@ function guardarVenta(venta) {
  * Elimina una venta mediante el ID
  * @param {number} id Identificador de la venta
  */
-function eliminarCompra(id) {
+function eliminarVenta(id) {
     const ventas = cargarVentas();
     const index = ventas.findIndex(v => v.id === id);
     if (index === -1) return;
@@ -1018,18 +1042,16 @@ function guardarCuentaPorPagar(cuenta) {
         purchase_id: cuenta.purchase_id,
         provider_id: cuenta.provider_id,
         amount_total: cuenta.amount_total,
-        amount_paid: cuenta.amount_paid,
-        amount_due: cuenta.amount_due,
+        installments: cuenta.installments,
+        installment_type: cuenta.installment_type,
         status: cuenta.status,
-        expire_at: cuenta.expire_at,
         created_at: cuenta.created_at,
-        updated_at: cuenta.updated_at
-    }
-    if (index === -1) {
-        cuentas.unshift(data)
-    } else {
-        cuentas[index] = data
-    }
+        updated_at: cuenta.updated_at || null
+    };
+    if (index === -1)
+        cuentas.unshift(data);
+    else
+        cuentas[index] = data;
     guardarBD(KEY_CUENTASPORPAGAR, cuentas);
 }
 
@@ -1079,18 +1101,16 @@ function guardarCuentaPorCobrar(cuenta) {
         sale_id: cuenta.sale_id,
         client_id: cuenta.client_id,
         amount_total: cuenta.amount_total,
-        amount_paid: cuenta.amount_paid,
-        amount_due: cuenta.amount_due,
+        installments: cuenta.installments,
+        installment_type: cuenta.installment_type,
         status: cuenta.status,
-        expire_at: cuenta.expire_at,
         created_at: cuenta.created_at,
-        updated_at: cuenta.updated_at
-    }
-    if (index === -1) {
-        cuentas.unshift(data)
-    } else {
-        cuentas[index] = data
-    }
+        updated_at: cuenta.updated_at || null
+    };
+    if (index === -1)
+        cuentas.unshift(data);
+    else
+        cuentas[index] = data;
     guardarBD(KEY_CUENTASPORCOBRAR, cuentas);
 }
 
@@ -1104,6 +1124,161 @@ function eliminarCuentaPorCobrar(id) {
     if (index === -1) return;
     cuentas.splice(index, 1);
     guardarBD(KEY_CUENTASPORCOBRAR, cuentas);
+}
+
+/**
+ * Cargar una cuota por pagar mediante el Id
+ * @param {number} id 
+ * @returns {CuotaPorPagar?}
+ */
+function cargarCuotaPorPagar(id) {
+    return cargarCuotasPorPagar().find(c => c.id === id) || null;
+}
+
+/**
+ * Cargar cuotas por pagar
+ * @param {number} account_payable_id 
+ * @returns {CuotaPorPagar[]}
+ */
+function cargarCuotasPorPagar(account_payable_id=null) {
+    const cuotas = Array.from(cargarBD(KEY_CUOTASPAGAR) || []);
+    if (!account_payable_id) return cuotas;
+    return cuotas.filter(c => c.account_payable_id === account_payable_id);
+}
+
+/**
+ * Guardar una cuota por pagar nueva o existente
+ * @param {CuotaPorPagar} cuota 
+ */
+function guardarCuotaPorPagar(cuota) {
+    const cuotas = cargarCuotasPorPagar();
+    const index = cuotas.findIndex(c => c.id === cuota.id);
+    const data = {
+        id: cuota.id,
+        account_payable_id: cuota.account_payable_id,
+        installment_number: cuota.installment_number,
+        amount: cuota.amount,
+        amount_paid: cuota.amount_paid || 0,
+        status: cuota.status,
+        due_date: cuota.due_date,
+        created_at: cuota.created_at,
+        updated_at: cuota.updated_at || null
+    };
+    if (index === -1)
+        cuotas.unshift(data);
+    else
+        cuotas[index] = data;
+    guardarBD(KEY_CUOTASPAGAR, cuotas);
+}
+
+/**
+ * Eliminar una cuota por pagar mediante el Identificador
+ * @param {*} id 
+ */
+function eliminarCuotaPorPagar(id) {
+    const cuotas = cargarCuotasPorPagar();
+    const index = cuotas.findIndex(c => c.id === id);
+    if (index === -1) return;
+    cuotas.splice(index, 1);
+    guardarBD(KEY_CUOTASPAGAR, cuotas);
+}
+
+/**
+ * Cargar una cuota por cobrar
+ * @param {number} id 
+ * @returns {CuotaPorCobrar?}
+ */
+function cargarCuotaPorCobrar(id) {
+    return cargarCuotasPorCobrar().find(c => c.id === id) || null;
+}
+
+/**
+ * Cargar todas las cuotas por cobrar
+ * @param {number} account_receivable_id Identificador de la cuenta por cobrar
+ * @returns {CuotaPorCobrar[]}
+ */
+function cargarCuotasPorCobrar(account_receivable_id=null) {
+    const cuotas = Array.from(cargarBD(KEY_CUOTASCOBRAR) || []);
+    if (!account_receivable_id) return cuotas;
+    return cuotas.filter(c => c.account_receivable_id === account_receivable_id);
+}
+
+/**
+ * Guarda una cuota por cobrar nueva o existente
+ * @param {CuotaPorCobrar} cuota 
+ */
+function guardarCuotaPorCobrar(cuota) {
+    const cuotas = cargarCuotasPorCobrar();
+    const index = cuotas.findIndex(c => c.id === cuota.id);
+    const data = {
+        id: cuota.id,
+        account_receivable_id: cuota.account_receivable_id,
+        installment_number: cuota.installment_number,
+        amount: cuota.amount,
+        amount_paid: cuota.amount_paid || 0,
+        status: cuota.status,
+        due_date: cuota.due_date,
+        created_at: cuota.created_at,
+        updated_at: cuota.updated_at || null
+    };
+    if (index === -1)
+        cuotas.unshift(data);
+    else
+        cuotas[index] = data;
+    guardarBD(KEY_CUOTASCOBRAR, cuotas);
+}
+
+/**
+ * Elimina una cuota por cobrar
+ * @param {number} id 
+ */
+function eliminarCuotaPorCobrar(id) {
+    const cuotas = cargarCuotasPorCobrar();
+    const index = cuotas.findIndex(c => c.id === id);
+    if (index === -1) return;
+    cuotas.splice(index, 1);
+    guardarBD(KEY_CUOTASCOBRAR, cuotas);
+}
+
+/**
+ * Genera un listado de cuotas
+ * @param {number} total Monto total de pago/cobro
+ * @param {*} cantidad Cantidad de cuotas a crear
+ * @returns {{ installment_number: number, amount: number }[]}
+ */
+function generarCuotas(total, cantidad) {
+    const valor = +(total / cantidad).toFixed(2);
+    const cuotas = [];
+    for (let i = 1; i <= cantidad; i++) {
+        cuotas.push({
+            installment_number: i,
+            amount: valor
+        });
+    }
+    return cuotas;
+}
+
+/**
+ * 
+ * @param {string | number | Date} fechaBase Fecha de inicio
+ * @param {number} periodos Cantidad de periodos para el vencimiento
+ * @param {TipoCuota} tipo Tipo de cuota
+ * @returns {Date}
+ */
+function calcularVencimiento(fechaBase, periodos, tipo) {
+    const fecha = new Date(fechaBase);
+    switch (tipo) {
+        case CUOTA_SEMANAL:
+            fecha.setDate(fecha.getDate() + (periodos * 7));
+            break;
+        case CUOTA_QUINCENAL:
+            fecha.setDate(fecha.getDate() + (periodos * 15));
+            break;
+        case CUOTA_MENSUAL:
+            fecha.setMonth(fecha.getMonth() + periodos);
+            break;
+    }
+    return fecha;
 }
 
 /**
