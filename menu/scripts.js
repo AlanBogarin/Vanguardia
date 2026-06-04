@@ -164,24 +164,28 @@ async function configurarComponentesDinamicos() {
 }
 
 function configurarModales(e) {
-        if (e.target.id === 'modalConfiguracion') {
-            const usuario = cargarUsuario(cargarSesion().user_id);
-            if (!usuario) return;
-            document.getElementById('cfgNombre').value  = usuario.name;
-            document.getElementById('cfgUsuario').value = usuario.username;
-            // document.getElementById('cfgCelular').value = usuario.tel;
-        } else if (e.target.id === 'modalCambiarContrasena') {
-            ['passActual','passNueva','passConfirmar'].forEach(id => {
-                document.getElementById(id).value = '';
-            });
-        }
+    if (e.target.id === 'modalConfiguracion') {
+        const usuario = cargarUsuario(cargarSesion().user_id);
+        if (!usuario) return;
+        document.getElementById('cfgNombre').value  = usuario.name;
+        document.getElementById('cfgUsuario').value = usuario.username;
+        // document.getElementById('cfgCelular').value = usuario.tel;
+    } else if (e.target.id === 'modalCambiarContrasena') {
+        ['passActual','passNueva','passConfirmar'].forEach(id => {
+            document.getElementById(id).value = '';
+        });
     }
-
-if (!window.location.href.endsWith("login.html")) {
-    // Cargar los componentes dinamicamente
-    document.addEventListener("DOMContentLoaded", () => configurarComponentesDinamicos().then(() => {
-        configurarSideBar();
-        validarSesion()
-    }))
-    document.addEventListener('show.bs.modal', configurarModales);
 }
+
+document.addEventListener("DOMContentLoaded", async () => {
+    if (!window.location.href.endsWith("login.html")) {
+        // Cargar los componentes dinamicamente
+        await configurarComponentesDinamicos();
+        configurarSideBar();
+        validarSesion();
+        document.addEventListener('show.bs.modal', configurarModales);
+    }
+    document.querySelectorAll('.modal').forEach((modal) => {
+        modal.addEventListener('hide.bs.modal', () => document.activeElement.blur());
+    });
+});

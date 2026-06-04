@@ -87,6 +87,25 @@ async function login() {
     }
 }
 
+/**
+ * @param {KeyboardEvent} event 
+ */
+function onKeydownUsuario(event) {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    document.getElementById("contra").focus();
+}
+
+/**
+ * @param {KeyboardEvent} event 
+ */
+async function onKeydownContra(event) {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    await login();
+}
+
+
 function verBD() {
     cargarDataTable(tablaRoles, cargarRoles());
     cargarDataTable(tablaUsuarios, cargarUsuarios());
