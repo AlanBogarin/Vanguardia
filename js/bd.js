@@ -119,25 +119,45 @@
  * @property {number} purchase_id Identificador de la compra
  * @property {number} provider_id Identificador del proveedor
  * @property {number} amount_total Cantidad total a pagar
- * @property {number} amount_paid Cantidad pagada
- * @property {number} amount_due Cantidad pendiente a pagar (amount_total - amount_paid)
- * @property {EstadoPago} status Estado de la cuenta
- * @property {Date} expire_at Fecha de vencimiento del pago
- * @property {Date} created_at Fecha de creacion de la compra
- * @property {Date?} updated_at Fecha de modificacion de la compra
+ * @property {number} installments Cantidad de cuotas pactadas
+ * @property {TipoCuota} installment_type Frecuencia de vencimiento de las cuotas
+ * @property {EstadoPago} status Estado actual de la cuenta
+ * @property {Date} created_at Fecha de creacion de la cuenta
+ * @property {Date?} updated_at Fecha de modificacion de la cuenta
  * 
  * @typedef {Object} CuentaPorCobrar
  * @property {number} id Identificador unico de la cuenta a cobrar
  * @property {number} sale_id Identificador de la venta
  * @property {number} client_id Identificador del cliente
  * @property {number} amount_total Cantidad total a cobrar
- * @property {number} amount_paid Cantidad pagada
- * @property {number} amount_due Cantidad pendiente a cobrar (amount_total - amount_paid)
- * @property {EstadoPago} status Estado de la cuenta
- * @property {Date} expire_at Fecha de vencimiento del cobro
- * @property {Date} created_at Fecha de creacion de la compra
- * @property {Date?} updated_at Fecha de modificacion de la compra
+ * @property {number} installments Cantidad de cuotas pactadas
+ * @property {TipoCuota} installment_type Frecuencia de vencimiento de las cuotas
+ * @property {EstadoPago} status Estado actual de la cuenta
+ * @property {Date} created_at Fecha de creacion de la cuenta
+ * @property {Date?} updated_at Fecha de modificacion de la cuenta
  * 
+ * @typedef {Object} CuotaPorPagar
+ * @property {number} id Identificador unico de la cuota
+ * @property {number} account_payable_id Identificador de la cuenta por pagar
+ * @property {number} installment_number Numero secuencial de la cuota
+ * @property {number} amount Importe correspondiente a la cuota
+ * @property {number} amount_paid Monto abonado a la cuota
+ * @property {EstadoPago} status Estado actual de la cuota
+ * @property {Date} due_date Fecha de vencimiento de la cuota
+ * @property {Date} created_at Fecha de creacion de la cuota
+ * @property {Date?} updated_at Fecha de modificacion de la cuota
+ * 
+ * @typedef {Object} CuotaPorCobrar
+ * @property {number} id Identificador unico de la cuota
+ * @property {number} account_receivable_id Identificador de la cuenta por cobrar
+ * @property {number} installment_number Numero secuencial de la cuota
+ * @property {number} amount Importe correspondiente a la cuota
+ * @property {number} amount_paid Monto cobrado de la cuota
+ * @property {EstadoPago} status Estado actual de la cuota
+ * @property {Date} due_date Fecha de vencimiento de la cuota
+ * @property {Date} created_at Fecha de creacion de la cuota
+ * @property {Date?} updated_at Fecha de modificacion de la cuota
+ *
  * @typedef {Object} Pago
  * @property {number} id Identificador unico del pago
  * @property {number} account_payable_id Identificador de la cuenta por pagar
@@ -160,9 +180,18 @@
  * @property {Date} expire_at Fecha de expiración de la sesión
  * @property {Date} created_at Fecha de creacion de la sesión
  * 
+ * @typedef {Object} Empresa
+ * @property {string} legal_name Razón Social de la empresa
+ * @property {string} slogan Slogan de la empresa
+ * @property {string} address Dirección del local
+ * @property {string} tel Teléfono del local
+ * @property {string} stamping Nro. Timbrado de la compra
+ * @property {string} ruc RUC de la empresa
+ * 
  * @typedef {"TRANSFERENCIA" | "TARJETA_CREDITO" | "TARJETA_DEBITO" | "EFECTIVO" | "CREDITO" | "CHEQUE"} MetodoPago
  * @typedef {"PENDIENTE" | "PARCIAL" | "PAGADA"} EstadoPago
- * @typedef {"EFECTIVO" | "CREDITO"} Condicion
+ * @typedef {"CONTADO" | "CREDITO"} Condicion
+ * @typedef {"SEMANAL" | "QUINCENAL" | "MENSUAL"} TipoCuota
  */
 
 // BD
@@ -179,9 +208,12 @@ const KEY_VENTAS = "ventas";
 const KEY_VENTADETALLES = "ventadetalles";
 const KEY_CUENTASPORPAGAR = "cuentasporpagar";
 const KEY_CUENTASPORCOBRAR = "cuentasporcobrar";
+const KEY_CUOTASPAGAR = "cuotaspagar";
+const KEY_CUOTASCOBRAR = "cuotascobrar";
 const KEY_PAGOS = "pagos";
 const KEY_COBROS = "cobros";
 const KEY_SESION = "sesion";
+const KEY_EMPRESA = "empresa";
 
 const REGEX_USUARIO = /^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚüÜ._\-]{5,20}$/;
 const REGEX_CONTRASENA = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[$@$!%*?&._\-])[A-Za-z\d$@$!%*?&._\-]{8,}$/;
@@ -205,11 +237,11 @@ const METODO_TARJETA_CREDITO = "TARJETA_CREDITO";
 const METODO_TARJETA_DEBITO = "TARJETA_DEBITO";
 const METODO_EFECTIVO = "EFECTIVO";
 const METODO_CHEQUE = "CHEQUE";
-const METODO_PAGO = [METODO_TRANSFERENCIA, METODO_TARJETA_CREDITO, METODO_TARJETA_DEBITO, METODO_EFECTIVO, METODO_CHEQUE]
+const METODOS = [METODO_TRANSFERENCIA, METODO_TARJETA_CREDITO, METODO_TARJETA_DEBITO, METODO_EFECTIVO, METODO_CHEQUE]
 
 const CONDICION_CONTADO = "CONTADO";
 const CONDICION_CREDITO = "CREDITO";
-const CONDICION_PAGO = [CONDICION_CONTADO, CONDICION_CREDITO];
+const CONDICIONES = [CONDICION_CONTADO, CONDICION_CREDITO];
 
 const ESTADO_PENDIENTE = "PENDIENTE";
 const ESTADO_PARCIAL = "PARCIAL";
@@ -218,6 +250,11 @@ const ESTADO_PAGO = [ESTADO_PENDIENTE, ESTADO_PARCIAL, ESTADO_PAGADA];
 
 const ESTADO_COBRADA = "COBRADA";
 const ESTADO_COBRO = [ESTADO_PENDIENTE, ESTADO_PARCIAL, ESTADO_COBRADA];
+
+const CUOTA_SEMANAL = "SEMANAL";
+const CUOTA_QUINCENAL = "QUINCENAL";
+const CUOTA_MENSUAL = "MENSUAL";
+const COUTAS = [CUOTA_SEMANAL, CUOTA_QUINCENAL, CUOTA_MENSUAL];
 
 const PERMISOS = {
     // MODULO USUARIOS (Bits 1-6)
@@ -375,7 +412,7 @@ function guardarRol(rol) {
         updated_at: rol.updated_at || null
     }
     if (index === -1) {
-        roles.push(data)
+        roles.unshift(data)
     } else {
         roles[index] = data
     }
@@ -439,7 +476,7 @@ function guardarUsuario(usuario) {
         updated_at: usuario.updated_at
     }
     if (index === -1) {
-        usuarios.push(data)
+        usuarios.unshift(data)
     } else {
         usuarios[index] = data
     }
@@ -496,7 +533,7 @@ function guardarCliente(cliente) {
         updated_at: cliente.updated_at
     }
     if (index === -1) {
-        clientes.push(data)
+        clientes.unshift(data)
     } else {
         clientes[index] = data
     }
@@ -554,7 +591,7 @@ function guardarProveedor(proveedor) {
         updated_at: proveedor.updated_at
     }
     if (index === -1) {
-        proveedores.push(data)
+        proveedores.unshift(data)
     } else {
         proveedores[index] = data
     }
@@ -607,7 +644,7 @@ function guardarCategoria(categoria) {
         updated_at: categoria.updated_at
     }
     if (index === -1) {
-        categorias.push(data)
+        categorias.unshift(data)
     } else {
         categorias[index] = data
     }
@@ -659,7 +696,7 @@ function guardarMarca(marca) {
         updated_at: marca.updated_at
     }
     if (index === -1) {
-        marcas.push(data)
+        marcas.unshift(data)
     } else {
         marcas[index] = data
     }
@@ -721,7 +758,7 @@ function guardarProducto(producto) {
         updated_at: producto.updated_at
     }
     if (index === -1) {
-        productos.push(data)
+        productos.unshift(data)
     } else {
         productos[index] = data
     }
@@ -777,7 +814,7 @@ function guardarCompra(compra) {
         created_at: compra.created_at
     }
     if (index === -1) {
-        compras.push(data)
+        compras.unshift(data)
     } else {
         compras[index] = data
     }
@@ -837,7 +874,7 @@ function guardarCompraDetalle(detalle) {
         created_at: detalle.created_at
     }
     if (index === -1) {
-        detalles.push(data)
+        detalles.unshift(data)
     } else {
         detalles[index] = data
     }
@@ -892,7 +929,7 @@ function guardarVenta(venta) {
         created_at: venta.created_at
     }
     if (index === -1) {
-        ventas.push(data)
+        ventas.unshift(data)
     } else {
         ventas[index] = data
     }
@@ -903,7 +940,7 @@ function guardarVenta(venta) {
  * Elimina una venta mediante el ID
  * @param {number} id Identificador de la venta
  */
-function eliminarCompra(id) {
+function eliminarVenta(id) {
     const ventas = cargarVentas();
     const index = ventas.findIndex(v => v.id === id);
     if (index === -1) return;
@@ -952,7 +989,7 @@ function guardarVentaDetalle(detalle) {
         created_at: detalle.created_at
     }
     if (index === -1) {
-        detalles.push(data)
+        detalles.unshift(data)
     } else {
         detalles[index] = data
     }
@@ -1005,18 +1042,16 @@ function guardarCuentaPorPagar(cuenta) {
         purchase_id: cuenta.purchase_id,
         provider_id: cuenta.provider_id,
         amount_total: cuenta.amount_total,
-        amount_paid: cuenta.amount_paid,
-        amount_due: cuenta.amount_due,
+        installments: cuenta.installments,
+        installment_type: cuenta.installment_type,
         status: cuenta.status,
-        expire_at: cuenta.expire_at,
         created_at: cuenta.created_at,
-        updated_at: cuenta.updated_at
-    }
-    if (index === -1) {
-        cuentas.push(data)
-    } else {
-        cuentas[index] = data
-    }
+        updated_at: cuenta.updated_at || null
+    };
+    if (index === -1)
+        cuentas.unshift(data);
+    else
+        cuentas[index] = data;
     guardarBD(KEY_CUENTASPORPAGAR, cuentas);
 }
 
@@ -1066,18 +1101,16 @@ function guardarCuentaPorCobrar(cuenta) {
         sale_id: cuenta.sale_id,
         client_id: cuenta.client_id,
         amount_total: cuenta.amount_total,
-        amount_paid: cuenta.amount_paid,
-        amount_due: cuenta.amount_due,
+        installments: cuenta.installments,
+        installment_type: cuenta.installment_type,
         status: cuenta.status,
-        expire_at: cuenta.expire_at,
         created_at: cuenta.created_at,
-        updated_at: cuenta.updated_at
-    }
-    if (index === -1) {
-        cuentas.push(data)
-    } else {
-        cuentas[index] = data
-    }
+        updated_at: cuenta.updated_at || null
+    };
+    if (index === -1)
+        cuentas.unshift(data);
+    else
+        cuentas[index] = data;
     guardarBD(KEY_CUENTASPORCOBRAR, cuentas);
 }
 
@@ -1091,6 +1124,161 @@ function eliminarCuentaPorCobrar(id) {
     if (index === -1) return;
     cuentas.splice(index, 1);
     guardarBD(KEY_CUENTASPORCOBRAR, cuentas);
+}
+
+/**
+ * Cargar una cuota por pagar mediante el Id
+ * @param {number} id 
+ * @returns {CuotaPorPagar?}
+ */
+function cargarCuotaPorPagar(id) {
+    return cargarCuotasPorPagar().find(c => c.id === id) || null;
+}
+
+/**
+ * Cargar cuotas por pagar
+ * @param {number} account_payable_id 
+ * @returns {CuotaPorPagar[]}
+ */
+function cargarCuotasPorPagar(account_payable_id=null) {
+    const cuotas = Array.from(cargarBD(KEY_CUOTASPAGAR) || []);
+    if (!account_payable_id) return cuotas;
+    return cuotas.filter(c => c.account_payable_id === account_payable_id);
+}
+
+/**
+ * Guardar una cuota por pagar nueva o existente
+ * @param {CuotaPorPagar} cuota 
+ */
+function guardarCuotaPorPagar(cuota) {
+    const cuotas = cargarCuotasPorPagar();
+    const index = cuotas.findIndex(c => c.id === cuota.id);
+    const data = {
+        id: cuota.id,
+        account_payable_id: cuota.account_payable_id,
+        installment_number: cuota.installment_number,
+        amount: cuota.amount,
+        amount_paid: cuota.amount_paid || 0,
+        status: cuota.status,
+        due_date: cuota.due_date,
+        created_at: cuota.created_at,
+        updated_at: cuota.updated_at || null
+    };
+    if (index === -1)
+        cuotas.unshift(data);
+    else
+        cuotas[index] = data;
+    guardarBD(KEY_CUOTASPAGAR, cuotas);
+}
+
+/**
+ * Eliminar una cuota por pagar mediante el Identificador
+ * @param {*} id 
+ */
+function eliminarCuotaPorPagar(id) {
+    const cuotas = cargarCuotasPorPagar();
+    const index = cuotas.findIndex(c => c.id === id);
+    if (index === -1) return;
+    cuotas.splice(index, 1);
+    guardarBD(KEY_CUOTASPAGAR, cuotas);
+}
+
+/**
+ * Cargar una cuota por cobrar
+ * @param {number} id 
+ * @returns {CuotaPorCobrar?}
+ */
+function cargarCuotaPorCobrar(id) {
+    return cargarCuotasPorCobrar().find(c => c.id === id) || null;
+}
+
+/**
+ * Cargar todas las cuotas por cobrar
+ * @param {number} account_receivable_id Identificador de la cuenta por cobrar
+ * @returns {CuotaPorCobrar[]}
+ */
+function cargarCuotasPorCobrar(account_receivable_id=null) {
+    const cuotas = Array.from(cargarBD(KEY_CUOTASCOBRAR) || []);
+    if (!account_receivable_id) return cuotas;
+    return cuotas.filter(c => c.account_receivable_id === account_receivable_id);
+}
+
+/**
+ * Guarda una cuota por cobrar nueva o existente
+ * @param {CuotaPorCobrar} cuota 
+ */
+function guardarCuotaPorCobrar(cuota) {
+    const cuotas = cargarCuotasPorCobrar();
+    const index = cuotas.findIndex(c => c.id === cuota.id);
+    const data = {
+        id: cuota.id,
+        account_receivable_id: cuota.account_receivable_id,
+        installment_number: cuota.installment_number,
+        amount: cuota.amount,
+        amount_paid: cuota.amount_paid || 0,
+        status: cuota.status,
+        due_date: cuota.due_date,
+        created_at: cuota.created_at,
+        updated_at: cuota.updated_at || null
+    };
+    if (index === -1)
+        cuotas.unshift(data);
+    else
+        cuotas[index] = data;
+    guardarBD(KEY_CUOTASCOBRAR, cuotas);
+}
+
+/**
+ * Elimina una cuota por cobrar
+ * @param {number} id 
+ */
+function eliminarCuotaPorCobrar(id) {
+    const cuotas = cargarCuotasPorCobrar();
+    const index = cuotas.findIndex(c => c.id === id);
+    if (index === -1) return;
+    cuotas.splice(index, 1);
+    guardarBD(KEY_CUOTASCOBRAR, cuotas);
+}
+
+/**
+ * Genera un listado de cuotas
+ * @param {number} total Monto total de pago/cobro
+ * @param {*} cantidad Cantidad de cuotas a crear
+ * @returns {{ installment_number: number, amount: number }[]}
+ */
+function generarCuotas(total, cantidad) {
+    const valor = +(total / cantidad).toFixed(2);
+    const cuotas = [];
+    for (let i = 1; i <= cantidad; i++) {
+        cuotas.push({
+            installment_number: i,
+            amount: valor
+        });
+    }
+    return cuotas;
+}
+
+/**
+ * 
+ * @param {string | number | Date} fechaBase Fecha de inicio
+ * @param {number} periodos Cantidad de periodos para el vencimiento
+ * @param {TipoCuota} tipo Tipo de cuota
+ * @returns {Date}
+ */
+function calcularVencimiento(fechaBase, periodos, tipo) {
+    const fecha = new Date(fechaBase);
+    switch (tipo) {
+        case CUOTA_SEMANAL:
+            fecha.setDate(fecha.getDate() + (periodos * 7));
+            break;
+        case CUOTA_QUINCENAL:
+            fecha.setDate(fecha.getDate() + (periodos * 15));
+            break;
+        case CUOTA_MENSUAL:
+            fecha.setMonth(fecha.getMonth() + periodos);
+            break;
+    }
+    return fecha;
 }
 
 /**
@@ -1128,7 +1316,7 @@ function guardarPago(pago) {
         created_at: pago.created_at
     }
     if (index === -1) {
-        pagos.push(data)
+        pagos.unshift(data)
     } else {
         pagos[index] = data
     }
@@ -1183,7 +1371,7 @@ function guardarCobro(cobro) {
         created_at: cobro.created_at
     }
     if (index === -1) {
-        cobros.push(data)
+        cobros.unshift(data)
     } else {
         cobros[index] = data
     }
@@ -1249,6 +1437,37 @@ function tienePermisoSesion(permiso) {
     return tienePermiso(rol.flags, permiso);
 }
 
+/**
+ * Recuperar datos de la empresa
+ * @returns {Empresa?} Sesion actual 
+ */
+function cargarEmpresa() {
+    return cargarBD(KEY_EMPRESA);
+}
+
+/**
+ * Guarda datos de la empresa
+ * @param {Empresa} empresa
+ */
+function guardarEmpresa(empresa) {
+    const data = {
+        legal_name: empresa.legal_name,
+        slogan: empresa.slogan,
+        address: empresa.address,
+        tel: empresa.tel,
+        stamping: empresa.stamping,
+        ruc: empresa.ruc 
+    }
+    guardarBD(KEY_EMPRESA, data);
+}
+
+/**
+ * Elimina los datos de la empresa actual
+ */
+function eliminarEmpresa() {
+    localStorage.removeItem(KEY_EMPRESA);
+}
+
 function initDB() {
     for (const key of [KEY_ROLES, KEY_USUARIOS, KEY_CLIENTES, KEY_PROVEEDORES, KEY_CATEGORIAS,
             KEY_MARCAS, KEY_PRODUCTOS, KEY_COMPRAS, KEY_COMPRADETALLES, KEY_VENTAS,
@@ -1256,6 +1475,7 @@ function initDB() {
         guardarBD(key, []);
     }
     eliminarSesion();
+    eliminarEmpresa();
     guardarRol({
         id: 1,
         name: "ADMIN",
@@ -1292,7 +1512,14 @@ function initDB() {
         created_at: new Date(),
         updated_at: null
     });
-
+    guardarEmpresa({
+        address: "Previstero Juan Carlos García / Madrinas de Guerra - Bo. Villa Armando - Concepción",
+        legal_name: "Vanguardia",
+        ruc: "87654321-1",
+        slogan: "Comercialización de Productos Informáticos y Tecnológicos",
+        stamping: "12345678",
+        tel: "0985495253"
+    });
 }
 
 function cargarDatosPrueba() {

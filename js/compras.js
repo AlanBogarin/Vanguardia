@@ -259,7 +259,7 @@ function btnGuardarNuevaCompra() {
         mensajeError("La condicion es obligatoria");
         condicionElem.focus();
         return;
-    } else if (!CONDICION_PAGO.includes(condicion)) {
+    } else if (!CONDICIONES.includes(condicion)) {
         mensajeError("Condición invalida");
         condicionElem.focus();
         return;

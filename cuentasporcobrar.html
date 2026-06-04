@@ -5,14 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Vanguardia - Cuentas por Cobrar</title>
     <link rel="icon" href="img/logo_x16.jpg">
+    <!-- ESTILOS DEL MENU -->
     <link href="menu/styles.css" rel="stylesheet"/>
+    <!-- BOOTSTRAP -->
     <link rel="stylesheet" href="bt/bootstrap.min.css">
+    <!-- BOOTSTRAP ICONS -->
     <link rel="stylesheet" href="bt-icons/bootstrap-icons.min.css">
+    <!-- ALERTIFY -->
     <link rel="stylesheet" href="alert/alertify.min.css">
     <link rel="stylesheet" href="alert/themes/default.min.css">
+    <!-- DATATABLES -->
     <link rel="stylesheet" href="dt/datatables.min.css">
     <link rel="stylesheet" href="dt/jquery.dataTables.min.css">
     <link rel="stylesheet" href="dt/buttons.dataTables.min.css">
+    <!-- TEMA VANGUARDIA -->
     <link rel="stylesheet" href="css/vanguardia.css">
 </head>
 <body class="sb-nav-fixed">
@@ -25,7 +31,7 @@
                     <div class="d-flex justify-content-between align-items-center mt-2 mb-2">
                         <h1 class="mb-0">Cuentas por Cobrar</h1>
                         <a href="cobros.html" class="btn btn-sm btn-success">
-                            <i class="bi bi-cash-stack me-1"></i> Ver Cobros
+                            <i class="bi bi-cash-stack me-1" id="link-cobros"></i> Ver Cobros
                         </a>
                     </div>
                     <div class="row mb-3">
@@ -41,11 +47,10 @@
                                         <div class="col-md-3 col-sm-6">
                                             <label class="form-label fw-semibold small mb-1">Estado</label>
                                             <select id="filtro_estado" class="form-select form-select-sm">
-                                                <option value="">Todos</option>
-                                                <option value="PENDIENTE">Pendiente</option>
-                                                <option value="PARCIAL">Parcial</option>
-                                                <option value="COBRADA">Cobrada</option>
-                                                <option value="VENCIDO">Vencido</option>
+                                                <option value="">TODOS</option>
+                                                <option value="PENDIENTE">PENDIENTE</option>
+                                                <option value="PARCIAL">PARCIAL</option>
+                                                <option value="COBRADA">COBRADA</option>
                                             </select>
                                         </div>
 
@@ -74,11 +79,11 @@
 
                                         <div class="col-md-2 col-sm-6">
                                             <div class="d-flex gap-1">
-                                                <button class="btn btn-sm btn-primary flex-fill" onclick="aplicarFiltros()">
+                                                <button class="btn btn-sm btn-primary flex-fill" onclick="onClickFiltrar()">
                                                     <i class="bi bi-funnel"></i> Filtrar
                                                 </button>
 
-                                                <button class="btn btn-sm btn-outline-secondary flex-fill" onclick="limpiarFiltros()">
+                                                <button class="btn btn-sm btn-outline-secondary flex-fill" onclick="onClickLimpiarFiltros()">
                                                     <i class="bi bi-x-circle"></i> Limpiar
                                                 </button>
                                             </div>
@@ -91,19 +96,6 @@
                     </div>
                     <div class="row">
                         <table id="tabla_cuentas_cobrar" class="display compact" style="width:100%">
-                            <thead>
-                                <tr>
-                                    <th>Id Cuenta</th>
-                                    <th>Id Venta</th>
-                                    <th>Cliente</th>
-                                    <th>Total a Cobrar</th>
-                                    <th>Monto Cobrado</th>
-                                    <th>Saldo Pendiente</th>
-                                    <th>Estado</th>
-                                    <th>Vencimiento</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
                         </table>
                     </div>
                 </div>
@@ -123,6 +115,7 @@
                 <div class="modal-body">
                     <ul class="list-group mb-3">
                         <li class="list-group-item"><strong>Cliente:</strong> <span id="det_cliente"></span></li>
+                        <li class="list-group-item"><strong>RUC/Cédula:</strong> <span id="det_ruc"></span></li>
                         <li class="list-group-item"><strong>ID Venta:</strong> <span id="det_venta"></span></li>
                         <li class="list-group-item"><strong>Fecha Emisión:</strong> <span id="det_emision"></span></li>
                         <li class="list-group-item"><strong>Vencimiento:</strong> <span id="det_vencimiento"></span></li>
@@ -135,19 +128,26 @@
         </div>
     </div>
 
+    <!-- MENU -->
     <script src="menu/scripts.js"></script>
+    <!-- BOOTSTRAP -->
     <script src="bt/bootstrap.bundle.min.js"></script>
+    <!-- ALERTIFY -->
     <script src="alert/alertify.min.js"></script>
+    <!-- DATATABLES -->
     <script src="dt/jquery-3.7.1.js"></script>
     <script src="dt/datatables.min.js"></script>
     <script src="dt/jquery.dataTables.min.js"></script>
+    <script src="dt/es-ES.js"></script>
+    <!-- DATATABLES Buttons extension -->
     <script src="dt/dataTables.buttons.min.js"></script>
     <script src="dt/buttons.print.min.js"></script>
     <script src="dt/buttons.html5.min.js"></script>
+    <!-- DATATABLES JSZip y pdfmake para exportar -->
     <script src="dt/jszip.min.js"></script>
     <script src="dt/pdfmake.min.js"></script>
     <script src="dt/vfs_fonts.js"></script>
-    <script src="dt/es-ES.js"></script>
+    <!-- SCRIPTS -->
     <script src="js/bd.js"></script>
     <script src="js/alertas.js"></script>
     <script src="js/tablas.js"></script>

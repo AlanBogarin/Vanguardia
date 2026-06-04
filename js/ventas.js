@@ -20,13 +20,8 @@ let detallesTemp = [];
 let _uidCounter  = 0;
 
 const tablaVentas = crearDataTable("tabla_ventas", [
-    { data: "id", title: "Id Venta", render: renderRaw },
-    { data: "client_id", title: "Cliente", render: data => renderString(cargarCliente(data).legal_name) },
-    { data: "user_id", title: "Usuario", render: data => renderString(cargarUsuario(data).username).toLowerCase() },
-    { data: "condition", title: "Condición", render: renderString },
-    { data: "amount", title: "Total", render: renderMoneda },
-    { data: "invoice", title: "Nro. Factura", render: renderString },
-    { data: "created_at", title: "Fecha", render: renderFecha  }
+    ...TABLAS.VENTA,
+    { data: null, title: "DETALLES", subtable: TABLAS.VENTA_DETALLE, render: data => cargarVentaDetalles(data.id) }
 ], {
     buttons: true, 
     pageLength: 10,
@@ -54,11 +49,11 @@ const tablaVentas = crearDataTable("tabla_ventas", [
     })
 });
 
-function btnAplicarFiltros() {
+function onClickAplicarFiltros() {
     cargarDatos();
 }
 
-function btnLimpiarFiltros() {
+function onClickLimpiarFiltros() {
     document.getElementById("filtro_condicion").value = "";
     document.getElementById("filtro_cliente_search").value = "";
     document.getElementById("filtro_total_min").value = "";
@@ -775,10 +770,6 @@ function generarVistaPreviewFactura() {
     $("#invoice").val(preview);
 }
 
-function renderMoneda(n) {
-    return new Intl.NumberFormat("es-PY", { minimumFractionDigits: 0 }).format(n || 0);
-}
-
 function cargarDatos() {
     const condicion = document.getElementById("filtro_condicion").value.toUpperCase();
     const cliente = document.getElementById("filtro_cliente_search").value.toUpperCase();
@@ -793,7 +784,7 @@ function cargarDatos() {
         if (!isNaN(totalMin) && totalMin > 0 && v.amount < totalMin) return false;
         if (!isNaN(totalMax) && totalMax > 0 && v.amount > totalMax) return false;
         if (fechaDesde && new Date(fechaDesde) > new Date(v.created_at)) return false;
-        if (fechaHasta && new Date(fechaHasta) < new Date(new Date(v.created_at).setHours(23, 59, 59, 999))) return false;
+        if (fechaHasta && new Date(fechaHasta) < new Date(v.created_at).setHours(23, 59, 59, 999)) return false;
         return true;
     }));
 }
