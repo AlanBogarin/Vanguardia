@@ -69,15 +69,12 @@
 
                                         <div class="col-md-3">
                                             <label class="form-label fw-semibold small mb-1">Proveedor</label>
-                                            <input type="text"
-                                                id="filtro_proveedor"
-                                                class="form-control form-control-sm"
-                                                placeholder="Buscar proveedor...">
+                                            <input type="text" id="filtro_proveedor" class="form-control form-control-sm" placeholder="Buscar proveedor..." oninput="cargarDatos()">
                                         </div>
 
                                         <div class="col-md-2">
                                             <label class="form-label fw-semibold small mb-1">Condicion</label>
-                                            <select id="filtro_condicion" class="form-select form-select-sm">
+                                            <select id="filtro_condicion" class="form-select form-select-sm" onchange="cargarDatos()">
                                                 <option value="">Todos</option>
                                                 <option value="CONTADO">CONTADO</option>
                                                 <option value="CREDITO">CRÉDITO</option>
@@ -86,30 +83,13 @@
 
                                         <div class="col-md-2">
                                             <label class="form-label fw-semibold small mb-1">Fecha Desde</label>
-                                            <input type="date"
-                                                id="filtro_fecha_desde"
-                                                class="form-control form-control-sm">
+                                            <input type="date" id="filtro_fecha_desde" class="form-control form-control-sm" onchange="cargarDatos()">
                                         </div>
 
                                         <div class="col-md-2">
                                             <label class="form-label fw-semibold small mb-1">Fecha Hasta</label>
-                                            <input type="date"
-                                                id="filtro_fecha_hasta"
-                                                class="form-control form-control-sm">
+                                            <input type="date" id="filtro_fecha_hasta" class="form-control form-control-sm" onchange="cargarDatos()">
                                         </div>
-
-                                        <div class="col-md-3 d-flex gap-1">
-                                            <button class="btn btn-sm btn-primary flex-fill"
-                                                    onclick="btnAplicarFiltros()">
-                                                <i class="bi bi-funnel"></i> Filtrar
-                                            </button>
-
-                                            <button class="btn btn-sm btn-outline-secondary flex-fill"
-                                                    onclick="btnLimpiarFiltros()">
-                                                <i class="bi bi-x-circle"></i> Limpiar
-                                            </button>
-                                        </div>
-
                                     </div>
                                 </div>
                             </div>

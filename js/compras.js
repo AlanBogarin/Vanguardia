@@ -485,18 +485,6 @@ function onShowModalNuevaCompra() {
     cargarDatos();
 }
 
-function btnAplicarFiltros() {
-    cargarDatos();
-}
-
-function btnLimpiarFiltros() {
-    document.getElementById("filtro_proveedor").value = "";
-    document.getElementById("filtro_condicion").value = "";
-    document.getElementById("filtro_fecha_desde").value = "";
-    document.getElementById("filtro_fecha_hasta").value = "";
-    cargarDatos();
-}
-
 function cargarDatos() {
     const proveedor = document.getElementById("filtro_proveedor").value.trim().toUpperCase();
     const tipoCondicion = document.getElementById("filtro_condicion").value.trim().toUpperCase();
