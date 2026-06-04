@@ -45,17 +45,6 @@ function ventanaVerDetalle(id) {
     modalDetalle.show();
 }
 
-function onClickFiltrar() {
-    cargarDatos();
-}
-
-function onClickLimpiarFiltros() {
-    document.getElementById("filtro_estado").value = "";
-    document.getElementById("filtro_fecha_desde").value = "";
-    document.getElementById("filtro_fecha_hasta").value = "";
-    document.getElementById("filtro_cliente").value = "";
-    cargarDatos();
-}
 
 function cargarDatos() {
     const dlClientesElem = document.getElementById("datalist_clientes");
@@ -82,5 +71,9 @@ function cargarDatos() {
 document.addEventListener('DOMContentLoaded', () => {
     if (!validarPermiso(PERMISOS.CUENTAS_COBRAR_VER)) return;
     if (!tienePermisoSesion(PERMISOS.COBROS_VER)) document.getElementById("link-cobros").style.display = "none";
+    document.getElementById("filtro_estado").addEventListener("change", cargarDatos);
+    document.getElementById("filtro_fecha_desde").addEventListener("change", cargarDatos);
+    document.getElementById("filtro_fecha_hasta").addEventListener("change", cargarDatos);
+    document.getElementById("filtro_cliente").addEventListener("input", cargarDatos);
     cargarDatos();
 });
