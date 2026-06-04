@@ -160,7 +160,8 @@
  *
  * @typedef {Object} Pago
  * @property {number} id Identificador unico del pago
- * @property {number} account_payable_id Identificador de la cuenta por pagar
+ * @property {number} installment_payable_id Identificador de la cuota por pagar
+ * @property {number?} purchase_id Identificador de la compra pagada al CONTADO
  * @property {number} amount Cantidad pagada
  * @property {MetodoPago} payment_method Método de pago
  * @property {string} obs Nro. Referencia / Comprobante / Observaciones del pago
@@ -168,8 +169,8 @@
  * 
  * @typedef {Object} Cobro
  * @property {number} id Identificador unico del cobro
- * @property {number?} account_receivable_id Identificador de la cuenta por cobrar
- * @property {number?} sale_id Identificador de la venta pagada al CONTADO
+ * @property {number?} installment_receivable_id Identificador de la cuota por cobrar
+ * @property {number?} sale_id Identificador de la venta cobrada al CONTADO
  * @property {number} amount Cantidad cobrada
  * @property {MetodoPago} payment_method Método de pago
  * @property {string} obs Nro. Factura / Comprobante del cobro
@@ -871,7 +872,7 @@ function guardarCompraDetalle(detalle) {
         amount: detalle.amount,
         unit_price: detalle.unit_price,
         subtotal: detalle.subtotal,
-        iva: detalle.iva !== undefined ? detalle.iva : 0,
+        iva: detalle.iva,
         created_at: detalle.created_at
     }
     if (index === -1) {
@@ -986,7 +987,7 @@ function guardarVentaDetalle(detalle) {
         amount: detalle.amount,
         unit_price: detalle.unit_price,
         subtotal: detalle.subtotal,
-        iva: detalle.iva !== undefined ? detalle.iva : 0,
+        iva: detalle.iva,
         created_at: detalle.created_at
     }
     if (index === -1) {
@@ -1260,14 +1261,13 @@ function generarCuotas(total, cantidad) {
 }
 
 /**
- * 
- * @param {string | number | Date} fechaBase Fecha de inicio
+ * @param {string | number | Date} inicio Fecha de inicio
  * @param {number} periodos Cantidad de periodos para el vencimiento
  * @param {TipoCuota} tipo Tipo de cuota
  * @returns {Date}
  */
-function calcularVencimiento(fechaBase, periodos, tipo) {
-    const fecha = new Date(fechaBase);
+function calcularVencimiento(inicio, periodos, tipo) {
+    const fecha = new Date(inicio);
     switch (tipo) {
         case CUOTA_SEMANAL:
             fecha.setDate(fecha.getDate() + (periodos * 7));
@@ -1310,7 +1310,7 @@ function guardarPago(pago) {
     const index = pagos.findIndex(p => p.id === pago.id);
     const data = {
         id: pago.id,
-        account_payable_id: pago.account_payable_id,
+        installment_payable_id: pago.installment_payable_id,
         amount: pago.amount,
         payment_method: pago.payment_method,
         obs: pago.obs.toUpperCase(),
@@ -1364,8 +1364,8 @@ function guardarCobro(cobro) {
     const index = cobros.findIndex(c => c.id === cobro.id);
     const data = {
         id: cobro.id,
-        account_receivable_id: cobro.account_receivable_id !== undefined ? cobro.account_receivable_id : null,
-        sale_id: cobro.sale_id !== undefined ? cobro.sale_id : null,
+        installment_receivable_id: cobro.installment_receivable_id ?? null,
+        sale_id: cobro.sale_id ?? null,
         amount: cobro.amount,
         payment_method: cobro.payment_method,
         obs: cobro.obs.toUpperCase(),
