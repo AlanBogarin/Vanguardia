@@ -193,16 +193,23 @@ function btnAgregarDetalle() {
 }
 
 function eliminarDetalle(producto_id) {
-    confirmar(
-        "Eliminar Producto",
-        "¿Estás seguro de que querés eliminar este producto del detalle?",
-        () => {
-            const index = detallesTemporales.findIndex(d => d.product_id === producto_id);
-            if (index !== -1) detallesTemporales.splice(index, 1);
-            renderizarDetalles();
+    pedir(
+        "Código de Seguridad",
+        "Ingrese el código de seguridad para eliminar este producto del detalle:",
+        "",
+        (evt, value) => {
+            const empresa = cargarEmpresa();
+            if (value === empresa.purchase_code) {
+                const index = detallesTemporales.findIndex(d => d.product_id === producto_id);
+                if (index !== -1) detallesTemporales.splice(index, 1);
+                renderizarDetalles();
+                mensajeSuccess("Producto eliminado del detalle.");
+            } else {
+                mensajeError("Código de seguridad incorrecto.");
+            }
         },
         () => {}
-    ).set("labels", { ok: "Sí, eliminar", cancel: "No, cancelar" });
+    );
 }
 
 function renderizarDetalles() {
@@ -307,7 +314,7 @@ function btnGuardarNuevaCompra() {
     yesterday.setDate(today.getDate() - 1);
     // ESATBLECER EL VALOR PREDETERMINADO DE HOY SI ESTA VACIO
     if (!fechaValor) {
-        fechaValor = today.toISOString().split('T')[0];
+        fechaValor = toISOLocalString(today).split('T')[0];
     }
     const selectedDate = new Date(fechaValor);
     // REVISAR EL LIMITE DE FECHA SOLO AYER Y HOY
@@ -319,7 +326,7 @@ function btnGuardarNuevaCompra() {
         mensajeError('Solo se permiten fechas de ayer o hoy.');
         return;
     }
-    const formattedFecha = selectedDate.toISOString(); // store as ISO string
+    const formattedFecha = toISOLocalString(selectedDate); // store as ISO string
     // const nuevaCompraId = obtenerSiguienteId(cargarCompras());
     // ...
     // Guardar datos temporales y decidir flujo
@@ -474,10 +481,10 @@ function onShowModalNuevaCompra() {
     yesterday.setDate(today.getDate() - 1);
     const fechaInput = document.getElementById('fecha_compra');
     if (fechaInput) {
-        fechaInput.min = yesterday.toISOString().split('T')[0];
-        fechaInput.max = today.toISOString().split('T')[0];
+        fechaInput.min = toISOLocalString(yesterday).split('T')[0];
+        fechaInput.max = toISOLocalString(today).split('T')[0];
         //Establecer por defecto en hoy.
-        fechaInput.value = today.toISOString().split('T')[0];
+        fechaInput.value = toISOLocalString(today).split('T')[0];
     }
     document.getElementById("condition").value = "CONTADO";
     const _mpEl = document.getElementById("metodo_pago");
