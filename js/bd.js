@@ -188,6 +188,7 @@
  * @property {string} tel Teléfono del local
  * @property {string} stamping Nro. Timbrado de la compra
  * @property {string} ruc RUC de la empresa
+ * @property {string} sales_code Código de seguridad para quitar un elemento de una venta temporal
  * 
  * @typedef {"TRANSFERENCIA" | "TARJETA_CREDITO" | "TARJETA_DEBITO" | "EFECTIVO" | "CREDITO" | "CHEQUE"} MetodoPago
  * @typedef {"PENDIENTE" | "PARCIAL" | "PAGADA"} EstadoPago
