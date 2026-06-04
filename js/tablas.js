@@ -775,7 +775,8 @@ const TABLAS = {
     ],
     PAGO: [
         { data: "id", title: "Id Pago", render: renderRaw },
-        { data: "account_payable_id", title: "Id Cuenta Pagar", render: renderRaw },
+        { data: "installment_payable_id", title: "Id Cuota", render: renderRaw },
+        { data: "purchase_id", title: "Id Compra", render: renderRaw },
         { data: "amount", title: "Monto Pagado", render: renderMoneda },
         { data: "payment_method", title: "Método Pago", render: renderString },
         { data: "obs", title: "Observaciones / Ref.", render: renderString },
@@ -783,7 +784,7 @@ const TABLAS = {
     ],
     COBRO: [
         { data: "id", title: "Id Cobro", render: renderRaw },
-        { data: "account_receivable_id", title: "Id Cuenta", render: renderRaw },
+        { data: "installment_receivable_id", title: "Id Cuota", render: renderRaw },
         { data: "sale_id", title: "Id Venta", render: renderRaw },
         { data: "amount", title: "Monto Cobrado", render: renderMoneda },
         { data: "payment_method", title: "Método Cobro", render: renderString },
