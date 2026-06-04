@@ -415,7 +415,7 @@ function guardarRol(rol) {
         updated_at: rol.updated_at || null
     }
     if (index === -1) {
-        roles.unshift(data)
+        roles.push(data)
     } else {
         roles[index] = data
     }
@@ -479,7 +479,7 @@ function guardarUsuario(usuario) {
         updated_at: usuario.updated_at
     }
     if (index === -1) {
-        usuarios.unshift(data)
+        usuarios.push(data)
     } else {
         usuarios[index] = data
     }
@@ -536,7 +536,7 @@ function guardarCliente(cliente) {
         updated_at: cliente.updated_at
     }
     if (index === -1) {
-        clientes.unshift(data)
+        clientes.push(data)
     } else {
         clientes[index] = data
     }
@@ -594,7 +594,7 @@ function guardarProveedor(proveedor) {
         updated_at: proveedor.updated_at
     }
     if (index === -1) {
-        proveedores.unshift(data)
+        proveedores.push(data)
     } else {
         proveedores[index] = data
     }
@@ -647,7 +647,7 @@ function guardarCategoria(categoria) {
         updated_at: categoria.updated_at
     }
     if (index === -1) {
-        categorias.unshift(data)
+        categorias.push(data)
     } else {
         categorias[index] = data
     }
@@ -699,7 +699,7 @@ function guardarMarca(marca) {
         updated_at: marca.updated_at
     }
     if (index === -1) {
-        marcas.unshift(data)
+        marcas.push(data)
     } else {
         marcas[index] = data
     }
@@ -761,7 +761,7 @@ function guardarProducto(producto) {
         updated_at: producto.updated_at
     }
     if (index === -1) {
-        productos.unshift(data)
+        productos.push(data)
     } else {
         productos[index] = data
     }
@@ -817,7 +817,7 @@ function guardarCompra(compra) {
         created_at: compra.created_at
     }
     if (index === -1) {
-        compras.unshift(data)
+        compras.push(data)
     } else {
         compras[index] = data
     }
@@ -877,7 +877,7 @@ function guardarCompraDetalle(detalle) {
         created_at: detalle.created_at
     }
     if (index === -1) {
-        detalles.unshift(data)
+        detalles.push(data)
     } else {
         detalles[index] = data
     }
@@ -932,7 +932,7 @@ function guardarVenta(venta) {
         created_at: venta.created_at
     }
     if (index === -1) {
-        ventas.unshift(data)
+        ventas.push(data)
     } else {
         ventas[index] = data
     }
@@ -992,7 +992,7 @@ function guardarVentaDetalle(detalle) {
         created_at: detalle.created_at
     }
     if (index === -1) {
-        detalles.unshift(data)
+        detalles.push(data)
     } else {
         detalles[index] = data
     }
@@ -1052,7 +1052,7 @@ function guardarCuentaPorPagar(cuenta) {
         updated_at: cuenta.updated_at || null
     };
     if (index === -1)
-        cuentas.unshift(data);
+        cuentas.push(data);
     else
         cuentas[index] = data;
     guardarBD(KEY_CUENTASPORPAGAR, cuentas);
@@ -1111,7 +1111,7 @@ function guardarCuentaPorCobrar(cuenta) {
         updated_at: cuenta.updated_at || null
     };
     if (index === -1)
-        cuentas.unshift(data);
+        cuentas.push(data);
     else
         cuentas[index] = data;
     guardarBD(KEY_CUENTASPORCOBRAR, cuentas);
@@ -1168,7 +1168,7 @@ function guardarCuotaPorPagar(cuota) {
         updated_at: cuota.updated_at || null
     };
     if (index === -1)
-        cuotas.unshift(data);
+        cuotas.push(data);
     else
         cuotas[index] = data;
     guardarBD(KEY_CUOTASPAGAR, cuotas);
@@ -1225,7 +1225,7 @@ function guardarCuotaPorCobrar(cuota) {
         updated_at: cuota.updated_at || null
     };
     if (index === -1)
-        cuotas.unshift(data);
+        cuotas.push(data);
     else
         cuotas[index] = data;
     guardarBD(KEY_CUOTASCOBRAR, cuotas);
@@ -1318,7 +1318,7 @@ function guardarPago(pago) {
         created_at: pago.created_at
     }
     if (index === -1) {
-        pagos.unshift(data)
+        pagos.push(data)
     } else {
         pagos[index] = data
     }
@@ -1373,7 +1373,7 @@ function guardarCobro(cobro) {
         created_at: cobro.created_at
     }
     if (index === -1) {
-        cobros.unshift(data)
+        cobros.push(data)
     } else {
         cobros[index] = data
     }

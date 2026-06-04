@@ -157,6 +157,7 @@ function crearDataTable(elementId, columns, config) {
         searching: false,
         lengthChange: false,
         pageLength: 5,
+        order: [[0, 'desc']],
         dom: "rtip",
         exportTitle: "REPORTE"
     }, config);
