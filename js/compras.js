@@ -107,8 +107,7 @@ function ventanaVerDetalles(id) {
             verAcumExenta += det.subtotal;
         }
 
-        const liqIva = ivaTipo === 5 ? Math.round(det.subtotal / 21) : (ivaTipo === 10 ? Math.round(det.subtotal / 11) : 0);
-        const subtSinIva = det.subtotal - liqIva;
+        const montoIva = Math.round((det.subtotal * ivaTipo) / 100);
 
         tbody.innerHTML += `
             <tr>
@@ -116,16 +115,15 @@ function ventanaVerDetalles(id) {
                 <td class="text-center fw-bold">${cant}</td>
                 <td>${renderMoneda(det.unit_price)}</td>
                 <td class="text-center fw-bold text-secondary">${ivaTipo}%</td>
-                <td class="text-end">${renderMoneda(subtSinIva)}</td>
-                <td class="text-center fw-bold text-info">${renderMoneda(liqIva)}</td>
+                <td class="text-center fw-bold text-info">${renderMoneda(montoIva)}</td>
                 <td class="fw-bold">${renderMoneda(det.subtotal)}</td>
             </tr>
         `;
     });
 
     // Fórmulas matemáticas de liquidación de IVA
-    const liquidacionVerIva5 = Math.round(verAcumIva5 / 21);
-    const liquidacionVerIva10 = Math.round(verAcumIva10 / 11);
+    const liquidacionVerIva5 = Math.round((verAcumIva5 * 5) / 100);
+    const liquidacionVerIva10 = Math.round((verAcumIva10 * 10) / 100);
 
     // Inserta los totales en sus respectivas etiquetas del HTML
     const elTotal = document.getElementById("ver_total_compra");
@@ -232,16 +230,14 @@ function renderizarDetalles() {
             acumExenta += det.subtotal;
         }
 
-        const liqIva = det.iva === 5 ? Math.round(det.subtotal / 21) : (det.iva === 10 ? Math.round(det.subtotal / 11) : 0);
-        const subtSinIva = det.subtotal - liqIva;
+        const montoIva = Math.round((det.subtotal * det.iva) / 100);
         tbody.innerHTML += `
             <tr>
                 <td>${det.productoName}</td>
                 <td class="text-center fw-bold">${det.quantity}</td>
                 <td>${renderMoneda(det.unit_price)}</td>
                 <td class="text-center fw-bold text-secondary">${det.iva}%</td>
-                <td class="text-end">${renderMoneda(subtSinIva)}</td>
-                <td class="text-center fw-bold text-info">${renderMoneda(liqIva)}</td>
+                <td class="text-center fw-bold text-info">${renderMoneda(montoIva)}</td>
                 <td class="fw-bold">${renderMoneda(det.subtotal)}</td>
                 <td class="text-center">
                     <button type="button" class="btn btn-sm btn-danger" onclick="eliminarDetalle(${det.product_id})"><i class="bi bi-trash"></i></button>
@@ -250,9 +246,9 @@ function renderizarDetalles() {
         `;
     });
 
-    // Fórmulas de liquidación de IVA de Paraguay
-    const liquidacionIva5 = Math.round(acumIva5 / 21);
-    const liquidacionIva10 = Math.round(acumIva10 / 11);
+    // Fórmulas de liquidación de IVA
+    const liquidacionIva5 = Math.round((acumIva5 * 5) / 100);
+    const liquidacionIva10 = Math.round((acumIva10 * 10) / 100);
 
     // Muestra los resultados en el nuevo diseño del pie de tabla
     const elTotalCompra = document.getElementById("total_compra");
@@ -352,6 +348,8 @@ function btnGuardarNuevaCompra() {
         document.getElementById('cuotas_total').value = `Gs. ${renderMoneda(amount)}`;
         document.getElementById('cuotas_cantidad').value = 3;
         document.getElementById('cuotas_tipo').value = 'MENSUAL';
+        document.getElementById('cuotas_entrega').value = 0;
+        document.getElementById('cuotas_primer_venc').value = '';
         previewCuotas();
         _modalCuotas.show();
     } else {
@@ -677,12 +675,35 @@ function seleccionarProductoDesdeModal(id) {
 function previewCuotas() {
     const cantidad = parseInt(document.getElementById('cuotas_cantidad').value) || 1;
     const tipo = document.getElementById('cuotas_tipo').value;
-    const total = _datosCompraTemp ? _datosCompraTemp.amount : 0;
-    const cuotas = generarCuotas(total, cantidad);
+    let entrega = parseInt(document.getElementById('cuotas_entrega').value) || 0;
+    const total_compra = _datosCompraTemp ? _datosCompraTemp.amount : 0;
+    
+    if (entrega > total_compra) {
+        entrega = total_compra;
+        document.getElementById('cuotas_entrega').value = entrega;
+    }
+    
+    const aFinanciar = total_compra - entrega;
+    document.getElementById('cuotas_total').value = `Gs. ${renderMoneda(aFinanciar)}`;
+
+    const cuotas = generarCuotas(aFinanciar, cantidad);
     const tbody = document.getElementById('tbody_preview_cuotas');
-    const hoy = new Date();
+    
+    const primerVencElem = document.getElementById('cuotas_primer_venc');
+    let fechaInicio = new Date();
+    if (primerVencElem && primerVencElem.value) {
+        fechaInicio = new Date(primerVencElem.value + 'T00:00:00'); 
+    }
+
     tbody.innerHTML = cuotas.map((c, i) => {
-        const venc = calcularVencimiento(hoy, i + 1, tipo);
+        let venc;
+        if (i === 0 && primerVencElem && primerVencElem.value) {
+            venc = fechaInicio;
+        } else if (primerVencElem && primerVencElem.value) {
+            venc = calcularVencimiento(fechaInicio, i, tipo); 
+        } else {
+            venc = calcularVencimiento(fechaInicio, i + 1, tipo);
+        }
         return `
             <tr>
                 <td class="text-center fw-bold">${c.installment_number}</td>
@@ -699,6 +720,17 @@ function cancelarCuotas() {
 }
 
 function confirmarCuotas() {
+    const cantidad = parseInt(document.getElementById('cuotas_cantidad').value);
+    if (!cantidad || cantidad <= 0) {
+        mensajeError("Debes ingresar la cantidad de cuotas");
+        return;
+    }
+    const primerVencElem = document.getElementById('cuotas_primer_venc');
+    if (primerVencElem && !primerVencElem.value) {
+        mensajeError("Debes definir la fecha de vencimiento de las cuota");
+        return;
+    }
+
     if (_modalCuotas) _modalCuotas.hide();
     guardarCompraFinal();
 }
@@ -745,13 +777,28 @@ function guardarCompraFinal() {
     if (condicion === CONDICION_CREDITO) {
         const cantidad = parseInt(document.getElementById('cuotas_cantidad').value) || 3;
         const tipo = document.getElementById('cuotas_tipo').value;
+        const entrega = parseInt(document.getElementById('cuotas_entrega').value) || 0;
+        const aFinanciar = amount - entrega;
+        
+        if (entrega > 0) {
+            guardarPago({
+                id: obtenerSiguienteId(cargarPagos()),
+                installment_payable_id: null,
+                purchase_id: nuevaCompraId,
+                amount: entrega,
+                payment_method: METODO_EFECTIVO,
+                obs: `ENTREGA INICIAL COMPRA NRO ${nuevaCompraId}`,
+                created_at: new Date()
+            });
+        }
+
         const cuentaId = obtenerSiguienteId(cargarCuentasPorPagar());
 
         guardarCuentaPorPagar({
             id: cuentaId,
             purchase_id: nuevaCompraId,
             provider_id,
-            amount_total: amount,
+            amount_total: aFinanciar,
             installments: cantidad,
             installment_type: tipo,
             status: ESTADO_PENDIENTE,
@@ -760,10 +807,24 @@ function guardarCompraFinal() {
         });
 
         // Generar cuotas
-        const cuotas = generarCuotas(amount, cantidad);
+        const cuotas = generarCuotas(aFinanciar, cantidad);
         let cuotaId = obtenerSiguienteId(cargarCuotasPorPagar());
-        const hoy = new Date();
+        
+        const primerVencElem = document.getElementById('cuotas_primer_venc');
+        let fechaInicio = new Date();
+        if (primerVencElem && primerVencElem.value) {
+            fechaInicio = new Date(primerVencElem.value + 'T00:00:00'); 
+        }
+
         cuotas.forEach((c, i) => {
+            let venc;
+            if (i === 0 && primerVencElem && primerVencElem.value) {
+                venc = fechaInicio;
+            } else if (primerVencElem && primerVencElem.value) {
+                venc = calcularVencimiento(fechaInicio, i, tipo); 
+            } else {
+                venc = calcularVencimiento(fechaInicio, i + 1, tipo);
+            }
             guardarCuotaPorPagar({
                 id: cuotaId++,
                 account_payable_id: cuentaId,
@@ -771,7 +832,7 @@ function guardarCompraFinal() {
                 amount: c.amount,
                 amount_paid: 0,
                 status: ESTADO_PENDIENTE,
-                due_date: calcularVencimiento(hoy, i + 1, tipo),
+                due_date: venc,
                 created_at: new Date(),
                 updated_at: null
             });
@@ -834,6 +895,11 @@ function agregarPagoMultiple() {
     const metodo = document.getElementById('pagos_metodo_input').value;
     const monto = parseInt(document.getElementById('pagos_monto_input').value) || 0;
     const total = _datosCompraTemp ? _datosCompraTemp.amount : 0;
+
+    if (!metodo) {
+        mensajeError('Seleccione el metodo de pago');
+        return;
+    }
 
     if (monto <= 0) {
         mensajeError('El monto debe ser mayor a 0.');
