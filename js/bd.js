@@ -75,6 +75,17 @@
  * @property {Date} created_at Fecha de creacion del marca
  * @property {Date?} updated_at Fecha de modificacion del marca
  * 
+ * @typedef {Object} AjusteInventario
+ * @property {number} id Identificador único del ajuste
+ * @property {number} product_id Identificador del producto
+ * @property {number} user_id Identificador del usuario que realizo el ajuste
+ * @property {"ENTRADA" | "SALIDA"} type Tipo de ajuste
+ * @property {number} quantity Cantidad ajustada
+ * @property {string} reason Motivo del ajuste
+ * @property {number} previous_stock Stock antes del ajuste
+ * @property {number} new_stock Stock después del ajuste
+ * @property {Date} created_at Fecha de creación
+ * 
  * @typedef {Object} Compra
  * @property {number} id Identificador unico de la compra
  * @property {number} provider_id Identificador del proveedor
@@ -196,6 +207,7 @@
  * @typedef {"PENDIENTE" | "PARCIAL" | "COBRADA"} EstadoCobro
  * @typedef {"CONTADO" | "CREDITO"} Condicion
  * @typedef {"SEMANAL" | "QUINCENAL" | "MENSUAL"} TipoCuota
+ * @typedef {"ENTRADA" | "SALIDA"} TipoAjuste
  */
 
 // BD
@@ -218,6 +230,7 @@ const KEY_PAGOS = "pagos";
 const KEY_COBROS = "cobros";
 const KEY_SESION = "sesion";
 const KEY_EMPRESA = "empresa";
+const KEY_AJUSTESINVENTARIO = "ajustesinventario";
 
 const REGEX_USUARIO = /^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚüÜ._\-]{5,20}$/;
 const REGEX_CONTRASENA = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[$@$!%*?&._\-])[A-Za-z\d$@$!%*?&._\-]{8,}$/;
@@ -259,6 +272,10 @@ const CUOTA_SEMANAL = "SEMANAL";
 const CUOTA_QUINCENAL = "QUINCENAL";
 const CUOTA_MENSUAL = "MENSUAL";
 const COUTAS = [CUOTA_SEMANAL, CUOTA_QUINCENAL, CUOTA_MENSUAL];
+
+const AJUSTE_ENTRADA = "ENTRADA";
+const AJUSTE_SALIDA = "SALIDA";
+const AJUSTE_TIPO = [AJUSTE_ENTRADA, AJUSTE_SALIDA];
 
 const PERMISOS = {
     // MODULO USUARIOS (Bits 1-6)
@@ -783,7 +800,64 @@ function eliminarProducto(id) {
     productos.splice(index, 1);
     guardarBD(KEY_PRODUCTOS, productos);
 }
-    
+
+/**
+ * Recupera un ajuste de inventario mediante el ID
+ * @param {number} id Identificador del ajuste
+ * @returns {AjusteInventario?}
+ */
+function cargarAjusteInventario(id) {
+    for (const ajuste of cargarAjustesInventario()) {
+        if (ajuste.id === id) return ajuste;
+    }
+}
+
+/**
+ * Recupera todos los ajustes de inventario
+ * @returns {AjusteInventario[]}
+ */
+function cargarAjustesInventario() {
+    return Array.from(cargarBD(KEY_AJUSTESINVENTARIO) || []);
+}
+
+/**
+ * Guarda un ajuste de inventario nuevo o existente
+ * @param {AjusteInventario} ajuste
+ */
+function guardarAjusteInventario(ajuste) {
+    const ajustes = cargarAjustesInventario();
+    const index = ajustes.findIndex(a => a.id === ajuste.id);
+    const data = {
+        id: ajuste.id,
+        product_id: ajuste.product_id,
+        user_id: ajuste.user_id,
+        type: ajuste.type,
+        quantity: ajuste.quantity,
+        reason: ajuste.reason,
+        previous_stock: ajuste.previous_stock,
+        new_stock: ajuste.new_stock,
+        created_at: ajuste.created_at
+    };
+    if (index === -1) {
+        ajustes.push(data);
+    } else {
+        ajustes[index] = data;
+    }
+    guardarBD(KEY_AJUSTESINVENTARIO, ajustes);
+}
+
+/**
+ * Elimina un ajuste de inventario mediante el ID
+ * @param {number} id Identificador del ajuste
+ */
+function eliminarAjusteInventario(id) {
+    const ajustes = cargarAjustesInventario();
+    const index = ajustes.findIndex(a => a.id === id);
+    if (index === -1) return;
+    ajustes.splice(index, 1);
+    guardarBD(KEY_AJUSTESINVENTARIO, ajustes);
+}
+
 /**
  * Recupera una compra mediante el ID
  * @param {number} id Identificador de la compra
