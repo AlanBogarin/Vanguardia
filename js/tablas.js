@@ -697,12 +697,18 @@ const TABLAS = {
         { data: "id", title: "Id Compra", render: renderRaw },
         { data: "provider_id", title: "Proveedor", render: data => cargarProveedor(data).legal_name },
         { data: "user_id", title: "Id Usuario", render: data => cargarUsuario(data).username },
-        { data: "condition", title: "Condición", render: renderString },
+        { data: null, title: "IVA", render: data => {
+        const detalles = cargarCompraDetalles().filter(d => d.purchase_id === data.id);
+        const tipos = [...new Set(detalles.map(d => {
+        if (d.iva !== null && d.iva !== undefined && d.iva !== '') return parseInt(d.iva);
+        const prod = cargarProducto(d.product_id);
+        return prod ? parseInt(prod.iva) : 0;
+    }).filter(v => !isNaN(v) && v > 0))].sort((a, b) => a - b);
+        return tipos.length ? tipos.map(t => `${t}%`).join(' / ') : 'EXENTA';
+    }},
         { data: "amount", title: "Total Pago", render: renderMoneda },
-        { data: "invoice", title: "Nro. Factura", render: renderString },
-        { data: "stamping", title: "Nro. Timbrado", render: renderString },
-        { data: "created_at", title: "Fecha Compra", render: renderFecha }
-    ],
+                { data: "created_at", title: "Fecha Compra", render: renderFecha }
+            ],
     COMPRA_DETALLE: [
         { data: "id", title: "Id Detalle", render: renderRaw },
         { data: "purchase_id", title: "Id Compra", render: renderRaw },
