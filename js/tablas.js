@@ -702,14 +702,14 @@ const TABLAS = {
         { data: "id", title: "Id Compra", render: renderRaw },
         { data: "provider_id", title: "Proveedor", render: data => cargarProveedor(data).legal_name },
         { data: "user_id", title: "Id Usuario", render: data => cargarUsuario(data).username },
-        { data: "condition", title: "Condición", render: renderString },
+        // { data: "condition", title: "Condición", render: renderString },
         { data: null, title: "IVA", render: data => {
             const tipos = [...new Set(cargarCompraDetalles(data.id).map(d => d.iva).filter(iva => iva > 0))];
             return tipos.length ? tipos.sort().map(t => `${t}%`).join(' / ') : 'EXENTA';
         }},
         { data: "amount", title: "Total Pago", render: renderMoneda },
-        { data: "invoice", title: "Nro. Factura", render: renderString },
-        { data: "stamping", title: "Nro. Timbrado", render: renderString },
+        // { data: "invoice", title: "Nro. Factura", render: renderString },
+        // { data: "stamping", title: "Nro. Timbrado", render: renderString },
         { data: "created_at", title: "Fecha Compra", render: renderFecha }
     ],
     COMPRA_DETALLE: [

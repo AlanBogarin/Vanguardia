@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Vanguardia - Compras</title>
     <link rel="icon" href="img/logo_x16.jpg">
-    <link href="menu/styles.css" rel="stylesheet"/>
+    <link href="menu/styles.css" rel="stylesheet" />
     <link rel="stylesheet" href="bt/bootstrap.min.css">
     <link rel="stylesheet" href="bt-icons/bootstrap-icons.min.css">
     <link rel="stylesheet" href="alert/alertify.min.css">
@@ -15,21 +16,32 @@
     <link rel="stylesheet" href="dt/buttons.dataTables.min.css">
     <link rel="stylesheet" href="css/vanguardia.css">
     <style>
-    /* Forzar el estilo de Bootstrap sobre los botones de DataTables */
-    .dt-buttons .btn {
-        margin-right: 5px !important;
-        border: none !important;
-        color: white !important;
-    }
-    .dt-buttons .btn-secondary { background-color: #0dcaf0 !important; }
-    .dt-buttons .btn-success   { background-color: #198754 !important; }
-    .dt-buttons .btn-danger    { background-color: #dc3545 !important; }
-    .dt-buttons .btn-info { 
-        background-color: #0dcaf0 !important; 
-        color: black !important; 
-    }
-</style>
+        /* Forzar el estilo de Bootstrap sobre los botones de DataTables */
+        .dt-buttons .btn {
+            margin-right: 5px !important;
+            border: none !important;
+            color: white !important;
+        }
+
+        .dt-buttons .btn-secondary {
+            background-color: #0dcaf0 !important;
+        }
+
+        .dt-buttons .btn-success {
+            background-color: #198754 !important;
+        }
+
+        .dt-buttons .btn-danger {
+            background-color: #dc3545 !important;
+        }
+
+        .dt-buttons .btn-info {
+            background-color: #0dcaf0 !important;
+            color: black !important;
+        }
+    </style>
 </head>
+
 <body class="sb-nav-fixed">
     <div id="contenedor-navbar">
         <!-- ========================================================= -->
@@ -59,8 +71,7 @@
                     <!-- PANEL DE FILTROS -->
                     <div class="row mb-3">
                         <div class="col-12">
-                            <div class="card"
-                                style="background:rgba(255,255,255,0.65);
+                            <div class="card" style="background:rgba(255,255,255,0.65);
                                         border:1px solid rgba(100,160,255,0.3);
                                         box-shadow:0 8px 32px rgba(30,80,180,0.12);
                                         border-radius:12px;
@@ -70,10 +81,8 @@
                                     style="background:rgba(30,80,180,0.9);
                                             color:white;
                                             border-radius:11px 11px 0 0;
-                                            cursor:pointer;"
-                                    data-bs-toggle="collapse"
-                                    data-bs-target="#panelFiltrosCompras"
-                                    aria-expanded="true">
+                                            cursor:pointer;" data-bs-toggle="collapse"
+                                    data-bs-target="#panelFiltrosCompras" aria-expanded="true">
                                     <span>
                                         <i class="bi bi-funnel-fill me-1"></i>
                                         <strong>Filtros</strong>
@@ -86,11 +95,14 @@
                                         <div class="row g-3 align-items-end">
                                             <div class="col-md-3">
                                                 <label class="form-label fw-semibold small mb-1">Proveedor</label>
-                                                <input type="text" id="filtro_proveedor" class="form-control form-control-sm" placeholder="Buscar proveedor..." oninput="cargarDatos()">
+                                                <input type="text" id="filtro_proveedor"
+                                                    class="form-control form-control-sm"
+                                                    placeholder="Buscar proveedor..." oninput="cargarDatos()">
                                             </div>
                                             <div class="col-md-2">
                                                 <label class="form-label fw-semibold small mb-1">Condición</label>
-                                                <select id="filtro_condicion" class="form-select form-select-sm" onchange="cargarDatos()">
+                                                <select id="filtro_condicion" class="form-select form-select-sm"
+                                                    onchange="cargarDatos()">
                                                     <option value="">Todos</option>
                                                     <option value="CONTADO">CONTADO</option>
                                                     <option value="CREDITO">CRÉDITO</option>
@@ -98,7 +110,8 @@
                                             </div>
                                             <div class="col-md-2">
                                                 <label class="form-label fw-semibold small mb-1">Estado Pago</label>
-                                                <select id="filtro_estado_pago" class="form-select form-select-sm" onchange="cargarDatos()">
+                                                <select id="filtro_estado_pago" class="form-select form-select-sm"
+                                                    onchange="cargarDatos()">
                                                     <option value="">Todos</option>
                                                     <option value="CON_SALDO">Con Saldo</option>
                                                     <option value="PAGADAS">Pagadas</option>
@@ -107,11 +120,13 @@
                                             </div>
                                             <div class="col-md-2">
                                                 <label class="form-label fw-semibold small mb-1">Fecha Desde</label>
-                                                <input type="date" id="filtro_fecha_desde" class="form-control form-control-sm" onchange="cargarDatos()">
+                                                <input type="date" id="filtro_fecha_desde"
+                                                    class="form-control form-control-sm" onchange="cargarDatos()">
                                             </div>
                                             <div class="col-md-2">
                                                 <label class="form-label fw-semibold small mb-1">Fecha Hasta</label>
-                                                <input type="date" id="filtro_fecha_hasta" class="form-control form-control-sm" onchange="cargarDatos()">
+                                                <input type="date" id="filtro_fecha_hasta"
+                                                    class="form-control form-control-sm" onchange="cargarDatos()">
                                             </div>
                                         </div>
                                     </div>
@@ -138,11 +153,13 @@
     </div>
 
     <!-- Modal Nueva Compra -->
-    <div class="modal fade modal-lg" id="modalNuevaCompra" tabindex="-1" aria-labelledby="modalNuevaCompraLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal fade modal-lg" id="modalNuevaCompra" tabindex="-1" aria-labelledby="modalNuevaCompraLabel"
+        aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog">
             <form class="modal-content">
                 <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="modalNuevaCompraLabel"><i class="bi bi-cart-plus-fill"></i> Registrar Nueva Compra</h5>
+                    <h5 class="modal-title" id="modalNuevaCompraLabel"><i class="bi bi-cart-plus-fill"></i> Registrar
+                        Nueva Compra</h5>
                 </div>
                 <div class="modal-body">
                     <div class="row mb-3 align-items-end">
@@ -150,8 +167,12 @@
                         <div class="col-md-5">
                             <label class="form-label">Buscar RUC</label>
                             <div class="input-group mb-2">
-                                <input class="form-control" id="buscar_proveedor" type="text" list="lista_proveedores" oninput="filtrarSoloNumerosRUC(this); onInputProveedor()" placeholder="Buscar por RUC..." inputmode="numeric">
-                                <button type="button" class="btn btn-outline-primary" onclick="abrirModalSeleccionProveedor()" title="Ver lista de proveedores"><i class="bi bi-list-ul"></i></button>
+                                <input class="form-control" id="buscar_proveedor" type="text" list="lista_proveedores"
+                                    oninput="filtrarSoloNumerosRUC(this); onInputProveedor()"
+                                    placeholder="Buscar por RUC..." inputmode="numeric">
+                                <button type="button" class="btn btn-outline-primary"
+                                    onclick="abrirModalSeleccionProveedor()" title="Ver lista de proveedores"><i
+                                        class="bi bi-list-ul"></i></button>
                             </div>
                             <datalist id="lista_proveedores"></datalist>
                             <select id="provider_id" class="form-select d-none" required></select>
@@ -162,76 +183,74 @@
                         </div>
                     </div>
                     <div class="row mb-3">
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label class="form-label">Condición</label>
-                            <select id="condition" class="form-select" required onchange="toggleMetodoPago()">
+                            <select id="condition" class="form-select" required>
                                 <option value="CONTADO">CONTADO</option>
                                 <option value="CREDITO">CRÉDITO</option>
                             </select>
                         </div>
-                        <div class="col-md-4" id="div_metodo_pago">
-                            <label class="form-label">Método de Pago</label>
-                            <select id="metodo_pago" class="form-select" required>
-                                <option value="EFECTIVO">Efectivo</option>
-                                <option value="TRANSFERENCIA">Transferencia Bancaria</option>
-                                <option value="TARJETA_CREDITO">Tarjeta de Crédito</option>
-                                <option value="TARJETA_DEBITO">Tarjeta de Débito</option>
-                                <option value="CHEQUE">Cheque</option>
-                            </select>
-                        </div>
                         <!-- FECHA COMPRA -->
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label class="form-label">Fecha Compra</label>
                             <input type="date" id="fecha_compra" class="form-control" required>
                         </div>
                     </div>
                     <div class="row mb-3">
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold text-black">Número de Timbrado *</label>
-                        <input type="text" id="timbrado" class="form-control" placeholder="Ej: 12345678" pattern="\d{8}" required>
-                        <div class="invalid-feedback">Debe contener 8 dígitos.</div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold text-black">Número de Timbrado *</label>
+                            <input type="text" id="timbrado" class="form-control" placeholder="Ej: 12345678"
+                                pattern="\d{8}" required>
+                            <div class="invalid-feedback">Debe contener 8 dígitos.</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold text-black">Número de Factura *</label>
+                            <input type="text" id="invoice" class="form-control text-uppercase"
+                                placeholder="Ej: 001-001-123" pattern="\d{3}-\d{3}-\d{3}" required>
+                            <div class="invalid-feedback">Formato requerido: 000-000-000</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Observaciones / Notas</label>
+                            <input type="text" id="notas_adicionales" class="form-control text-uppercase"
+                                maxlength="100" placeholder="Opcional...">
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold text-black">Número de Factura *</label>
-                        <input type="text" id="invoice" class="form-control text-uppercase" placeholder="Ej: 001-001-123" pattern="\d{3}-\d{3}-\d{3}" required>
-                        <div class="invalid-feedback">Formato requerido: 000-000-000</div>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Observaciones / Notas</label>
-                        <input type="text" id="notas_adicionales" class="form-control text-uppercase" maxlength="100" placeholder="Opcional...">
-                    </div>
-                </div>
 
-                <hr>
-                <h6 class="fw-bold">Detalle de Productos</h6>
+                    <hr>
+                    <h6 class="fw-bold">Detalle de Productos</h6>
                     <div class="row mb-3 align-items-end">
                         <div class="col-md-4">
                             <label class="form-label small text-muted">Producto</label>
                             <div class="input-group mb-2">
-                                <input type="text" id="buscar_producto" class="form-control" placeholder="Código o nombre..." oninput="onInputProducto(event)" onkeydown="onKeydownProducto(event)">
-                                <button type="button" class="btn btn-outline-primary" onclick="abrirModalSeleccionProducto()" title="Ver lista de productos"><i class="bi bi-list-ul"></i></button>
-                            </div> 
+                                <input type="text" id="buscar_producto" class="form-control"
+                                    placeholder="Código o nombre..." oninput="onInputProducto(event)"
+                                    onkeydown="onKeydownProducto(event)">
+                                <button type="button" class="btn btn-outline-primary"
+                                    onclick="abrirModalSeleccionProducto()" title="Ver lista de productos"><i
+                                        class="bi bi-list-ul"></i></button>
+                            </div>
                         </div>
-                    <div class="col-md-2">
-                        <label class="form-label small text-muted">Cantidad</label>
-                        <input type="number" id="cantidad_input" class="form-control" placeholder="Cant." min="1">
+                        <div class="col-md-2">
+                            <label class="form-label small text-muted">Cantidad</label>
+                            <input type="number" id="cantidad_input" class="form-control" placeholder="Cant." min="1">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small text-muted">Precio Costo Unit.</label>
+                            <input type="number" id="precio_input" class="form-control" placeholder="Precio Unit.">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small text-muted">IVA</label>
+                            <select id="iva_select_manual" class="form-select fw-bold text-center" disabled>
+                                <option value=""></option>
+                                <option value="10">10%</option>
+                                <option value="5">5%</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1">
+                            <button class="btn btn-success w-100" type="button" onclick="btnAgregarDetalle()"
+                                title="Agregar al carrito"><i class="bi bi-plus-lg"></i></button>
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                        <label class="form-label small text-muted">Precio Costo Unit.</label>
-                        <input type="number" id="precio_input" class="form-control" placeholder="Precio Unit.">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label small text-muted">IVA</label>
-                        <select id="iva_select_manual" class="form-select fw-bold text-center" disabled>
-                            <option value=""></option>
-                            <option value="10">10%</option>
-                            <option value="5">5%</option>
-                        </select>
-                    </div>
-                    <div class="col-md-1">
-                        <button class="btn btn-success w-100" type="button" onclick="btnAgregarDetalle()" title="Agregar al carrito"><i class="bi bi-plus-lg"></i></button>
-                    </div>
-                </div>
 
                     <div class="table-responsive">
                         <table class="table table-sm table-bordered" id="tabla_detalles_compra">
@@ -240,8 +259,10 @@
                                     <th>Producto</th>
                                     <th class="text-center" style="width: 10%;">Cantidad</th>
                                     <th style="width: 20%;">Precio Unit.</th>
-                                    <th class="text-center" style="width: 12%;">IVA</th>
-                                    <th style="width: 20%;">Subtotal</th>
+                                    <th class="text-center" style="width: 8%;">IVA</th>
+                                    <th class="text-end" style="width: 13%;">Subt. IVA</th>
+                                    <th class="text-center" style="width: 12%;">Liq. IVA</th>
+                                    <th style="width: 15%;">Subtotal</th>
                                     <th class="text-center" style="width: 10%;">Acciones</th>
                                 </tr>
                             </thead>
@@ -250,12 +271,12 @@
                             </tbody>
                             <tfoot class="table-light">
                                 <tr>
-                                    <th colspan="4" class="text-end fw-bold">TOTAL IMPORTE / PAGAR:</th>
+                                    <th colspan="6" class="text-end fw-bold">TOTAL IMPORTE / PAGAR:</th>
                                     <th id="total_compra" class="text-primary fw-bold fs-5">Gs. 0</th>
                                     <th></th>
                                 </tr>
                                 <tr>
-                                    <td colspan="6" class="p-2 bg-light">
+                                    <td colspan="8" class="p-2 bg-light">
                                         <div class="d-flex justify-content-start gap-4 small text-muted font-monospace">
                                             <div>
                                                 <label class="fw-bold">IVA 5%:</label>
@@ -267,7 +288,8 @@
                                             </div>
                                             <div>
                                                 <label class="fw-bold text-primary">Total IVA:</label>
-                                                <span id="total_iva_sum_nueva" class="badge bg-primary fs-6 ms-1">Gs. 0</span>
+                                                <span id="total_iva_sum_nueva" class="badge bg-primary fs-6 ms-1">Gs.
+                                                    0</span>
                                             </div>
                                         </div>
                                     </td>
@@ -277,8 +299,10 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" type="reset" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
-                    <button class="btn btn-primary" type="button" onclick="btnGuardarNuevaCompra()"><i class="bi bi-floppy"></i> Guardar Compra</button>
+                    <button class="btn btn-secondary" type="reset" data-bs-dismiss="modal"><i
+                            class="bi bi-x-circle"></i> Cancelar</button>
+                    <button class="btn btn-primary" type="button" onclick="btnGuardarNuevaCompra()"><i
+                            class="bi bi-floppy"></i> Guardar Compra</button>
                 </div>
             </form>
         </div>
@@ -289,7 +313,8 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header bg-info text-white">
-                    <h5 class="modal-title"><i class="bi bi-info-circle"></i> Detalles de la Compra #<span id="ver_compra_id"></span></h5>
+                    <h5 class="modal-title"><i class="bi bi-info-circle"></i> Detalles de la Compra #<span
+                            id="ver_compra_id"></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -307,17 +332,21 @@
                                 <th>Producto</th>
                                 <th>Cantidad</th>
                                 <th>Precio Unit.</th>
-                                <th>IVA</th> <th>Subtotal</th>
+                                <th>IVA</th>
+                                <th>Subt. IVA</th>
+                                <th>Liq. IVA</th>
+                                <th>Subtotal</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
-                        <tfoot id="footer_ver_detalles"> <tr>
-                                <th colspan="4" class="text-end table-light">Total a Pagar:</th>
+                        <tfoot id="footer_ver_detalles">
+                            <tr>
+                                <th colspan="6" class="text-end table-light">Total a Pagar:</th>
                                 <th id="ver_total_compra" class="table-light text-primary fw-bold">Gs. 0</th>
                             </tr>
                             <tr class="small text-muted">
-                                <th colspan="3" class="text-end border-0"> IVA:</th>
-                                <td colspan="2" class="border-0 p-0">
+                                <th colspan="4" class="text-end border-0"> IVA:</th>
+                                <td colspan="3" class="border-0 p-0">
                                     <table class="table table-sm table-borderless m-0 py-0" style="font-size: 0.85rem;">
                                         <tr>
                                             <td class="py-0 text-end borde-0">LiqIVA 5%:</td>
@@ -341,114 +370,191 @@
         </div>
     </div>
     <!-- Modal Selección de Proveedor -->
-<div class="modal fade" id="modalSeleccionProveedor" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title"><i class="bi bi-building me-1"></i> Seleccionar Proveedor</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <input type="text" id="buscar_prov_modal" class="form-control" placeholder="Buscar por nombre o RUC..." oninput="filtrarProveedoresModal()">
+    <div class="modal fade" id="modalSeleccionProveedor" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="bi bi-building me-1"></i> Seleccionar Proveedor</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-                    <table class="table table-sm table-hover table-bordered align-middle">
-                        <thead class="table-primary sticky-top">
-                            <tr>
-                                <th>Nombre / Razón Social</th>
-                                <th>RUC</th>
-                                <th class="text-center">Seleccionar</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody_modal_proveedores"></tbody>
-                    </table>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input type="text" id="buscar_prov_modal" class="form-control"
+                            placeholder="Buscar por nombre o RUC..." oninput="filtrarProveedoresModal()">
+                    </div>
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-sm table-hover table-bordered align-middle">
+                            <thead class="table-primary sticky-top">
+                                <tr>
+                                    <th>Nombre / Razón Social</th>
+                                    <th>RUC</th>
+                                    <th class="text-center">Seleccionar</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody_modal_proveedores"></tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle me-1"></i> Cerrar</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i
+                            class="bi bi-x-circle me-1"></i> Cerrar</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
-<!-- Modal Selección de Producto -->
-<div class="modal fade" id="modalSeleccionProducto" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title"><i class="bi bi-box-seam me-1"></i> Seleccionar Producto</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <input type="text" id="buscar_prod_modal" class="form-control" placeholder="Buscar por nombre o código..." oninput="filtrarProductosModal()">
+    <!-- Modal Selección de Producto -->
+    <div class="modal fade" id="modalSeleccionProducto" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="bi bi-box-seam me-1"></i> Seleccionar Producto</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-                    <table class="table table-sm table-hover table-bordered align-middle">
-                        <thead class="table-success sticky-top">
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Código</th>
-                                <th class="text-center">Stock</th>
-                                <th class="text-center">IVA</th>
-                                <th class="text-center">Seleccionar</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody_modal_productos"></tbody>
-                    </table>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input type="text" id="buscar_prod_modal" class="form-control"
+                            placeholder="Buscar por nombre o código..." oninput="filtrarProductosModal()">
+                    </div>
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-sm table-hover table-bordered align-middle">
+                            <thead class="table-success sticky-top">
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Código</th>
+                                    <th class="text-center">Stock</th>
+                                    <th class="text-center">IVA</th>
+                                    <th class="text-center">Seleccionar</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody_modal_productos"></tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle me-1"></i> Cerrar</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i
+                            class="bi bi-x-circle me-1"></i> Cerrar</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
-<!-- Modal Configurar Cuotas -->
-<div class="modal fade" id="modalConfigurarCuotas" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-warning text-dark">
-                <h5 class="modal-title"><i class="bi bi-calendar-check me-1"></i> Configurar Cuotas</h5>
-            </div>
-            <div class="modal-body">
-                <p class="text-muted small mb-3">Configurá las cuotas para esta compra a crédito antes de confirmar.</p>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Total a financiar</label>
-                    <input type="text" id="cuotas_total" class="form-control" readonly>
+    <!-- Modal Configurar Cuotas -->
+    <div class="modal fade" id="modalConfigurarCuotas" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title"><i class="bi bi-calendar-check me-1"></i> Configurar Cuotas</h5>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Cantidad de cuotas</label>
-                    <input type="number" id="cuotas_cantidad" class="form-control" min="1" max="36" value="3" oninput="previewCuotas()">
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">Configurá las cuotas para esta compra a crédito antes de confirmar.
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Total a financiar</label>
+                        <input type="text" id="cuotas_total" class="form-control" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Cantidad de cuotas</label>
+                        <input type="number" id="cuotas_cantidad" class="form-control" min="1" max="36" value="3"
+                            oninput="previewCuotas()">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Frecuencia</label>
+                        <select id="cuotas_tipo" class="form-select" onchange="previewCuotas()">
+                            <option value="MENSUAL">Mensual</option>
+                            <option value="QUINCENAL">Quincenal</option>
+                            <option value="SEMANAL">Semanal</option>
+                        </select>
+                    </div>
+                    <div class="table-responsive" style="max-height:250px;overflow-y:auto;">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-warning sticky-top">
+                                <tr>
+                                    <th class="text-center">Cuota</th>
+                                    <th>Importe</th>
+                                    <th>Vencimiento</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody_preview_cuotas"></tbody>
+                        </table>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Frecuencia</label>
-                    <select id="cuotas_tipo" class="form-select" onchange="previewCuotas()">
-                        <option value="MENSUAL">Mensual</option>
-                        <option value="QUINCENAL">Quincenal</option>
-                        <option value="SEMANAL">Semanal</option>
-                    </select>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="cancelarCuotas()"><i
+                            class="bi bi-x-circle me-1"></i> Cancelar</button>
+                    <button type="button" class="btn btn-warning text-dark" onclick="confirmarCuotas()"><i
+                            class="bi bi-check-circle me-1"></i> Confirmar Compra</button>
                 </div>
-                <div class="table-responsive" style="max-height:250px;overflow-y:auto;">
-                    <table class="table table-sm table-bordered">
-                        <thead class="table-warning sticky-top">
-                            <tr>
-                                <th class="text-center">Cuota</th>
-                                <th>Importe</th>
-                                <th>Vencimiento</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody_preview_cuotas"></tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="cancelarCuotas()"><i class="bi bi-x-circle me-1"></i> Cancelar</button>
-                <button type="button" class="btn btn-warning text-dark" onclick="confirmarCuotas()"><i class="bi bi-check-circle me-1"></i> Confirmar Compra</button>
             </div>
         </div>
     </div>
-</div>
+
+    <!-- Modal Pagos Multiples Contado -->
+    <div class="modal fade" id="modalPagosMultiples" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="bi bi-wallet2 me-1"></i> Configurar Pagos al Contado</h5>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">Podés dividir el pago al contado en múltiples métodos (Ej: mitad
+                        Efectivo, mitad Tarjeta).</p>
+                    <div class="row mb-3 text-center">
+                        <div class="col-md-4">
+                            <label class="fw-bold">Total a Pagar</label>
+                            <h5 id="pagos_total" class="text-primary">Gs. 0</h5>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="fw-bold">Pagado</label>
+                            <h5 id="pagos_abonado" class="text-success">Gs. 0</h5>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="fw-bold">Saldo Restante</label>
+                            <h5 id="pagos_saldo" class="text-danger">Gs. 0</h5>
+                        </div>
+                    </div>
+                    <div class="row mb-3 align-items-end bg-light p-2 rounded border">
+                        <div class="col-md-5">
+                            <label class="form-label small">Método de Pago</label>
+                            <select id="pagos_metodo_input" class="form-select form-select-sm">
+                                <option value="EFECTIVO">Efectivo</option>
+                                <option value="TRANSFERENCIA">Transferencia Bancaria</option>
+                                <option value="TARJETA_CREDITO">Tarjeta de Crédito</option>
+                                <option value="TARJETA_DEBITO">Tarjeta de Débito</option>
+                                <option value="CHEQUE">Cheque</option>
+                            <option value="QR">Pago QR</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small">Monto</label>
+                            <input type="number" id="pagos_monto_input" class="form-control form-control-sm" min="1">
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-sm btn-success w-100"
+                                onclick="agregarPagoMultiple()"><i class="bi bi-plus"></i> Agregar</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive" style="max-height:200px;overflow-y:auto;">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-success sticky-top">
+                                <tr>
+                                    <th>Método</th>
+                                    <th>Monto</th>
+                                    <th class="text-center">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody_pagos_multiples"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="cancelarPagosMultiples()"><i
+                            class="bi bi-x-circle me-1"></i> Cancelar</button>
+                    <button type="button" class="btn btn-success" id="btn_confirmar_pagos"
+                        onclick="confirmarPagosMultiples()" disabled><i class="bi bi-check-circle me-1"></i> Confirmar
+                        Pagos</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="menu/scripts.js"></script>
     <script src="bt/bootstrap.bundle.min.js"></script>
@@ -470,6 +576,6 @@
     <script src="js/bd.js"></script>
     <script src="js/alertas.js"></script>
     <script src="js/tablas.js"></script>
-    <script src="js/compras.js?v=2"></script>
+    <script src="js/compras.js"></script>
 </body>
 </html>
