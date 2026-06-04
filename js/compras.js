@@ -11,6 +11,8 @@ const modalNCompra = new bootstrap.Modal(document.getElementById('modalNuevaComp
 const modalVerDetalle = new bootstrap.Modal(document.getElementById('modalVerDetalles'));
 let _modalCuotas = null;
 let _datosCompraTemp = null;
+let _modalPagosMultiples = null;
+const _pagosMultiplesTemp = [];
 
 /** @type {DetalleTemporal[]} */
 const detallesTemporales = [];
@@ -105,12 +107,18 @@ function ventanaVerDetalles(id) {
             verAcumExenta += det.subtotal;
         }
 
+        const liqIva = ivaTipo === 5 ? Math.round(det.subtotal / 21) : (ivaTipo === 10 ? Math.round(det.subtotal / 11) : 0);
+        const subtSinIva = det.subtotal - liqIva;
+
         tbody.innerHTML += `
             <tr>
                 <td>${pName}</td>
                 <td class="text-center fw-bold">${cant}</td>
                 <td>${renderMoneda(det.unit_price)}</td>
-                <td class="text-center fw-bold text-secondary">${ivaTipo}%</td> <td class="fw-bold">${renderMoneda(det.subtotal)}</td>
+                <td class="text-center fw-bold text-secondary">${ivaTipo}%</td>
+                <td class="text-end">${renderMoneda(subtSinIva)}</td>
+                <td class="text-center fw-bold text-info">${renderMoneda(liqIva)}</td>
+                <td class="fw-bold">${renderMoneda(det.subtotal)}</td>
             </tr>
         `;
     });
@@ -217,13 +225,16 @@ function renderizarDetalles() {
             acumExenta += det.subtotal;
         }
 
+        const liqIva = det.iva === 5 ? Math.round(det.subtotal / 21) : (det.iva === 10 ? Math.round(det.subtotal / 11) : 0);
+        const subtSinIva = det.subtotal - liqIva;
         tbody.innerHTML += `
             <tr>
                 <td>${det.productoName}</td>
                 <td class="text-center fw-bold">${det.quantity}</td>
                 <td>${renderMoneda(det.unit_price)}</td>
-                <!-- Nueva columna visual de IVA por fila -->
                 <td class="text-center fw-bold text-secondary">${det.iva}%</td>
+                <td class="text-end">${renderMoneda(subtSinIva)}</td>
+                <td class="text-center fw-bold text-info">${renderMoneda(liqIva)}</td>
                 <td class="fw-bold">${renderMoneda(det.subtotal)}</td>
                 <td class="text-center">
                     <button type="button" class="btn btn-sm btn-danger" onclick="eliminarDetalle(${det.product_id})"><i class="bi bi-trash"></i></button>
@@ -313,7 +324,8 @@ function btnGuardarNuevaCompra() {
     // ...
     // Guardar datos temporales y decidir flujo
     const amount = detallesTemporales.reduce((acc, curr) => acc + curr.subtotal, 0);
-    const metodo_pago = condicion === CONDICION_CONTADO ? document.getElementById('metodo_pago').value : null;
+    const mpElem = document.getElementById('metodo_pago');
+    const metodo_pago = condicion === CONDICION_CONTADO && mpElem ? mpElem.value : null;
     
     _datosCompraTemp = {
         provider_id: proveedor.id,
@@ -336,7 +348,8 @@ function btnGuardarNuevaCompra() {
         previewCuotas();
         _modalCuotas.show();
     } else {
-        guardarCompraFinal();
+        // Contado: abrir modal de pagos múltiples
+        abrirModalPagosMultiples();
     }
 }
 
@@ -444,11 +457,11 @@ function toggleMetodoPago() {
     const divMetodoPago = document.getElementById("div_metodo_pago");
     const selectMetodoPago = document.getElementById("metodo_pago");
     if (condicion === "CONTADO") {
-        divMetodoPago.classList.remove("d-none");
-        selectMetodoPago.setAttribute("required", "required");
+        if (divMetodoPago) divMetodoPago.classList.remove("d-none");
+        if (selectMetodoPago) selectMetodoPago.setAttribute("required", "required");
     } else {
-        divMetodoPago.classList.add("d-none");
-        selectMetodoPago.removeAttribute("required");
+        if (divMetodoPago) divMetodoPago.classList.add("d-none");
+        if (selectMetodoPago) selectMetodoPago.removeAttribute("required");
     }
 }
 
@@ -467,7 +480,8 @@ function onShowModalNuevaCompra() {
         fechaInput.value = today.toISOString().split('T')[0];
     }
     document.getElementById("condition").value = "CONTADO";
-    document.getElementById("metodo_pago").value = "EFECTIVO";
+    const _mpEl = document.getElementById("metodo_pago");
+    if (_mpEl) _mpEl.value = "EFECTIVO";
     toggleMetodoPago();
     habilitarBusquedaProveedor(true);
     cargarDatos();
@@ -758,16 +772,31 @@ function guardarCompraFinal() {
 
         mensajeSuccess(`Compra a crédito guardada. Se generaron ${cantidad} cuotas.`);
     } else {
-        // Contado: guardar pago directo
-        guardarPago({
-            id: obtenerSiguienteId(cargarPagos()),
-            installment_payable_id: null,
-            purchase_id: nuevaCompraId,
-            amount,
-            payment_method: _datosCompraTemp.metodo_pago || METODO_EFECTIVO,
-            obs: `PAGO CONTADO COMPRA NRO ${nuevaCompraId}`,
-            created_at: new Date()
-        });
+        // Contado: guardar pagos múltiples
+        if (_pagosMultiplesTemp.length > 0) {
+            _pagosMultiplesTemp.forEach(pago => {
+                guardarPago({
+                    id: obtenerSiguienteId(cargarPagos()),
+                    installment_payable_id: null,
+                    purchase_id: nuevaCompraId,
+                    amount: pago.amount,
+                    payment_method: pago.method,
+                    obs: `PAGO CONTADO COMPRA NRO ${nuevaCompraId} - ${pago.method}`,
+                    created_at: new Date()
+                });
+            });
+        } else {
+            guardarPago({
+                id: obtenerSiguienteId(cargarPagos()),
+                installment_payable_id: null,
+                purchase_id: nuevaCompraId,
+                amount,
+                payment_method: _datosCompraTemp.metodo_pago || METODO_EFECTIVO,
+                obs: `PAGO CONTADO COMPRA NRO ${nuevaCompraId}`,
+                created_at: new Date()
+            });
+        }
+        _pagosMultiplesTemp.splice(0);
         mensajeSuccess("Compra al contado registrada correctamente.");
     }
 
@@ -776,4 +805,119 @@ function guardarCompraFinal() {
     renderizarDetalles();
     cargarDatos();
     modalNCompra.hide();
+}
+
+// ======== PAGOS MÚLTIPLES CONTADO ========
+function abrirModalPagosMultiples() {
+    if (!_modalPagosMultiples) {
+        _modalPagosMultiples = new bootstrap.Modal(document.getElementById('modalPagosMultiples'));
+    }
+    _pagosMultiplesTemp.splice(0);
+    const total = _datosCompraTemp ? _datosCompraTemp.amount : 0;
+    document.getElementById('pagos_total').textContent = `Gs. ${renderMoneda(total)}`;
+    document.getElementById('pagos_monto_input').value = '';
+    // Reset payment method selector
+    const metodoInput = document.getElementById('pagos_metodo_input');
+    if (metodoInput) metodoInput.value = '';
+    renderizarPagosMultiples();
+    _modalPagosMultiples.show();
+}
+
+function agregarPagoMultiple() {
+    const metodo = document.getElementById('pagos_metodo_input').value;
+    const monto = parseInt(document.getElementById('pagos_monto_input').value) || 0;
+    const total = _datosCompraTemp ? _datosCompraTemp.amount : 0;
+
+    if (monto <= 0) {
+        mensajeError('El monto debe ser mayor a 0.');
+        return;
+    }
+
+    const pagado = _pagosMultiplesTemp.reduce((acc, p) => acc + p.amount, 0);
+    const saldo = total - pagado;
+
+    if (monto > saldo) {
+        mensajeError(`El monto excede el saldo restante de Gs. ${renderMoneda(saldo)}`);
+        return;
+    }
+
+    // Add the payment to the list
+    _pagosMultiplesTemp.push({ method: metodo, amount: monto });
+
+    // Reset method selector after adding payment
+    const metodoInput = document.getElementById('pagos_metodo_input');
+    if (metodoInput) metodoInput.value = '';
+
+    // Update UI
+    renderizarPagosMultiples();
+
+    // Pre-fill remaining balance in the amount input
+    const nuevoPagado = _pagosMultiplesTemp.reduce((acc, p) => acc + p.amount, 0);
+    const nuevoSaldo = total - nuevoPagado;
+    document.getElementById('pagos_monto_input').value = nuevoSaldo > 0 ? nuevoSaldo : '';
+}
+
+
+
+function eliminarPagoMultiple(index) {
+    _pagosMultiplesTemp.splice(index, 1);
+    renderizarPagosMultiples();
+    const total = _datosCompraTemp ? _datosCompraTemp.amount : 0;
+    const pagado = _pagosMultiplesTemp.reduce((acc, p) => acc + p.amount, 0);
+    document.getElementById('pagos_monto_input').value = total - pagado > 0 ? total - pagado : '';
+}
+
+function renderizarPagosMultiples() {
+    const total = _datosCompraTemp ? _datosCompraTemp.amount : 0;
+    const pagado = _pagosMultiplesTemp.reduce((acc, p) => acc + p.amount, 0);
+    const saldo = total - pagado;
+
+    document.getElementById('pagos_abonado').textContent = `Gs. ${renderMoneda(pagado)}`;
+    document.getElementById('pagos_saldo').textContent = `Gs. ${renderMoneda(saldo)}`;
+
+    const tbody = document.getElementById('tbody_pagos_multiples');
+    const metodoLabels = {
+        'EFECTIVO': 'Efectivo',
+        'TRANSFERENCIA': 'Transferencia Bancaria',
+        'TARJETA_CREDITO': 'Tarjeta de Crédito',
+        'TARJETA_DEBITO': 'Tarjeta de Débito',
+        'CHEQUE': 'Cheque',
+        'QR': 'Pago QR'
+    };
+
+    if (_pagosMultiplesTemp.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No se agregaron pagos aún.</td></tr>';
+    } else {
+        tbody.innerHTML = _pagosMultiplesTemp.map((p, i) => `
+            <tr>
+                <td>${metodoLabels[p.method] || p.method}</td>
+                <td class="fw-bold">Gs. ${renderMoneda(p.amount)}</td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-danger" onclick="eliminarPagoMultiple(${i})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    const btnConfirmar = document.getElementById('btn_confirmar_pagos');
+    if (btnConfirmar) btnConfirmar.disabled = (saldo !== 0);
+}
+
+function cancelarPagosMultiples() {
+    _pagosMultiplesTemp.splice(0);
+    _datosCompraTemp = null;
+    if (_modalPagosMultiples) _modalPagosMultiples.hide();
+}
+
+function confirmarPagosMultiples() {
+    const total = _datosCompraTemp ? _datosCompraTemp.amount : 0;
+    const pagado = _pagosMultiplesTemp.reduce((acc, p) => acc + p.amount, 0);
+    if (pagado !== total) {
+        mensajeError(`El total pagado (Gs. ${renderMoneda(pagado)}) no coincide con el total (Gs. ${renderMoneda(total)}).`);
+        return;
+    }
+    if (_modalPagosMultiples) _modalPagosMultiples.hide();
+    guardarCompraFinal();
 }
