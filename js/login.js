@@ -59,6 +59,13 @@ async function login() {
         setTimeout(function () {
             mensaje.textContent = "";
         }, 5000);
+    } else if (!usuario.active) {
+        mensaje.textContent = "Usuario no disponible.";
+        mensaje.style.color = "red";
+        inputUsuario.focus();
+        setTimeout(function () {
+            mensaje.textContent = "";
+        }, 5000);
     } else if (hash !== usuario.password_hash) {
         // Si la contraseña es incorrecta
         mensaje.textContent = "Contraseña incorrecta.";
