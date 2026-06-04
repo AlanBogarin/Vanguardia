@@ -186,7 +186,7 @@ function crearDataTable(elementId, columns, config) {
     columns.forEach(col => {
         const align = col.align || "left";
         delete col["align"];
-        col.className = `dt-header-center dt-body-${align}`;
+        col.className = `dt-head-center dt-body-${align}`;
     });
     // Acciones
     if (dtconfig.actions) {
