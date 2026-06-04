@@ -49,10 +49,6 @@ const tablaVentas = crearDataTable("tabla_ventas", [
     })
 });
 
-function onClickAplicarFiltros() {
-    cargarDatos();
-}
-
 function onClickLimpiarFiltros() {
     document.getElementById("filtro_condicion").value = "";
     document.getElementById("filtro_cliente_search").value = "";
@@ -72,14 +68,6 @@ function cargarSelectClientes() {
         .map(c => `<option data-id="${c.id}" value="${c.legal_name}">${c.ruc}</option>`).join("");
     document.getElementById("client_search").value = "";
     document.getElementById("client_id").value = "";
-}
-
-function onInputFiltroCliente() {
-    // const texto = $("#filtro_cliente_search").val().trim();
-    // const opt = $("#datalist_filtro_clientes option").filter(function() {
-    //     return $(this).val() === texto;
-    // });
-    // $("#filtro_cliente_id").val(opt.length ? opt.data("id") : "");
 }
 
 function onInputCliente() {
@@ -836,8 +824,8 @@ function cargarDatos() {
         if (cliente && !c.legal_name.includes(cliente) && !c.ruc.includes(cliente)) return false;
         if (!isNaN(totalMin) && totalMin > 0 && v.amount < totalMin) return false;
         if (!isNaN(totalMax) && totalMax > 0 && v.amount > totalMax) return false;
-        if (fechaDesde && new Date(fechaDesde) > new Date(v.created_at)) return false;
-        if (fechaHasta && new Date(fechaHasta) < new Date(v.created_at).setHours(23, 59, 59, 999)) return false;
+        if (fechaDesde && fechaDesde > v.created_at.substring(0, 10)) return false;
+        if (fechaHasta && fechaHasta < v.created_at.substring(0, 10)) return false;
         return true;
     }));
 }

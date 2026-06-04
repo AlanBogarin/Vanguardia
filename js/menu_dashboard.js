@@ -86,7 +86,7 @@ function cargarDatos() {
                             <td><span class="badge bg-secondary">#${v.id}</span></td>
                             <td>${cliName}</td>
                             <td class="text-success fw-bold">${formatoMoneda(v.amount)}</td>
-                            <td class="text-muted">${new Date(v.created_at).toLocaleDateString('es-PY')}</td>
+                            <td class="text-muted">${renderFecha(v.created_at)}</td>
                         </tr>
                     `;
                 });

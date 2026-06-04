@@ -104,16 +104,8 @@ function cargarDatos() {
     const fechaHasta = document.getElementById("filtro_fecha_hasta")?.value;
     cargarDataTable(tablaCobros, cargarCobros().filter(c => {
         if (metodo && c.payment_method !== metodo) return false;
-        if (fechaDesde && c.created_at) {
-            const fd = new Date(fechaDesde);
-            fd.setHours(0, 0, 0, 0);
-            if (new Date(c.created_at) < fd) return false;
-        }
-        if (fechaHasta && c.created_at) {
-            const fh = new Date(fechaHasta);
-            fh.setHours(23, 59, 59, 999);
-            if (new Date(c.created_at) > fh) return false;
-        }
+        if (fechaDesde && fechaDesde > c.created_at.substring(0, 10)) return false;
+        if (fechaHasta && fechaDesde < c.created_at.substring(0, 10)) return false;
         return true;
     }));
     // Cargar select

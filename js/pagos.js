@@ -188,22 +188,9 @@ function obtenerPagosFiltrados() {
     const fechaHasta = document.getElementById('filtro_fecha_hasta').value;
 
     return cargarPagos().filter(p => {
-        // Filtro metodo de pago
         if (metodo && p.payment_method !== metodo) return false;
-
-        // Filtro rango de fechas (created_at)
-        const createdAt = new Date(p.created_at);
-        if (fechaDesde) {
-            const desde = new Date(fechaDesde);
-            desde.setHours(0, 0, 0, 0);
-            if (createdAt < desde) return false;
-        }
-        if (fechaHasta) {
-            const hasta = new Date(fechaHasta);
-            hasta.setHours(23, 59, 59, 999);
-            if (createdAt > hasta) return false;
-        }
-
+        if (fechaDesde && fechaDesde > p.created_at.substring(0, 10)) return false;
+        if (fechaHasta && fechaHasta < p.created_at.substring(0, 10)) return false;
         return true;
     });
 }

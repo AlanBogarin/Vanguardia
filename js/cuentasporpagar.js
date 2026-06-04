@@ -69,26 +69,14 @@ function obtenerCuentasFiltradas() {
 
     return cargarCuentasPorPagar().filter(c => {
         const vencida = c.status !== ESTADO_PAGADA && new Date(c.expire_at) < hoy;
-
-        // Filtro estado (incluye "VENCIDO" como estado visual)
         if (estado === 'VENCIDO' && !vencida) return false;
         if (estado && estado !== 'VENCIDO' && c.status !== estado) return false;
-
-        // Filtro rango de fechas de vencimiento
-        const expireAt = new Date(c.expire_at);
-        if (fechaDesde && expireAt < new Date(fechaDesde)) return false;
-        if (fechaHasta) {
-            const hasta = new Date(fechaHasta);
-            hasta.setHours(23, 59, 59, 999);
-            if (expireAt > hasta) return false;
-        }
-
-        // Filtro proveedor
+        if (fechaDesde && fechaDesde > c.expire_at.substring(0, 10)) return false;
+        if (fechaHasta && fechaHasta < c.expire_at.substring(0, 10)) return false;
         if (busquedaProv) {
             const prov = cargarProveedor(c.provider_id);
             if (!prov || !prov.legal_name.toLowerCase().includes(busquedaProv)) return false;
         }
-
         return true;
     });
 }
