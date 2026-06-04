@@ -39,11 +39,40 @@
         </div>
         <div id="layoutSidenav_content">
             <main>
-                <!-- 
-                Visualizar el la informacion sobre la empresa actual
-                Debe comprobar los permisos para modificar
-                
-                 -->
+                <div class="container-fluid px-4">
+                    <div class="d-flex justify-content-between align-items-center mt-2 mb-4">
+                        <h1 class="mb-0">Empresa</h1>
+                        <button class="btn btn-sm btn-warning" id="btnEditar" type="button" onclick="ventanaEditarEmpresa()">
+                            <i class="bi bi-pencil-square me-1"></i> Editar Datos
+                        </button>
+                    </div>
+
+                    <!-- TARJETA DE DATOS -->
+                    <div class="card mb-4"
+                        style="background:rgba(255,255,255,0.65);
+                                border:1px solid rgba(100,160,255,0.3);
+                                box-shadow:0 8px 32px rgba(30,80,180,0.12);
+                                border-radius:12px;
+                                backdrop-filter:blur(6px);">
+                        <div class="card-header py-2 px-3"
+                            style="background:rgba(30,80,180,0.9);
+                                    color:white;
+                                    border-radius:11px 11px 0 0;">
+                            <i class="bi bi-building me-1"></i>
+                            <strong>Datos de la Empresa</strong>
+                        </div>
+                        <div class="card-body py-3">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item bg-transparent"><strong>Razón Social:</strong> <span id="ver_legal_name"></span></li>
+                                <li class="list-group-item bg-transparent"><strong>Slogan:</strong> <span id="ver_slogan"></span></li>
+                                <li class="list-group-item bg-transparent"><strong>RUC:</strong> <span id="ver_ruc"></span></li>
+                                <li class="list-group-item bg-transparent"><strong>Dirección:</strong> <span id="ver_address"></span></li>
+                                <li class="list-group-item bg-transparent"><strong>Teléfono:</strong> <span id="ver_tel"></span></li>
+                                <li class="list-group-item bg-transparent"><strong>Timbrado:</strong> <span id="ver_stamping"></span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </main>
             <footer class="py-4 bg-light mt-auto" id="contenedor-footer">
                 <!-- ========================================================= -->
@@ -54,7 +83,46 @@
             </footer>
         </div>
     </div>
-
+    <!-- Modal Editar Empresa -->
+    <div class="modal fade" id="modalEditarEmpresa" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <form class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title"><i class="bi bi-pencil-square"></i> Editar Datos de la Empresa</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label class="form-label">Razón Social</label>
+                        <input type="text" id="edit_legal_name" class="form-control" maxlength="50" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Slogan</label>
+                        <input type="text" id="edit_slogan" class="form-control" maxlength="100">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">RUC</label>
+                        <input type="text" id="edit_ruc" class="form-control" maxlength="20" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Dirección</label>
+                        <input type="text" id="edit_address" class="form-control" maxlength="100" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Teléfono</label>
+                        <input type="text" id="edit_tel" class="form-control" maxlength="20" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Nro. Timbrado</label>
+                        <input type="text" id="edit_stamping" class="form-control" maxlength="8" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                    <button class="btn btn-warning" type="button" onclick="btnGuardarEmpresa()"><i class="bi bi-floppy"></i> Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
     <script src="menu/scripts.js"></script>
     <script src="bt/bootstrap.bundle.min.js"></script>
     <script src="alert/alertify.min.js"></script>
