@@ -183,8 +183,16 @@ function btnAgregarDetalle() {
 }
 
 function eliminarDetalle(producto_id) {
-    detallesTemporales = detallesTemporales.filter(d => d.product_id !== producto_id);
-    renderizarDetalles();
+    confirmar(
+        "Eliminar Producto",
+        "¿Estás seguro de que querés eliminar este producto del detalle?",
+        () => {
+            const index = detallesTemporales.findIndex(d => d.product_id === producto_id);
+            if (index !== -1) detallesTemporales.splice(index, 1);
+            renderizarDetalles();
+        },
+        () => {}
+    ).set("labels", { ok: "Sí, eliminar", cancel: "No, cancelar" });
 }
 
 function renderizarDetalles() {
