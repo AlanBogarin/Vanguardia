@@ -65,6 +65,17 @@ function renderFecha(data) {
     return data ? `${renderDate(data)} ${renderTime(data)}` : "";
 }
 
+
+/**
+ * Formatear fecha para inputs de tipo datetime-local
+ * @param {string | number | Date} data 
+ * @returns {string}
+ */
+function toISOLocalString(data) {
+    const fecha = new Date(data);
+    return new Date(fecha.getTime() - fecha.getTimezoneOffset() * 60000).toISOString().slice(0, 19);
+}
+
 /**
  * @param {string | number?} data 
  * @returns {string}
