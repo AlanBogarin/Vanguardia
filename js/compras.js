@@ -313,13 +313,16 @@ function btnGuardarNuevaCompra() {
     // ...
     // Guardar datos temporales y decidir flujo
     const amount = detallesTemporales.reduce((acc, curr) => acc + curr.subtotal, 0);
+    const metodo_pago = condicion === CONDICION_CONTADO ? document.getElementById('metodo_pago').value : null;
+    
     _datosCompraTemp = {
         provider_id: proveedor.id,
         condicion,
         factura,
         timbrado,
         formattedFecha,
-        amount
+        amount,
+        metodo_pago
     };
 
     if (condicion === CONDICION_CREDITO) {
@@ -436,6 +439,19 @@ function onInputProveedor() {
     }
 }
 
+function toggleMetodoPago() {
+    const condicion = document.getElementById("condition").value;
+    const divMetodoPago = document.getElementById("div_metodo_pago");
+    const selectMetodoPago = document.getElementById("metodo_pago");
+    if (condicion === "CONTADO") {
+        divMetodoPago.classList.remove("d-none");
+        selectMetodoPago.setAttribute("required", "required");
+    } else {
+        divMetodoPago.classList.add("d-none");
+        selectMetodoPago.removeAttribute("required");
+    }
+}
+
 function onShowModalNuevaCompra() {
     document.getElementById("buscar_proveedor").value = "";
     document.getElementById("nombre_proveedor").value = "";
@@ -450,6 +466,9 @@ function onShowModalNuevaCompra() {
         //Establecer por defecto en hoy.
         fechaInput.value = today.toISOString().split('T')[0];
     }
+    document.getElementById("condition").value = "CONTADO";
+    document.getElementById("metodo_pago").value = "EFECTIVO";
+    toggleMetodoPago();
     habilitarBusquedaProveedor(true);
     cargarDatos();
 }
@@ -745,7 +764,7 @@ function guardarCompraFinal() {
             installment_payable_id: null,
             purchase_id: nuevaCompraId,
             amount,
-            payment_method: METODO_EFECTIVO,
+            payment_method: _datosCompraTemp.metodo_pago || METODO_EFECTIVO,
             obs: `PAGO CONTADO COMPRA NRO ${nuevaCompraId}`,
             created_at: new Date()
         });

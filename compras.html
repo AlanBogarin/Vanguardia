@@ -162,15 +162,25 @@
                         </div>
                     </div>
                     <div class="row mb-3">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label">Condición</label>
-                            <select id="condition" class="form-select" required>
+                            <select id="condition" class="form-select" required onchange="toggleMetodoPago()">
                                 <option value="CONTADO">CONTADO</option>
                                 <option value="CREDITO">CRÉDITO</option>
                             </select>
                         </div>
+                        <div class="col-md-4" id="div_metodo_pago">
+                            <label class="form-label">Método de Pago</label>
+                            <select id="metodo_pago" class="form-select" required>
+                                <option value="EFECTIVO">Efectivo</option>
+                                <option value="TRANSFERENCIA">Transferencia Bancaria</option>
+                                <option value="TARJETA_CREDITO">Tarjeta de Crédito</option>
+                                <option value="TARJETA_DEBITO">Tarjeta de Débito</option>
+                                <option value="CHEQUE">Cheque</option>
+                            </select>
+                        </div>
                         <!-- FECHA COMPRA -->
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label">Fecha Compra</label>
                             <input type="date" id="fecha_compra" class="form-control" required>
                         </div>
