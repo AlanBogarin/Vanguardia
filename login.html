@@ -46,12 +46,116 @@
 
     <!-- VER|CARGAR|BORRAR BD -->
     <div class="text-center mt-5">
+        <button class="btn btn-info btn-sm" title="Acerca del Proyecto" data-bs-toggle="modal"
+                data-bs-target="#Info" type="button" onclick="onClickInfo()"><i class="bi bi-exclamation-circle"></i></button>
         <button class="btn btn-success btn-sm" title="Ver la base de datos" data-bs-toggle="modal"
-                data-bs-target="#BD" type="button" onclick="verBD()"><i class="bi bi-eye"></i></button>
-        <button class="btn btn-primary btn-sm" title="Cargar la base de datos" onclick="nuevoBD()"><i
+                data-bs-target="#BD" type="button" onclick="onClickVerBD()"><i class="bi bi-eye"></i></button>
+        <button class="btn btn-primary btn-sm" title="Cargar la base de datos" onclick="onClickCargarBD()"><i
                 class="bi bi-database-add"></i></button>
-        <button class="btn btn-danger btn-sm" title="Vaciar la base de datos" onclick="borrarBD()"><i
+        <button class="btn btn-danger btn-sm" title="Vaciar la base de datos" onclick="onClickVaciarBD()"><i
                 class="bi bi-trash"></i></button>
+    </div>
+
+    <!-- VER INFO DEL PROYECTO -->
+    <div class="modal fade" id="Info" tabindex="-1" aria-hidden="true"
+        data-bs-backdrop="static" data-bs-keyboard="false"
+        aria-labelledby="BDLabel">
+        <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h1 class="modal-title fs-5" id="BDLabel">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        Acerca del Proyecto
+                    </h1>
+                    <button type="button" class="btn-close btn-close-white"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <!-- Información Institucional -->
+                        <div class="card mb-3">
+                            <div class="card-header fw-bold">
+                                <i class="bi bi-building me-2"></i>
+                                Información Institucional
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Universidad:</strong> Universidad Nacional de Concepción (UNC)</p>
+                                <p><strong>Facultad:</strong> Facultad de Ciencias Económicas y Administrativas (FCEA)</p>
+                                <p><strong>Carrera:</strong> Ingeniería en Informática Empresarial (IIE)</p>
+                                <p><strong>Asignatura:</strong> Programación III</p>
+                                <p><strong>Año:</strong> 2026</p>
+                            </div>
+                        </div>
+                        <!-- Información del Proyecto -->
+                        <div class="card mb-3">
+                            <div class="card-header fw-bold">
+                                <i class="bi bi-diagram-3-fill me-2"></i>
+                                Información del Proyecto
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Nombre del Proyecto:</strong> Sistema de Gestión Empresarial</p>
+                                <p><strong>Empresa:</strong> Vanguardia</p>
+                                <p><strong>Versión:</strong> 1.0.0</p>
+                                <p><strong>Fecha de Desarrollo:</strong> 2026</p>
+                                <p><strong>Estado:</strong> Proyecto Académico</p>
+                                <p><strong>Descripción:</strong> Sistema desarrollado para la administración integral de procesos empresariales, incluyendo gestión de usuarios, clientes, proveedores, ventas, compras, inventario, cuentas por cobrar, cuentas por pagar y reportes.</p>
+                            </div>
+                        </div>
+                        <!-- Equipo de Desarrollo -->
+                        <div class="card mb-3">
+                            <div class="card-header fw-bold">
+                                <i class="bi bi-people-fill me-2"></i>
+                                Equipo de Desarrollo
+                            </div>
+                            <div class="card-body">
+                                <ul class="mb-0">
+                                    <li>Cynthia Liz Chamorro Riquelme</li>
+                                    <li>Andrea Rojas Alvarenga</li>
+                                    <li>Alan Amin Bogarín Godoy</li>
+                                    <li>Alexis Ramón Martínez</li>
+                                    <li>Edgar Ibañez Meza</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <!-- Docente Responsable -->
+                        <div class="card mb-3">
+                            <div class="card-header fw-bold">
+                                <i class="bi bi-person-badge-fill me-2"></i>
+                                Docente Responsable
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-0">
+                                    <strong>Profesor:</strong> Juan Benito Torres Báez
+                                </p>
+                            </div>
+                        </div>
+                        <!-- Información Técnica -->
+                        <div class="card">
+                            <div class="card-header fw-bold">
+                                <i class="bi bi-cpu-fill me-2"></i>
+                                Información Técnica
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Frontend:</strong> HTML5, CSS3, JavaScript, Bootstrap 5</p>
+                                <p><strong>Backend:</strong> No aplica, Aplicación Web Cliente (Client-Side)</p>
+                                <p><strong>Base de Datos:</strong> LocalStorage del navegador web</p>
+                                <p><strong>Servidor:</strong> Hosting web estático público</p>
+                                <p class="mb-0"><strong>Licencia:</strong> Uso Académico</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-danger"
+                            data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i>
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- VER LA BD -->

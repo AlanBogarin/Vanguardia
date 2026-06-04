@@ -105,8 +105,9 @@ async function onKeydownContra(event) {
     await login();
 }
 
+function onClickInfo() {}
 
-function verBD() {
+function onClickVerBD() {
     cargarDataTable(tablaRoles, cargarRoles());
     cargarDataTable(tablaUsuarios, cargarUsuarios());
     cargarDataTable(tablaClientes, cargarClientes());
@@ -126,7 +127,7 @@ function verBD() {
     cargarDataTable(tablaCobros, cargarCobros());
 }
 
-function nuevoBD() {
+function onClickCargarBD() {
     initDB();
     confirmar(
         "Cargar Base de Datos",
@@ -139,7 +140,7 @@ function nuevoBD() {
     );
 }
 
-function borrarBD() {
+function onClickVaciarBD() {
     localStorage.clear();
     mensajeError("Base de datos eliminada");
 }
