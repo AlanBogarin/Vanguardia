@@ -325,10 +325,14 @@ function ventanaAnularCliente(id) {
 }
 
 function cargarDatos() {
-    const estado = document.getElementById("filtro_estado")?.value;
+    const estado = document.getElementById("filtro_estado").value;
+    const fechaDesde = document.getElementById("filtro_creacion_desde").value;
+    const fechaHasta = document.getElementById("filtro_creacion_hasta").value;
     cargarDataTable(tablaClientes, cargarClientes().filter(c => {
         if (estado === "ACTIVO" && !c.active) return false;
         if (estado === "INACTIVO" && c.active) return false;
+        if (fechaDesde && fechaDesde > c.created_at.substring(0, 10)) return false;
+        if (fechaHasta && fechaHasta < c.created_at.substring(0, 10)) return false;
         return true;
     }));
 }

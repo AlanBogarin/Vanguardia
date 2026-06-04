@@ -34,66 +34,86 @@
                             <i class="bi bi-cash-stack me-1" id="link-cobros"></i> Ver Cobros
                         </a>
                     </div>
+
+                    <!-- PANEL DE FILTROS -->
                     <div class="row mb-3">
                         <div class="col-12">
-                            <div class="card" style="background:rgba(255,255,255,0.65);border:1px solid rgba(100,160,255,0.3);box-shadow:0 8px 32px rgba(30,80,180,0.12);border-radius:12px;backdrop-filter:blur(6px);">
-                                <div class="card-header py-2 px-3" style="background:rgba(30,80,180,0.9);color:white;border-radius:11px 11px 0 0;">
-                                    <i class="bi bi-funnel-fill me-1"></i><strong>Filtros</strong>
+                            <div class="card"
+                                style="background:rgba(255,255,255,0.65);
+                                        border:1px solid rgba(100,160,255,0.3);
+                                        box-shadow:0 8px 32px rgba(30,80,180,0.12);
+                                        border-radius:12px;
+                                        backdrop-filter:blur(6px);">
+                                <!-- HEADER CLICKABLE -->
+                                <div class="card-header py-2 px-3 d-flex justify-content-between align-items-center"
+                                    style="background:rgba(30,80,180,0.9);
+                                            color:white;
+                                            border-radius:11px 11px 0 0;
+                                            cursor:pointer;"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#panelFiltrosCuentasCobrar"
+                                    aria-expanded="true">
+                                    <span>
+                                        <i class="bi bi-funnel-fill me-1"></i>
+                                        <strong>Filtros</strong>
+                                    </span>
+                                    <i class="bi bi-chevron-down"></i>
                                 </div>
-
-                                <div class="card-body py-3">
-                                    <div class="row g-3 align-items-end">
-
-                                        <div class="col-md-3 col-sm-6">
-                                            <label class="form-label fw-semibold small mb-1">Estado</label>
-                                            <select id="filtro_estado" class="form-select form-select-sm">
-                                                <option value="">TODOS</option>
-                                                <option value="PENDIENTE">PENDIENTE</option>
-                                                <option value="PARCIAL">PARCIAL</option>
-                                                <option value="COBRADA">COBRADA</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="col-md-2 col-sm-6">
-                                            <label class="form-label fw-semibold small mb-1">Venc. Desde</label>
-                                            <input type="date" id="filtro_fecha_desde" class="form-control form-control-sm">
-                                        </div>
-
-                                        <div class="col-md-2 col-sm-6">
-                                            <label class="form-label fw-semibold small mb-1">Venc. Hasta</label>
-                                            <input type="date" id="filtro_fecha_hasta" class="form-control form-control-sm">
-                                        </div>
-
-                                        <div class="col-md-3 col-sm-6">
-                                            <label class="form-label fw-semibold small mb-1">Cliente</label>
-
-                                            <input
-                                                type="text"
-                                                id="filtro_cliente"
-                                                class="form-control form-control-sm"
-                                                list="datalist_clientes"
-                                                placeholder="Buscar cliente...">
-
-                                            <datalist id="datalist_clientes"></datalist>
-                                        </div>
-
-                                        <div class="col-md-2 col-sm-6">
-                                            <div class="d-flex gap-1">
-                                                <button class="btn btn-sm btn-primary flex-fill" onclick="onClickFiltrar()">
-                                                    <i class="bi bi-funnel"></i> Filtrar
-                                                </button>
-
-                                                <button class="btn btn-sm btn-outline-secondary flex-fill" onclick="onClickLimpiarFiltros()">
-                                                    <i class="bi bi-x-circle"></i> Limpiar
-                                                </button>
+                                <!-- COLLAPSE BODY -->
+                                <div class="collapse show" id="panelFiltrosCuentasCobrar">
+                                    <div class="card-body py-3">
+                                        <div class="row g-3 align-items-end">
+                                            <div class="col-md-3 col-sm-6">
+                                                <label class="form-label fw-semibold small mb-1">Estado</label>
+                                                <select id="filtro_estado"
+                                                        class="form-select form-select-sm">
+                                                    <option value="">TODOS</option>
+                                                    <option value="PENDIENTE">PENDIENTE</option>
+                                                    <option value="PARCIAL">PARCIAL</option>
+                                                    <option value="COBRADA">COBRADA</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-2 col-sm-6">
+                                                <label class="form-label fw-semibold small mb-1">Venc. Desde</label>
+                                                <input type="date"
+                                                    id="filtro_fecha_desde"
+                                                    class="form-control form-control-sm">
+                                            </div>
+                                            <div class="col-md-2 col-sm-6">
+                                                <label class="form-label fw-semibold small mb-1">Venc. Hasta</label>
+                                                <input type="date"
+                                                    id="filtro_fecha_hasta"
+                                                    class="form-control form-control-sm">
+                                            </div>
+                                            <div class="col-md-3 col-sm-6">
+                                                <label class="form-label fw-semibold small mb-1">Cliente</label>
+                                                <input type="text"
+                                                    id="filtro_cliente"
+                                                    class="form-control form-control-sm"
+                                                    list="datalist_clientes"
+                                                    placeholder="Buscar cliente...">
+                                                <datalist id="datalist_clientes"></datalist>
+                                            </div>
+                                            <div class="col-md-2 col-sm-6">
+                                                <div class="d-flex gap-1">
+                                                    <button class="btn btn-sm btn-primary flex-fill"
+                                                            onclick="onClickFiltrar()">
+                                                        <i class="bi bi-funnel"></i> Filtrar
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-secondary flex-fill"
+                                                            onclick="onClickLimpiarFiltros()">
+                                                        <i class="bi bi-x-circle"></i> Limpiar
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
-
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- TABLA -->
                     <div class="row">
                         <table id="tabla_cuentas_cobrar" class="display compact" style="width:100%">
                         </table>

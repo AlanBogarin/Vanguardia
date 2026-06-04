@@ -100,7 +100,6 @@ function cargarDatos() {
 document.addEventListener('DOMContentLoaded', () => {
     if (!validarPermiso(PERMISOS.CUENTAS_PAGAR_VER)) return;
     if (!tienePermisoSesion(PERMISOS.PAGOS_VER)) document.getElementById("verPagos").style.display = "none";
-    tablaCuentas.buttons().container().appendTo('#contenedor-botones-exportar');
     cargarDatalistProveedores();
     cargarDatos();
 });

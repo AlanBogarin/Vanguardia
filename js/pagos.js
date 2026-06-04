@@ -8,25 +8,7 @@
 
 const modalNuevoPago = new bootstrap.Modal(document.getElementById('modalNuevoPago'));
 
-const tablaPagos = crearDataTable("tabla_pagos", [
-    { data: "id", title: "Id Pago", render: renderRaw },
-    {
-        data: "account_payable_id", title: "Cuenta por Pagar", render: data => {
-            const cuenta = cargarCuentaPorPagar(data);
-            return `
-        ${data} - ${renderMoneda(cuenta.amount_total)} - ${cargarProveedor(cuenta.provider_id).legal_name}
-        `
-        }
-    },
-    { data: "amount", title: "Cantidad Pagada", render: renderMoneda },
-    {
-        data: "payment_method", title: "Método de pago", render: (data, type, row) => {
-            return row.bank ? `${renderString(data)} (${renderString(row.bank)})` : renderString(data);
-        }
-    },
-    { data: "obs", title: "Nro. Referencia / Comprobante / Observaciones", render: renderString },
-    { data: "created_at", title: "Fecha de creación", render: renderFecha }
-], {
+const tablaPagos = crearDataTable("tabla_pagos", TABLAS.PAGO, {
     buttons: true,
     pageLength: 10,
     searching: true,
@@ -182,21 +164,17 @@ function limpiarFiltros() {
     cargarDatos();
 }
 
-function obtenerPagosFiltrados() {
+function cargarDatos() {
     const metodo = document.getElementById('filtro_metodo').value;
     const fechaDesde = document.getElementById('filtro_fecha_desde').value;
     const fechaHasta = document.getElementById('filtro_fecha_hasta').value;
 
-    return cargarPagos().filter(p => {
+    const pagosFiltrados = cargarPagos().filter(p => {
         if (metodo && p.payment_method !== metodo) return false;
         if (fechaDesde && fechaDesde > p.created_at.substring(0, 10)) return false;
         if (fechaHasta && fechaHasta < p.created_at.substring(0, 10)) return false;
         return true;
     });
-}
-
-function cargarDatos() {
-    const pagosFiltrados = obtenerPagosFiltrados();
     cargarDataTable(tablaPagos, pagosFiltrados);
 
     // Sumatoria de pagos

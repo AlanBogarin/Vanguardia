@@ -71,8 +71,8 @@ function cargarDatos() {
     }).join("");
     cargarDataTable(tablaCuentas, cargarCuentasPorCobrar().filter(c => {
         if (estado && c.status !== estado) return false;
-        if (fechaDesde && fechaDesde > c.expire_at.substring(0, 10)) return false;
-        if (fechaHasta && fechaHasta < c.expire_at.substring(0, 10)) return false;
+        // if (fechaDesde && fechaDesde > c.expire_at.substring(0, 10)) return false;
+        // if (fechaHasta && fechaHasta < c.expire_at.substring(0, 10)) return false;
         const legal_name = cargarCliente(c.client_id).legal_name;
         if (cliente && !legal_name.includes(cliente) && idMap[cliente] !== c.id) return false;
         return true;
