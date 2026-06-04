@@ -89,11 +89,20 @@
                                                 <input type="text" id="filtro_proveedor" class="form-control form-control-sm" placeholder="Buscar proveedor..." oninput="cargarDatos()">
                                             </div>
                                             <div class="col-md-2">
-                                                <label class="form-label fw-semibold small mb-1">Tipo Pago</label>
+                                                <label class="form-label fw-semibold small mb-1">Condición</label>
                                                 <select id="filtro_condicion" class="form-select form-select-sm" onchange="cargarDatos()">
                                                     <option value="">Todos</option>
                                                     <option value="CONTADO">CONTADO</option>
                                                     <option value="CREDITO">CRÉDITO</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label class="form-label fw-semibold small mb-1">Estado Pago</label>
+                                                <select id="filtro_estado_pago" class="form-select form-select-sm" onchange="cargarDatos()">
+                                                    <option value="">Todos</option>
+                                                    <option value="CON_SALDO">Con Saldo</option>
+                                                    <option value="PAGADAS">Pagadas</option>
+                                                    <option value="CONTADO">Contado</option>
                                                 </select>
                                             </div>
                                             <div class="col-md-2">
@@ -153,21 +162,11 @@
                         </div>
                     </div>
                     <div class="row mb-3">
-                        <!-- CONDICIÓN -->
                         <div class="col-md-6">
                             <label class="form-label">Condición</label>
                             <select id="condition" class="form-select" required>
                                 <option value="CONTADO">CONTADO</option>
                                 <option value="CREDITO">CRÉDITO</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label fw-semibold small mb-1">Estado Pago</label>
-                            <select id="filtro_estado_pago" class="form-select form-select-sm" onchange="cargarDatos()">
-                                <option value="">Todos</option>
-                                <option value="CON_SALDO">Con Saldo</option>
-                                <option value="PAGADAS">Pagadas</option>
-                                <option value="CONTADO">Contado</option>
                             </select>
                         </div>
                         <!-- FECHA COMPRA -->

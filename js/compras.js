@@ -9,6 +9,8 @@
 
 const modalNCompra = new bootstrap.Modal(document.getElementById('modalNuevaCompra'));
 const modalVerDetalle = new bootstrap.Modal(document.getElementById('modalVerDetalles'));
+let _modalCuotas = null;
+let _datosCompraTemp = null;
 
 /** @type {DetalleTemporal[]} */
 const detallesTemporales = [];
@@ -307,67 +309,34 @@ function btnGuardarNuevaCompra() {
         return;
     }
     const formattedFecha = selectedDate.toISOString(); // store as ISO string
+    // const nuevaCompraId = obtenerSiguienteId(cargarCompras());
     // ...
-    const nuevaCompraId = obtenerSiguienteId(cargarCompras());
-    let amount = detallesTemporales.reduce((acc, curr) => acc + curr.subtotal, 0);
-    const currentUser = 1; // Asumimos usuario 1 por ahora hasta que haya sesión
-    guardarCompra({
-        id: nuevaCompraId,
+    // Guardar datos temporales y decidir flujo
+    const amount = detallesTemporales.reduce((acc, curr) => acc + curr.subtotal, 0);
+    _datosCompraTemp = {
         provider_id: proveedor.id,
-        user_id: currentUser,
-        condition: condicion,
-        amount: amount,
-        invoice: factura,
-        stamping: timbrado,
-        created_at: formattedFecha
-    });
-    //
-    const detallesBD = cargarCompraDetalles();
-    let detalleId = obtenerSiguienteId(detallesBD);
-    const productos = cargarProductos();
-    detallesTemporales.forEach(det => {
-        guardarCompraDetalle({
-           id: detalleId++,
-            purchase_id: nuevaCompraId,
-            product_id: det.product_id,
-            quantity: det.quantity,
-            unit_price: det.unit_price,
-            subtotal: det.subtotal,
-            iva: det.iva
-        });
-        // Actualizar stock del producto
-        const p = productos.find(prod => prod.id === det.product_id);
-        if (p) {
-            p.stock += det.quantity;
-            p.updated_at = new Date();
-            guardarProducto(p);
-        }
-    });
-    // Generar Cuenta por Pagar si es a CRÉDITO
+        condicion,
+        factura,
+        timbrado,
+        formattedFecha,
+        amount
+    };
+
     if (condicion === CONDICION_CREDITO) {
-        const vto = new Date();
-        vto.setDate(vto.getDate() + 30); // 30 días de vencimiento por defecto
-        guardarCuentaPorPagar({
-            id: obtenerSiguienteId(cargarCuentasPorPagar()),
-            purchase_id: nuevaCompraId,
-            provider_id: proveedor.id,
-            amount_total: amount,
-            amount_paid: 0,
-            amount_due: amount,
-            status: ESTADO_PENDIENTE,
-            expire_at: vto,
-            created_at: new Date(),
-            updated_at: null
-        });
-        mensajeSuccess("Compra a crédito guardada. Se generó Cuenta por Pagar.");
+        // Mostrar modal de cuotas antes de guardar
+        if (!_modalCuotas) {
+            _modalCuotas = new bootstrap.Modal(document.getElementById('modalConfigurarCuotas'));
+        }
+        document.getElementById('cuotas_total').value = `Gs. ${renderMoneda(amount)}`;
+        document.getElementById('cuotas_cantidad').value = 3;
+        document.getElementById('cuotas_tipo').value = 'MENSUAL';
+        previewCuotas();
+        _modalCuotas.show();
     } else {
-        mensajeSuccess("Compra al contado registrada correctamente.");
+        guardarCompraFinal();
     }
-    detallesTemporales.splice(0);
-    renderizarDetalles();
-    cargarDatos();
-    modalNCompra.hide();
 }
+
 
 function habilitarBusquedaProveedor(habilitar) {
     const elBuscar = document.getElementById("buscar_proveedor");
@@ -490,6 +459,7 @@ function cargarDatos() {
     const tipoCondicion = document.getElementById("filtro_condicion").value.trim().toUpperCase();
     const fechaDesde = document.getElementById("filtro_fecha_desde").value.trim();
     const fechaHasta = document.getElementById("filtro_fecha_hasta").value.trim();
+    const estadoPago = document.getElementById("filtro_estado_pago")?.value || "";
     // Restringir las fechas solo a ayer y hoy.
     const today = new Date();
     today.setHours(23,59,59,999);
@@ -503,10 +473,23 @@ function cargarDatos() {
 
     // Cargar y filtrar las compras dentro del rango de fechas permitido, luego ordenar por ID de forma descendente (las más recientes primero).
     cargarDataTable(tablaCompras, cargarCompras().filter(c => {
-        if (!cargarProveedor(c.provider_id).legal_name.includes(proveedor)) return false;
+        const fechaCompra = new Date(c.created_at);
+        const prov = cargarProveedor(c.provider_id);
+        if (!prov || !prov.legal_name.includes(proveedor)) return false;
         if (tipoCondicion && c.condition !== tipoCondicion) return false;
-        if (fechaDesde && fechaDesde > c.created_at.substring(0, 10)) return false;
-        if (fechaHasta && fechaHasta < c.created_at.substring(0, 10)) return false;
+        if (fechaDesde && fechaCompra < new Date(fechaDesde)) return false;
+        if (fechaHasta && fechaCompra > new Date(fechaHasta + 'T23:59:59')) return false;
+        if (estadoPago === 'CONTADO' && c.condition !== CONDICION_CONTADO) return false;
+        if (estadoPago === 'CON_SALDO') {
+            if (c.condition !== CONDICION_CREDITO) return false;
+            const cuenta = cargarCuentaPorPagar(null, c.id);
+            if (!cuenta || cuenta.status === ESTADO_PAGADA) return false;
+        }
+        if (estadoPago === 'PAGADAS') {
+            if (c.condition !== CONDICION_CREDITO) return false;
+            const cuenta = cargarCuentaPorPagar(null, c.id);
+            if (!cuenta || cuenta.status !== ESTADO_PAGADA) return false;
+        }
         return true;
     }));
     const selectProveedores = document.getElementById("provider_id");
@@ -650,4 +633,128 @@ function seleccionarProductoDesdeModal(id) {
     document.getElementById('iva_select_manual').value = producto.iva || '';
 
     if (_modalSeleccionProducto) _modalSeleccionProducto.hide();
+}
+function previewCuotas() {
+    const cantidad = parseInt(document.getElementById('cuotas_cantidad').value) || 1;
+    const tipo = document.getElementById('cuotas_tipo').value;
+    const total = _datosCompraTemp ? _datosCompraTemp.amount : 0;
+    const cuotas = generarCuotas(total, cantidad);
+    const tbody = document.getElementById('tbody_preview_cuotas');
+    const hoy = new Date();
+    tbody.innerHTML = cuotas.map((c, i) => {
+        const venc = calcularVencimiento(hoy, i + 1, tipo);
+        return `
+            <tr>
+                <td class="text-center fw-bold">${c.installment_number}</td>
+                <td>Gs. ${renderMoneda(c.amount)}</td>
+                <td>${renderDate(venc)}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function cancelarCuotas() {
+    _datosCompraTemp = null;
+    if (_modalCuotas) _modalCuotas.hide();
+}
+
+function confirmarCuotas() {
+    if (_modalCuotas) _modalCuotas.hide();
+    guardarCompraFinal();
+}
+
+function guardarCompraFinal() {
+    const { provider_id, condicion, factura, timbrado, formattedFecha, amount } = _datosCompraTemp;
+    const currentUser = cargarSesion()?.user_id || 1;
+    const nuevaCompraId = obtenerSiguienteId(cargarCompras());
+
+    guardarCompra({
+        id: nuevaCompraId,
+        provider_id,
+        user_id: currentUser,
+        condition: condicion,
+        amount,
+        invoice: factura,
+        stamping: timbrado,
+        created_at: formattedFecha
+    });
+
+    // Guardar detalles y actualizar stock
+    const detallesBD = cargarCompraDetalles();
+    let detalleId = obtenerSiguienteId(detallesBD);
+    const productos = cargarProductos();
+    detallesTemporales.forEach(det => {
+        guardarCompraDetalle({
+            id: detalleId++,
+            purchase_id: nuevaCompraId,
+            product_id: det.product_id,
+            quantity: det.quantity,
+            unit_price: det.unit_price,
+            subtotal: det.subtotal,
+            iva: det.iva,
+            created_at: new Date()
+        });
+        const p = productos.find(prod => prod.id === det.product_id);
+        if (p) {
+            p.stock += det.quantity;
+            p.updated_at = new Date();
+            guardarProducto(p);
+        }
+    });
+
+    if (condicion === CONDICION_CREDITO) {
+        const cantidad = parseInt(document.getElementById('cuotas_cantidad').value) || 3;
+        const tipo = document.getElementById('cuotas_tipo').value;
+        const cuentaId = obtenerSiguienteId(cargarCuentasPorPagar());
+
+        guardarCuentaPorPagar({
+            id: cuentaId,
+            purchase_id: nuevaCompraId,
+            provider_id,
+            amount_total: amount,
+            installments: cantidad,
+            installment_type: tipo,
+            status: ESTADO_PENDIENTE,
+            created_at: new Date(),
+            updated_at: null
+        });
+
+        // Generar cuotas
+        const cuotas = generarCuotas(amount, cantidad);
+        let cuotaId = obtenerSiguienteId(cargarCuotasPorPagar());
+        const hoy = new Date();
+        cuotas.forEach((c, i) => {
+            guardarCuotaPorPagar({
+                id: cuotaId++,
+                account_payable_id: cuentaId,
+                installment_number: c.installment_number,
+                amount: c.amount,
+                amount_paid: 0,
+                status: ESTADO_PENDIENTE,
+                due_date: calcularVencimiento(hoy, i + 1, tipo),
+                created_at: new Date(),
+                updated_at: null
+            });
+        });
+
+        mensajeSuccess(`Compra a crédito guardada. Se generaron ${cantidad} cuotas.`);
+    } else {
+        // Contado: guardar pago directo
+        guardarPago({
+            id: obtenerSiguienteId(cargarPagos()),
+            installment_payable_id: null,
+            purchase_id: nuevaCompraId,
+            amount,
+            payment_method: METODO_EFECTIVO,
+            obs: `PAGO CONTADO COMPRA NRO ${nuevaCompraId}`,
+            created_at: new Date()
+        });
+        mensajeSuccess("Compra al contado registrada correctamente.");
+    }
+
+    _datosCompraTemp = null;
+    detallesTemporales.splice(0);
+    renderizarDetalles();
+    cargarDatos();
+    modalNCompra.hide();
 }
