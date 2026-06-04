@@ -81,17 +81,6 @@ function obtenerCuentasFiltradas() {
     });
 }
 
-function aplicarFiltros() {
-    cargarDatos();
-}
-
-function limpiarFiltros() {
-    document.getElementById('filtro_estado').value       = '';
-    document.getElementById('filtro_fecha_desde').value  = '';
-    document.getElementById('filtro_fecha_hasta').value  = '';
-    document.getElementById('filtro_proveedor').value    = '';
-    cargarDatos();
-}
 
 function cargarDatos() {
     cargarDataTable(tablaCuentas, obtenerCuentasFiltradas());
@@ -100,6 +89,10 @@ function cargarDatos() {
 document.addEventListener('DOMContentLoaded', () => {
     if (!validarPermiso(PERMISOS.CUENTAS_PAGAR_VER)) return;
     if (!tienePermisoSesion(PERMISOS.PAGOS_VER)) document.getElementById("verPagos").style.display = "none";
+    document.getElementById('filtro_estado').addEventListener('change', cargarDatos);
+    document.getElementById('filtro_fecha_desde').addEventListener('change', cargarDatos);
+    document.getElementById('filtro_fecha_hasta').addEventListener('change', cargarDatos);
+    document.getElementById('filtro_proveedor').addEventListener('input', cargarDatos);
     cargarDatalistProveedores();
     cargarDatos();
 });
