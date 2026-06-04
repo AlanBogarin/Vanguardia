@@ -86,14 +86,11 @@
                                         <div class="row g-3 align-items-end">
                                             <div class="col-md-3">
                                                 <label class="form-label fw-semibold small mb-1">Proveedor</label>
-                                                <input type="text"
-                                                    id="filtro_proveedor"
-                                                    class="form-control form-control-sm"
-                                                    placeholder="Buscar proveedor...">
+                                                <input type="text" id="filtro_proveedor" class="form-control form-control-sm" placeholder="Buscar proveedor..." oninput="cargarDatos()">
                                             </div>
                                             <div class="col-md-2">
                                                 <label class="form-label fw-semibold small mb-1">Tipo Pago</label>
-                                                <select id="filtro_condicion" class="form-select form-select-sm">
+                                                <select id="filtro_condicion" class="form-select form-select-sm" onchange="cargarDatos()">
                                                     <option value="">Todos</option>
                                                     <option value="CONTADO">CONTADO</option>
                                                     <option value="CREDITO">CRÉDITO</option>
@@ -101,25 +98,11 @@
                                             </div>
                                             <div class="col-md-2">
                                                 <label class="form-label fw-semibold small mb-1">Fecha Desde</label>
-                                                <input type="date"
-                                                    id="filtro_fecha_desde"
-                                                    class="form-control form-control-sm">
+                                                <input type="date" id="filtro_fecha_desde" class="form-control form-control-sm" onchange="cargarDatos()">
                                             </div>
                                             <div class="col-md-2">
                                                 <label class="form-label fw-semibold small mb-1">Fecha Hasta</label>
-                                                <input type="date"
-                                                    id="filtro_fecha_hasta"
-                                                    class="form-control form-control-sm">
-                                            </div>
-                                            <div class="col-md-3 d-flex gap-1">
-                                                <button class="btn btn-sm btn-primary flex-fill"
-                                                        onclick="btnAplicarFiltros()">
-                                                    <i class="bi bi-funnel"></i> Filtrar
-                                                </button>
-                                                <button class="btn btn-sm btn-outline-secondary flex-fill"
-                                                        onclick="btnLimpiarFiltros()">
-                                                    <i class="bi bi-x-circle"></i> Limpiar
-                                                </button>
+                                                <input type="date" id="filtro_fecha_hasta" class="form-control form-control-sm" onchange="cargarDatos()">
                                             </div>
                                         </div>
                                     </div>
@@ -176,6 +159,15 @@
                             <select id="condition" class="form-select" required>
                                 <option value="CONTADO">CONTADO</option>
                                 <option value="CREDITO">CRÉDITO</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-semibold small mb-1">Estado Pago</label>
+                            <select id="filtro_estado_pago" class="form-select form-select-sm" onchange="cargarDatos()">
+                                <option value="">Todos</option>
+                                <option value="CON_SALDO">Con Saldo</option>
+                                <option value="PAGADAS">Pagadas</option>
+                                <option value="CONTADO">Contado</option>
                             </select>
                         </div>
                         <!-- FECHA COMPRA -->
@@ -399,6 +391,51 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle me-1"></i> Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal Configurar Cuotas -->
+<div class="modal fade" id="modalConfigurarCuotas" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title"><i class="bi bi-calendar-check me-1"></i> Configurar Cuotas</h5>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small mb-3">Configurá las cuotas para esta compra a crédito antes de confirmar.</p>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Total a financiar</label>
+                    <input type="text" id="cuotas_total" class="form-control" readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Cantidad de cuotas</label>
+                    <input type="number" id="cuotas_cantidad" class="form-control" min="1" max="36" value="3" oninput="previewCuotas()">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Frecuencia</label>
+                    <select id="cuotas_tipo" class="form-select" onchange="previewCuotas()">
+                        <option value="MENSUAL">Mensual</option>
+                        <option value="QUINCENAL">Quincenal</option>
+                        <option value="SEMANAL">Semanal</option>
+                    </select>
+                </div>
+                <div class="table-responsive" style="max-height:250px;overflow-y:auto;">
+                    <table class="table table-sm table-bordered">
+                        <thead class="table-warning sticky-top">
+                            <tr>
+                                <th class="text-center">Cuota</th>
+                                <th>Importe</th>
+                                <th>Vencimiento</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody_preview_cuotas"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="cancelarCuotas()"><i class="bi bi-x-circle me-1"></i> Cancelar</button>
+                <button type="button" class="btn btn-warning text-dark" onclick="confirmarCuotas()"><i class="bi bi-check-circle me-1"></i> Confirmar Compra</button>
             </div>
         </div>
     </div>
