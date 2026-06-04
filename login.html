@@ -25,11 +25,11 @@
             <form id="login-form">
                 <div class="col-md-12">
                     <label class="form-label" for="usuario">Usuario</label>
-                    <input class="form-control" id="usuario" type="text">
+                    <input class="form-control" id="usuario" onkeydown="onKeydownUsuario(event)" type="text">
                 </div>
                 <div class="col-md-12">
                     <label class="form-label" for="contra">Contraseña</label>
-                    <input class="form-control" id="contra" type="password">
+                    <input class="form-control" id="contra" onkeydown="onKeydownContra(event)" type="password">
                 </div>
                 <div class="col-md-12">
                     <div class="col-md-6 d-grid mx-auto mt-md-3">
@@ -117,6 +117,14 @@
                     <p class="fw-bold text-primary">CUENTAS POR COBRAR</p>
                     <table id="tabla_cuentasporcobrar" class="display compact" style="width:100%"></table>
 
+                    <!-- CUOTAS POR PAGAR -->
+                    <p class="fw-bold text-primary">CUOTAS POR PAGAR</p>
+                    <table id="tabla_cuotasporpagar" class="display compact" style="width:100%"></table>
+
+                    <!-- CUOTAS POR COBRAR -->
+                    <p class="fw-bold text-primary">CUOTAS POR COBRAR</p>
+                    <table id="tabla_cuotasporcobrar" class="display compact" style="width:100%"></table>
+
                     <!-- PAGOS -->
                     <p class="fw-bold text-primary">PAGOS</p>
                     <table id="tabla_pagos" class="display compact" style="width:100%"></table>
@@ -132,13 +140,6 @@
         </div>
     </div>
 
-    <script>
-        document.querySelectorAll('.modal').forEach((modal) => {
-            modal.addEventListener('hide.bs.modal', () => {
-                document.activeElement.blur();
-            });
-        });
-    </script>
     <!-- LIB EXTERNAS -->
     <script src="bt/bootstrap.min.js"></script>
     <script src="alert/alertify.min.js"></script>

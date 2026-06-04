@@ -132,7 +132,7 @@
  * @property {number} amount_total Cantidad total a cobrar
  * @property {number} installments Cantidad de cuotas pactadas
  * @property {TipoCuota} installment_type Frecuencia de vencimiento de las cuotas
- * @property {EstadoPago} status Estado actual de la cuenta
+ * @property {EstadoCobro} status Estado actual de la cuenta
  * @property {Date} created_at Fecha de creacion de la cuenta
  * @property {Date?} updated_at Fecha de modificacion de la cuenta
  * 
@@ -153,14 +153,15 @@
  * @property {number} installment_number Numero secuencial de la cuota
  * @property {number} amount Importe correspondiente a la cuota
  * @property {number} amount_paid Monto cobrado de la cuota
- * @property {EstadoPago} status Estado actual de la cuota
+ * @property {EstadoCobro} status Estado actual de la cuota
  * @property {Date} due_date Fecha de vencimiento de la cuota
  * @property {Date} created_at Fecha de creacion de la cuota
  * @property {Date?} updated_at Fecha de modificacion de la cuota
  *
  * @typedef {Object} Pago
  * @property {number} id Identificador unico del pago
- * @property {number} account_payable_id Identificador de la cuenta por pagar
+ * @property {number} installment_payable_id Identificador de la cuota por pagar
+ * @property {number?} purchase_id Identificador de la compra pagada al CONTADO
  * @property {number} amount Cantidad pagada
  * @property {MetodoPago} payment_method Método de pago
  * @property {string} obs Nro. Referencia / Comprobante / Observaciones del pago
@@ -168,8 +169,8 @@
  * 
  * @typedef {Object} Cobro
  * @property {number} id Identificador unico del cobro
- * @property {number?} account_receivable_id Identificador de la cuenta por cobrar
- * @property {number?} sale_id Identificador de la venta pagada al CONTADO
+ * @property {number?} installment_receivable_id Identificador de la cuota por cobrar
+ * @property {number?} sale_id Identificador de la venta cobrada al CONTADO
  * @property {number} amount Cantidad cobrada
  * @property {MetodoPago} payment_method Método de pago
  * @property {string} obs Nro. Factura / Comprobante del cobro
@@ -187,9 +188,11 @@
  * @property {string} tel Teléfono del local
  * @property {string} stamping Nro. Timbrado de la compra
  * @property {string} ruc RUC de la empresa
+ * @property {string} sales_code Código de seguridad para quitar un elemento de una venta temporal
  * 
  * @typedef {"TRANSFERENCIA" | "TARJETA_CREDITO" | "TARJETA_DEBITO" | "EFECTIVO" | "CREDITO" | "CHEQUE"} MetodoPago
  * @typedef {"PENDIENTE" | "PARCIAL" | "PAGADA"} EstadoPago
+ * @typedef {"PENDIENTE" | "PARCIAL" | "COBRADA"} EstadoCobro
  * @typedef {"CONTADO" | "CREDITO"} Condicion
  * @typedef {"SEMANAL" | "QUINCENAL" | "MENSUAL"} TipoCuota
  */
@@ -412,7 +415,7 @@ function guardarRol(rol) {
         updated_at: rol.updated_at || null
     }
     if (index === -1) {
-        roles.unshift(data)
+        roles.push(data)
     } else {
         roles[index] = data
     }
@@ -476,7 +479,7 @@ function guardarUsuario(usuario) {
         updated_at: usuario.updated_at
     }
     if (index === -1) {
-        usuarios.unshift(data)
+        usuarios.push(data)
     } else {
         usuarios[index] = data
     }
@@ -533,7 +536,7 @@ function guardarCliente(cliente) {
         updated_at: cliente.updated_at
     }
     if (index === -1) {
-        clientes.unshift(data)
+        clientes.push(data)
     } else {
         clientes[index] = data
     }
@@ -591,7 +594,7 @@ function guardarProveedor(proveedor) {
         updated_at: proveedor.updated_at
     }
     if (index === -1) {
-        proveedores.unshift(data)
+        proveedores.push(data)
     } else {
         proveedores[index] = data
     }
@@ -644,7 +647,7 @@ function guardarCategoria(categoria) {
         updated_at: categoria.updated_at
     }
     if (index === -1) {
-        categorias.unshift(data)
+        categorias.push(data)
     } else {
         categorias[index] = data
     }
@@ -696,7 +699,7 @@ function guardarMarca(marca) {
         updated_at: marca.updated_at
     }
     if (index === -1) {
-        marcas.unshift(data)
+        marcas.push(data)
     } else {
         marcas[index] = data
     }
@@ -758,7 +761,7 @@ function guardarProducto(producto) {
         updated_at: producto.updated_at
     }
     if (index === -1) {
-        productos.unshift(data)
+        productos.push(data)
     } else {
         productos[index] = data
     }
@@ -814,7 +817,7 @@ function guardarCompra(compra) {
         created_at: compra.created_at
     }
     if (index === -1) {
-        compras.unshift(data)
+        compras.push(data)
     } else {
         compras[index] = data
     }
@@ -870,11 +873,11 @@ function guardarCompraDetalle(detalle) {
         amount: detalle.amount,
         unit_price: detalle.unit_price,
         subtotal: detalle.subtotal,
-        iva: detalle.iva !== undefined ? detalle.iva : 0,
+        iva: detalle.iva,
         created_at: detalle.created_at
     }
     if (index === -1) {
-        detalles.unshift(data)
+        detalles.push(data)
     } else {
         detalles[index] = data
     }
@@ -929,7 +932,7 @@ function guardarVenta(venta) {
         created_at: venta.created_at
     }
     if (index === -1) {
-        ventas.unshift(data)
+        ventas.push(data)
     } else {
         ventas[index] = data
     }
@@ -985,11 +988,11 @@ function guardarVentaDetalle(detalle) {
         amount: detalle.amount,
         unit_price: detalle.unit_price,
         subtotal: detalle.subtotal,
-        iva: detalle.iva !== undefined ? detalle.iva : 0,
+        iva: detalle.iva,
         created_at: detalle.created_at
     }
     if (index === -1) {
-        detalles.unshift(data)
+        detalles.push(data)
     } else {
         detalles[index] = data
     }
@@ -1049,7 +1052,7 @@ function guardarCuentaPorPagar(cuenta) {
         updated_at: cuenta.updated_at || null
     };
     if (index === -1)
-        cuentas.unshift(data);
+        cuentas.push(data);
     else
         cuentas[index] = data;
     guardarBD(KEY_CUENTASPORPAGAR, cuentas);
@@ -1108,7 +1111,7 @@ function guardarCuentaPorCobrar(cuenta) {
         updated_at: cuenta.updated_at || null
     };
     if (index === -1)
-        cuentas.unshift(data);
+        cuentas.push(data);
     else
         cuentas[index] = data;
     guardarBD(KEY_CUENTASPORCOBRAR, cuentas);
@@ -1165,7 +1168,7 @@ function guardarCuotaPorPagar(cuota) {
         updated_at: cuota.updated_at || null
     };
     if (index === -1)
-        cuotas.unshift(data);
+        cuotas.push(data);
     else
         cuotas[index] = data;
     guardarBD(KEY_CUOTASPAGAR, cuotas);
@@ -1222,7 +1225,7 @@ function guardarCuotaPorCobrar(cuota) {
         updated_at: cuota.updated_at || null
     };
     if (index === -1)
-        cuotas.unshift(data);
+        cuotas.push(data);
     else
         cuotas[index] = data;
     guardarBD(KEY_CUOTASCOBRAR, cuotas);
@@ -1259,14 +1262,13 @@ function generarCuotas(total, cantidad) {
 }
 
 /**
- * 
- * @param {string | number | Date} fechaBase Fecha de inicio
+ * @param {string | number | Date} inicio Fecha de inicio
  * @param {number} periodos Cantidad de periodos para el vencimiento
  * @param {TipoCuota} tipo Tipo de cuota
  * @returns {Date}
  */
-function calcularVencimiento(fechaBase, periodos, tipo) {
-    const fecha = new Date(fechaBase);
+function calcularVencimiento(inicio, periodos, tipo) {
+    const fecha = new Date(inicio);
     switch (tipo) {
         case CUOTA_SEMANAL:
             fecha.setDate(fecha.getDate() + (periodos * 7));
@@ -1309,14 +1311,14 @@ function guardarPago(pago) {
     const index = pagos.findIndex(p => p.id === pago.id);
     const data = {
         id: pago.id,
-        account_payable_id: pago.account_payable_id,
+        installment_payable_id: pago.installment_payable_id,
         amount: pago.amount,
         payment_method: pago.payment_method,
         obs: pago.obs.toUpperCase(),
         created_at: pago.created_at
     }
     if (index === -1) {
-        pagos.unshift(data)
+        pagos.push(data)
     } else {
         pagos[index] = data
     }
@@ -1363,15 +1365,15 @@ function guardarCobro(cobro) {
     const index = cobros.findIndex(c => c.id === cobro.id);
     const data = {
         id: cobro.id,
-        account_receivable_id: cobro.account_receivable_id !== undefined ? cobro.account_receivable_id : null,
-        sale_id: cobro.sale_id !== undefined ? cobro.sale_id : null,
+        installment_receivable_id: cobro.installment_receivable_id ?? null,
+        sale_id: cobro.sale_id ?? null,
         amount: cobro.amount,
         payment_method: cobro.payment_method,
         obs: cobro.obs.toUpperCase(),
         created_at: cobro.created_at
     }
     if (index === -1) {
-        cobros.unshift(data)
+        cobros.push(data)
     } else {
         cobros[index] = data
     }
@@ -1655,12 +1657,12 @@ function cargarDatosPrueba() {
     guardarVentaDetalle({ id: 11, sale_id: 9, product_id: 4, amount: 1, unit_price: 8000000, subtotal: 8000000, iva: 10, created_at: new Date() });
     guardarVentaDetalle({ id: 12, sale_id: 10, product_id: 10, amount: 1, unit_price: 4500000, subtotal: 4500000, iva: 10, created_at: new Date() });
 
-    // 12. CuentasPorPagar (las compras a credito fueron: id 2, 4, 6, 8, 10)
-    guardarCuentaPorPagar({ id: 1, purchase_id: 2, provider_id: 3, amount_total: 65000000, amount_paid: 35000000, amount_due: 30000000, status: "PARCIAL", expire_at: new Date(Date.now() + 86400000 * 25), created_at: new Date(Date.now() - 86400000 * 4), updated_at: null });
-    guardarCuentaPorPagar({ id: 2, purchase_id: 4, provider_id: 8, amount_total: 54000000, amount_paid: 54000000, amount_due: 0, status: "PAGADA", expire_at: new Date(Date.now() + 86400000 * 28), created_at: new Date(Date.now() - 86400000 * 2), updated_at: null });
-    guardarCuentaPorPagar({ id: 3, purchase_id: 6, provider_id: 2, amount_total: 150000000, amount_paid: 0, amount_due: 150000000, status: "PENDIENTE", expire_at: new Date(Date.now() + 86400000 * 30), created_at: new Date(), updated_at: null });
-    guardarCuentaPorPagar({ id: 4, purchase_id: 8, provider_id: 7, amount_total: 42500000, amount_paid: 0, amount_due: 42500000, status: "PENDIENTE", expire_at: new Date(Date.now() + 86400000 * 30), created_at: new Date(), updated_at: null });
-    guardarCuentaPorPagar({ id: 5, purchase_id: 10, provider_id: 4, amount_total: 12000000, amount_paid: 5000000, amount_due: 7000000, status: "PARCIAL", expire_at: new Date(Date.now() + 86400000 * 30), created_at: new Date(), updated_at: null });
+    // 12. CuentasPorPagar
+    guardarCuentaPorPagar({ id: 1, purchase_id: 2, provider_id: 3, amount_total: 65000000, installments: 3, installment_type: CUOTA_MENSUAL, status: ESTADO_PARCIAL, created_at: new Date(Date.now() - 86400000 * 4), updated_at: null });
+    guardarCuentaPorPagar({ id: 2, purchase_id: 4, provider_id: 8, amount_total: 54000000, installments: 2, installment_type: "MENSUAL", status: ESTADO_PAGADA, created_at: new Date(Date.now() - 86400000 * 2), updated_at: null });
+    guardarCuentaPorPagar({ id: 3, purchase_id: 6, provider_id: 2, amount_total: 150000000, installments: 5, installment_type: CUOTA_MENSUAL, status: ESTADO_PENDIENTE, created_at: new Date(), updated_at: null });
+    guardarCuentaPorPagar({ id: 4, purchase_id: 8, provider_id: 7, amount_total: 42500000, installments: 2, installment_type: CUOTA_QUINCENAL, status: ESTADO_PENDIENTE, created_at: new Date(), updated_at: null });
+    guardarCuentaPorPagar({ id: 5, purchase_id: 10, provider_id: 4, amount_total: 12000000, installments: 3, installment_type: CUOTA_SEMANAL, status: ESTADO_PARCIAL, created_at: new Date(), updated_at: null });
 
     // 13. Pagos
     guardarPago({ id: 1, account_payable_id: 1, amount: 15000000, payment_method: METODO_TRANSFERENCIA, obs: "TRF. BANCO ATLAS NRO 54321", created_at: new Date(Date.now() - 86400000 * 3) });
@@ -1671,11 +1673,11 @@ function cargarDatosPrueba() {
     guardarPago({ id: 6, account_payable_id: 3, amount: 1200000, payment_method: METODO_TARJETA_CREDITO, obs: "TARJETA VISA - AUT: 456789", created_at: new Date() });
     guardarPago({ id: 7, account_payable_id: 4, amount: 850000, payment_method: METODO_TARJETA_DEBITO, obs: "MASTERCARD DEB - AUT: 123456", created_at: new Date() });
 
-    // 14. CuentasPorCobrar (ventas a credito fueron id 2, 4, 7, 9)
-    guardarCuentaPorCobrar({ id: 1, sale_id: 2, client_id: 3, amount_total: 6500000, amount_paid: 3500000, amount_due: 3000000, status: "PARCIAL", expire_at: new Date(Date.now() + 86400000 * 28), created_at: new Date(Date.now() - 86400000 * 2), updated_at: null });
-    guardarCuentaPorCobrar({ id: 2, sale_id: 4, client_id: 7, amount_total: 16100000, amount_paid: 16100000, amount_due: 0, status: "COBRADA", expire_at: new Date(Date.now() + 86400000 * 30), created_at: new Date(), updated_at: null });
-    guardarCuentaPorCobrar({ id: 3, sale_id: 7, client_id: 4, amount_total: 14500000, amount_paid: 0, amount_due: 14500000, status: "PENDIENTE", expire_at: new Date(Date.now() + 86400000 * 30), created_at: new Date(), updated_at: null });
-    guardarCuentaPorCobrar({ id: 4, sale_id: 9, client_id: 8, amount_total: 8000000, amount_paid: 0, amount_due: 8000000, status: "PENDIENTE", expire_at: new Date(Date.now() + 86400000 * 30), created_at: new Date(), updated_at: null });
+    // 14. CuentasPorCobrar
+    guardarCuentaPorCobrar({ id: 1, sale_id: 2, client_id: 3, amount_total: 6500000, installments: 2, installment_type: CUOTA_MENSUAL, status: ESTADO_PARCIAL, created_at: new Date(Date.now() - 86400000 * 2), updated_at: null });
+    guardarCuentaPorCobrar({ id: 2, sale_id: 4, client_id: 7, amount_total: 16100000, installments: 2, installment_type: CUOTA_MENSUAL, status: ESTADO_COBRADA, created_at: new Date(), updated_at: null });
+    guardarCuentaPorCobrar({ id: 3, sale_id: 7, client_id: 4, amount_total: 14500000, installments: 3, installment_type: CUOTA_QUINCENAL, status: ESTADO_PENDIENTE, created_at: new Date(), updated_at: null });
+    guardarCuentaPorCobrar({ id: 4, sale_id: 9, client_id: 8, amount_total: 8000000, installments: 3, installment_type: CUOTA_MENSUAL, status: ESTADO_PENDIENTE, created_at: new Date(), updated_at: null });
 
     // 15. Cobros
     guardarCobro({ id: 1, account_receivable_id: 1, sale_id: null, amount: 3500000, payment_method: METODO_EFECTIVO, obs: "Caja", created_at: new Date(Date.now() - 86400000 * 1) });
@@ -1687,6 +1689,30 @@ function cargarDatosPrueba() {
     guardarCobro({ id: 7, account_receivable_id: null, sale_id: 6, amount: 9500000, payment_method: METODO_TARJETA_CREDITO, obs: "Caja", created_at: new Date() });
     guardarCobro({ id: 8, account_receivable_id: null, sale_id: 8, amount: 10000000, payment_method: METODO_EFECTIVO, obs: "Caja", created_at: new Date() });
     guardarCobro({ id: 9, account_receivable_id: null, sale_id: 10, amount: 4500000, payment_method: METODO_TRANSFERENCIA, obs: "Caja", created_at: new Date() });
+
+    // 16. CuotasPorPagar
+    guardarCuotaPorPagar({ id: 1, account_payable_id: 1, installment_number: 1, amount: 21666666, amount_paid: 15000000, status: ESTADO_PARCIAL, due_date: new Date(Date.now() + 86400000 * 10), created_at: new Date(), updated_at: null });
+    guardarCuotaPorPagar({ id: 2, account_payable_id: 1, installment_number: 2, amount: 21666667, amount_paid: 0, status: ESTADO_PENDIENTE, due_date: new Date(Date.now() + 86400000 * 20), created_at: new Date(), updated_at: null });
+    guardarCuotaPorPagar({ id: 3, account_payable_id: 1, installment_number: 3, amount: 21666667, amount_paid: 0, status: ESTADO_PENDIENTE, due_date: new Date(Date.now() + 86400000 * 30), created_at: new Date(), updated_at: null });
+    guardarCuotaPorPagar({ id: 4, account_payable_id: 3, installment_number: 1, amount: 50000000, amount_paid: 0, status: ESTADO_PENDIENTE, due_date: new Date(Date.now() + 86400000 * 15), created_at: new Date(), updated_at: null });
+    guardarCuotaPorPagar({ id: 5, account_payable_id: 3, installment_number: 2, amount: 50000000, amount_paid: 0, status: ESTADO_PENDIENTE, due_date: new Date(Date.now() + 86400000 * 30), created_at: new Date(), updated_at: null });
+    guardarCuotaPorPagar({ id: 6, account_payable_id: 4, installment_number: 1, amount: 21250000, amount_paid: 0, status: ESTADO_PENDIENTE, due_date: new Date(Date.now() + 86400000 * 10), created_at: new Date(), updated_at: null });
+    guardarCuotaPorPagar({ id: 7, account_payable_id: 4, installment_number: 2, amount: 21250000, amount_paid: 0, status: ESTADO_PENDIENTE, due_date: new Date(Date.now() + 86400000 * 20), created_at: new Date(), updated_at: null });
+    guardarCuotaPorPagar({ id: 8, account_payable_id: 5, installment_number: 1, amount: 6000000, amount_paid: 5000000, status: ESTADO_PARCIAL, due_date: new Date(Date.now() + 86400000 * 5), created_at: new Date(), updated_at: null });
+    guardarCuotaPorPagar({ id: 9, account_payable_id: 5, installment_number: 2, amount: 6000000, amount_paid: 0, status: ESTADO_PENDIENTE, due_date: new Date(Date.now() + 86400000 * 15), created_at: new Date(), updated_at: null });
+    guardarCuotaPorPagar({ id: 10, account_payable_id: 5, installment_number: 3, amount: 6000000, amount_paid: 0, status: ESTADO_PENDIENTE, due_date: new Date(Date.now() + 86400000 * 25), created_at: new Date(), updated_at: null });
+
+    // 17. CuotasPorCobrar
+    guardarCuotaPorCobrar({ id: 1, account_receivable_id: 1, installment_number: 1, amount: 2166667, amount_paid: 1500000, status: ESTADO_PARCIAL, due_date: new Date(Date.now() + 86400000 * 8), created_at: new Date(), updated_at: null });
+    guardarCuotaPorCobrar({ id: 2, account_receivable_id: 1, installment_number: 2, amount: 2166666, amount_paid: 2000000, status: ESTADO_PARCIAL, due_date: new Date(Date.now() + 86400000 * 16), created_at: new Date(), updated_at: null });
+    guardarCuotaPorCobrar({ id: 3, account_receivable_id: 1, installment_number: 3, amount: 2166667, amount_paid: 0, status: ESTADO_PENDIENTE, due_date: new Date(Date.now() + 86400000 * 24), created_at: new Date(), updated_at: null });
+    guardarCuotaPorCobrar({ id: 4, account_receivable_id: 2, installment_number: 1, amount: 8050000, amount_paid: 8050000, status: ESTADO_COBRADA, due_date: new Date(Date.now() - 86400000 * 2), created_at: new Date(), updated_at: null });
+    guardarCuotaPorCobrar({ id: 5, account_receivable_id: 2, installment_number: 2, amount: 8050000, amount_paid: 8050000, status: ESTADO_COBRADA, due_date: new Date(Date.now() - 86400000 * 1), created_at: new Date(), updated_at: null });
+    guardarCuotaPorCobrar({ id: 6, account_receivable_id: 3, installment_number: 1, amount: 7250000, amount_paid: 0, status: ESTADO_PENDIENTE, due_date: new Date(Date.now() + 86400000 * 10), created_at: new Date(), updated_at: null });
+    guardarCuotaPorCobrar({ id: 7, account_receivable_id: 3, installment_number: 2, amount: 7250000, amount_paid: 0, status: ESTADO_PENDIENTE, due_date: new Date(Date.now() + 86400000 * 20), created_at: new Date(), updated_at: null });
+    guardarCuotaPorCobrar({ id: 8, account_receivable_id: 4, installment_number: 1, amount: 4000000, amount_paid: 0, status: ESTADO_PENDIENTE, due_date: new Date(Date.now() + 86400000 * 12), created_at: new Date(), updated_at: null });
+    guardarCuotaPorCobrar({ id: 9, account_receivable_id: 4, installment_number: 2, amount: 4000000, amount_paid: 0, status: ESTADO_PENDIENTE, due_date: new Date(Date.now() + 86400000 * 24), created_at: new Date(), updated_at: null });
+    guardarCuotaPorCobrar({ id: 10, account_receivable_id: 4, installment_number: 3, amount: 4000000, amount_paid: 0, status: ESTADO_PENDIENTE, due_date: new Date(Date.now() + 86400000 * 36), created_at: new Date(), updated_at: null });
 }
 
 /**

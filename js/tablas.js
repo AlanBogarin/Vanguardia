@@ -157,6 +157,7 @@ function crearDataTable(elementId, columns, config) {
         searching: false,
         lengthChange: false,
         pageLength: 5,
+        order: [[0, 'desc']],
         dom: "rtip",
         exportTitle: "REPORTE"
     }, config);
@@ -690,18 +691,16 @@ const TABLAS = {
         { data: "id", title: "Id Compra", render: renderRaw },
         { data: "provider_id", title: "Proveedor", render: data => cargarProveedor(data).legal_name },
         { data: "user_id", title: "Id Usuario", render: data => cargarUsuario(data).username },
+        { data: "condition", title: "Condición", render: renderString },
         { data: null, title: "IVA", render: data => {
-        const detalles = cargarCompraDetalles().filter(d => d.purchase_id === data.id);
-        const tipos = [...new Set(detalles.map(d => {
-        if (d.iva !== null && d.iva !== undefined && d.iva !== '') return parseInt(d.iva);
-        const prod = cargarProducto(d.product_id);
-        return prod ? parseInt(prod.iva) : 0;
-    }).filter(v => !isNaN(v) && v > 0))].sort((a, b) => a - b);
-        return tipos.length ? tipos.map(t => `${t}%`).join(' / ') : 'EXENTA';
-    }},
+            const tipos = [...new Set(cargarCompraDetalles(data.id).map(d => d.iva).filter(iva => iva > 0))];
+            return tipos.length ? tipos.sort().map(t => `${t}%`).join(' / ') : 'EXENTA';
+        }},
         { data: "amount", title: "Total Pago", render: renderMoneda },
-                { data: "created_at", title: "Fecha Compra", render: renderFecha }
-            ],
+        { data: "invoice", title: "Nro. Factura", render: renderString },
+        { data: "stamping", title: "Nro. Timbrado", render: renderString },
+        { data: "created_at", title: "Fecha Compra", render: renderFecha }
+    ],
     COMPRA_DETALLE: [
         { data: "id", title: "Id Detalle", render: renderRaw },
         { data: "purchase_id", title: "Id Compra", render: renderRaw },
@@ -777,7 +776,8 @@ const TABLAS = {
     ],
     PAGO: [
         { data: "id", title: "Id Pago", render: renderRaw },
-        { data: "account_payable_id", title: "Id Cuenta Pagar", render: renderRaw },
+        { data: "installment_payable_id", title: "Id Cuota", render: renderRaw },
+        { data: "purchase_id", title: "Id Compra", render: renderRaw },
         { data: "amount", title: "Monto Pagado", render: renderMoneda },
         { data: "payment_method", title: "Método Pago", render: renderString },
         { data: "obs", title: "Observaciones / Ref.", render: renderString },
@@ -785,7 +785,7 @@ const TABLAS = {
     ],
     COBRO: [
         { data: "id", title: "Id Cobro", render: renderRaw },
-        { data: "account_receivable_id", title: "Id Cuenta", render: renderRaw },
+        { data: "installment_receivable_id", title: "Id Cuota", render: renderRaw },
         { data: "sale_id", title: "Id Venta", render: renderRaw },
         { data: "amount", title: "Monto Cobrado", render: renderMoneda },
         { data: "payment_method", title: "Método Cobro", render: renderString },

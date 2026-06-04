@@ -47,28 +47,72 @@
                             <i class="bi bi-person-plus-fill me-1"></i> Nuevo cliente
                         </button>
                     </div>
-                    <!-- Filtros -->
+
+                    <!-- PANEL DE FILTROS -->
                     <div class="row mb-3">
                         <div class="col-12">
-                            <div class="card" style="background:rgba(255,255,255,0.65);border:1px solid rgba(100,160,255,0.3);box-shadow:0 8px 32px rgba(30,80,180,0.12);border-radius:12px;backdrop-filter:blur(6px);">
-                                <div class="card-header py-2 px-3" style="background:rgba(30,80,180,0.9);color:white;border-radius:11px 11px 0 0;">
-                                    <i class="bi bi-funnel-fill me-1"></i><strong>Filtros</strong>
+                            <div class="card"
+                                style="background:rgba(255,255,255,0.65);
+                                        border:1px solid rgba(100,160,255,0.3);
+                                        box-shadow:0 8px 32px rgba(30,80,180,0.12);
+                                        border-radius:12px;
+                                        backdrop-filter:blur(6px);">
+                                <!-- HEADER CLICKABLE -->
+                                <div class="card-header py-2 px-3 d-flex justify-content-between align-items-center"
+                                    style="background:rgba(30,80,180,0.9);
+                                            color:white;
+                                            border-radius:11px 11px 0 0;
+                                            cursor:pointer;"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#panelFiltrosFinal"
+                                    aria-expanded="true">
+                                    <span>
+                                        <i class="bi bi-funnel-fill me-1"></i>
+                                        <strong>Filtros</strong>
+                                    </span>
+                                    <i class="bi bi-chevron-down"></i>
                                 </div>
-                                <div class="card-body py-3">
-                                    <div class="row g-3 align-items-end">
-                                        <div class="col-md-3 col-sm-6">
-                                            <label for="filtro_estado" class="form-label fw-semibold small mb-1" style="color:#0d2149">Estado</label>
-                                            <select id="filtro_estado" class="form-select form-select-sm" onchange="cargarDatos()" style="background-color:rgba(255,255,255,0.9);border:1px solid rgba(30,80,180,0.3);color:#0d2149;border-radius:6px;">
-                                                <option value="ACTIVO">Activos</option>
-                                                <option value="INACTIVO">Inactivos</option>
-                                                <option value="" selected>Todos</option>
-                                            </select>
+                                <!-- COLLAPSE BODY -->
+                                <div class="collapse show" id="panelFiltrosFinal">
+                                    <div class="card-body py-3">
+                                        <div class="row g-3 align-items-end">
+                                            <div class="col-md-3 col-sm-6">
+                                                <label for="filtro_estado" class="form-label fw-semibold small mb-1" style="color:#0d2149">
+                                                    Estado
+                                                </label>
+                                                <select class="form-select"
+                                                        id="filtro_estado"
+                                                        onchange="cargarDatos()">
+                                                    <option value="ACTIVO">Activos</option>
+                                                    <option value="INACTIVO">Inactivos</option>
+                                                    <option value="" selected>Todos</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-3 col-sm-6">
+                                                <label for="filtro_creacion_desde" class="form-label fw-semibold small mb-1" style="color:#0d2149">
+                                                    Creado Desde
+                                                </label>
+                                                <input class="form-control"
+                                                    id="filtro_creacion_desde"
+                                                    type="date"
+                                                    onchange="cargarDatos()">
+                                            </div>
+                                            <div class="col-md-3 col-sm-6">
+                                                <label for="filtro_creacion_hasta" class="form-label fw-semibold small mb-1" style="color:#0d2149">
+                                                    Creado Hasta
+                                                </label>
+                                                <input class="form-control"
+                                                    id="filtro_creacion_hasta"
+                                                    type="date"
+                                                    onchange="cargarDatos()">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
                     <!-- TABLA -->
                     <div class="row">
                         <table id="tabla_clientes" class="display compact" style="width:100%">

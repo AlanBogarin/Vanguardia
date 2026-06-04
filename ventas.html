@@ -35,86 +35,91 @@
                         </button>
                     </div>
 
-                    <!-- Tabla principal -->
                     <!-- PANEL DE FILTROS -->
-                    <div class="card mb-3">
-                        <div class="card-header py-2 d-flex justify-content-between align-items-center"
-                             style="cursor:pointer" data-bs-toggle="collapse" data-bs-target="#panelFiltros">
-                            <span><i class="bi bi-funnel-fill me-1"></i> Filtros</span>
+                    <div class="card mb-3"
+                        style="background:rgba(255,255,255,0.65);
+                                border:1px solid rgba(100,160,255,0.3);
+                                box-shadow:0 8px 32px rgba(30,80,180,0.12);
+                                border-radius:12px;
+                                backdrop-filter:blur(6px);">
+                        <!-- HEADER CLICKABLE -->
+                        <div class="card-header py-2 px-3 d-flex justify-content-between align-items-center"
+                            style="background:rgba(30,80,180,0.9);
+                                    color:white;
+                                    border-radius:11px 11px 0 0;
+                                    cursor:pointer;"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#panelFiltrosVentas"
+                            aria-expanded="true">
+                            <span>
+                                <i class="bi bi-funnel-fill me-1"></i>
+                                <strong>Filtros</strong>
+                            </span>
                             <i class="bi bi-chevron-down"></i>
                         </div>
-                        <div class="collapse show" id="panelFiltros">
-                            <div class="card-body pb-2">
-                                <div class="row g-2 align-items-end">
-
-                                    <!-- Condición de cobro -->
+                        <!-- BODY COLLAPSE -->
+                        <div class="collapse show" id="panelFiltrosVentas">
+                            <div class="card-body pb-3">
+                                <div class="row g-3 align-items-end">
                                     <div class="col-md-2">
                                         <label class="form-label small mb-1">Condición de cobro</label>
-                                        <select id="filtro_condicion" class="form-select form-select-sm">
-                                            <option value="">Todas</option>
+                                        <select id="filtro_condicion"
+                                                class="form-select form-select-sm"
+                                                onchange="cargarDatos()">
+                                            <option value="">TODAS</option>
                                             <option value="CONTADO">CONTADO</option>
-                                            <option value="CREDITO">CRÉDITO</option>                                           
+                                            <option value="CREDITO">CRÉDITO</option>
                                         </select>
                                     </div>
-
-                                    <!-- Cliente -->
                                     <div class="col-md-3">
                                         <label class="form-label small mb-1">Cliente</label>
-                                        <input type="text" id="filtro_cliente_search"
-                                               class="form-control form-control-sm"
-                                               oninput="onInputFiltroCliente()"
-                                               list="datalist_filtro_clientes"
-                                               placeholder="Buscar por nombre o RUC..."
-                                               autocomplete="off">
+                                        <input type="text"
+                                            id="filtro_cliente_search"
+                                            class="form-control form-control-sm"
+                                            oninput="cargarDatos()"
+                                            list="datalist_filtro_clientes"
+                                            placeholder="Buscar por nombre o RUC..."
+                                            autocomplete="off">
                                         <datalist id="datalist_filtro_clientes"></datalist>
-                                        <!-- <input type="hidden" id="filtro_cliente_id"> -->
                                     </div>
-
-                                    <!-- Total mínimo -->
                                     <div class="col-md-2">
                                         <label class="form-label small mb-1">Total mínimo (Gs.)</label>
-                                        <input type="number" id="filtro_total_min"
-                                               class="form-control form-control-sm"
-                                               placeholder="0" min="0">
+                                        <input type="number"
+                                            id="filtro_total_min"
+                                            class="form-control form-control-sm"
+                                            oninput="cargarDatos()"
+                                            placeholder="0"
+                                            min="0">
                                     </div>
-
-                                    <!-- Total máximo -->
                                     <div class="col-md-2">
                                         <label class="form-label small mb-1">Total máximo (Gs.)</label>
-                                        <input type="number" id="filtro_total_max"
-                                               class="form-control form-control-sm"
-                                               placeholder="0" min="0">
+                                        <input type="number"
+                                            id="filtro_total_max"
+                                            class="form-control form-control-sm"
+                                            oninput="cargarDatos()"
+                                            placeholder="0"
+                                            min="0">
                                     </div>
-
-                                    <!-- Fecha desde -->
                                     <div class="col-md-1" style="min-width:130px">
                                         <label class="form-label small mb-1">Fecha desde</label>
-                                        <input type="date" id="filtro_fecha_desde"
-                                               class="form-control form-control-sm">
+                                        <input type="date"
+                                            id="filtro_fecha_desde"
+                                            onchange="cargarDatos()"
+                                            class="form-control form-control-sm">
                                     </div>
-
-                                    <!-- Fecha hasta -->
                                     <div class="col-md-1" style="min-width:130px">
                                         <label class="form-label small mb-1">Fecha hasta</label>
-                                        <input type="date" id="filtro_fecha_hasta"
-                                               class="form-control form-control-sm">
+                                        <input type="date"
+                                            id="filtro_fecha_hasta"
+                                            onchange="cargarDatos()"
+                                            class="form-control form-control-sm">
                                     </div>
-
-                                    <!-- Botones -->
-                                    <div class="col-auto d-flex gap-2">
-                                        <button class="btn btn-primary btn-sm" onclick="onClickAplicarFiltros()">
-                                            <i class="bi bi-search"></i> Filtrar
-                                        </button>
-                                        <button class="btn btn-outline-secondary btn-sm" onclick="onClickLimpiarFiltros()">
-                                            <i class="bi bi-x-circle"></i> Limpiar
-                                        </button>
-                                    </div>
-
                                 </div>
                             </div>
                         </div>
                     </div>
 
+                    <!-- TABLA -->
                     <div class="row">
                         <table id="tabla_ventas" class="display compact" style="width:100%">
                         </table>

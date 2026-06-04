@@ -502,16 +502,13 @@ function cargarDatos() {
     const endLimit = today;
 
     // Cargar y filtrar las compras dentro del rango de fechas permitido, luego ordenar por ID de forma descendente (las más recientes primero).
-     const filtered = cargarCompras().filter(compra => {
-        if (!cargarProveedor(compra.provider_id).legal_name.includes(proveedor)) return false;
-        if (tipoCondicion && compra.condition !== tipoCondicion) return false;
-        const fechaCompra = new Date(compra.created_at);
-        if (fechaDesde && fechaCompra < new Date(fechaDesde)) return false;
-        if (fechaHasta && fechaCompra > new Date(fechaHasta + 'T23:59:59')) return false;
+    cargarDataTable(tablaCompras, cargarCompras().filter(c => {
+        if (!cargarProveedor(c.provider_id).legal_name.includes(proveedor)) return false;
+        if (tipoCondicion && c.condition !== tipoCondicion) return false;
+        if (fechaDesde && fechaDesde > c.created_at.substring(0, 10)) return false;
+        if (fechaHasta && fechaHasta < c.created_at.substring(0, 10)) return false;
         return true;
-    }).sort((a, b) => b.id - a.id);
-
-    cargarDataTable(tablaCompras, filtered);
+    }));
     const selectProveedores = document.getElementById("provider_id");
     const proveedores = cargarProveedores().filter(p => p.active);
     selectProveedores.innerHTML = "<option value=\"\">Seleccione un proveedor...</option>"

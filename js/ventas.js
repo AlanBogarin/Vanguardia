@@ -49,10 +49,6 @@ const tablaVentas = crearDataTable("tabla_ventas", [
     })
 });
 
-function onClickAplicarFiltros() {
-    cargarDatos();
-}
-
 function onClickLimpiarFiltros() {
     document.getElementById("filtro_condicion").value = "";
     document.getElementById("filtro_cliente_search").value = "";
@@ -72,14 +68,6 @@ function cargarSelectClientes() {
         .map(c => `<option data-id="${c.id}" value="${c.legal_name}">${c.ruc}</option>`).join("");
     document.getElementById("client_search").value = "";
     document.getElementById("client_id").value = "";
-}
-
-function onInputFiltroCliente() {
-    // const texto = $("#filtro_cliente_search").val().trim();
-    // const opt = $("#datalist_filtro_clientes option").filter(function() {
-    //     return $(this).val() === texto;
-    // });
-    // $("#filtro_cliente_id").val(opt.length ? opt.data("id") : "");
 }
 
 function onInputCliente() {
@@ -395,16 +383,55 @@ function simularImpresionPDF() {
 /**
  * @param {number} idVenta 
  */
+function numeroALetras(num) {
+    const unidades = ['', 'UN', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE',
+        'DIEZ', 'ONCE', 'DOCE', 'TRECE', 'CATORCE', 'QUINCE', 'DIECISÉIS', 'DIECISIETE',
+        'DIECIOCHO', 'DIECINUEVE'];
+    const decenas = ['', '', 'VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'];
+    const centenas = ['', 'CIEN', 'DOSCIENTOS', 'TRESCIENTOS', 'CUATROCIENTOS', 'QUINIENTOS',
+        'SEISCIENTOS', 'SETECIENTOS', 'OCHOCIENTOS', 'NOVECIENTOS'];
+
+    if (num === 0) return 'CERO GUARANÍES';
+
+    function convertirGrupo(n) {
+        let resultado = '';
+        if (n >= 100) {
+            if (n === 100) return 'CIEN';
+            resultado += centenas[Math.floor(n / 100)] + ' ';
+            n = n % 100;
+        }
+        if (n >= 20) {
+            resultado += decenas[Math.floor(n / 10)];
+            if (n % 10 !== 0) resultado += ' Y ' + unidades[n % 10];
+        } else if (n > 0) {
+            resultado += unidades[n];
+        }
+        return resultado.trim();
+    }
+
+    let resultado = '';
+    const millones = Math.floor(num / 1000000);
+    const miles    = Math.floor((num % 1000000) / 1000);
+    const resto    = num % 1000;
+
+    if (millones > 0) resultado += (millones === 1 ? 'UN MILLÓN' : convertirGrupo(millones) + ' MILLONES') + ' ';
+    if (miles > 0)    resultado += (miles === 1 ? 'MIL' : convertirGrupo(miles) + ' MIL') + ' ';
+    if (resto > 0)    resultado += convertirGrupo(resto);
+
+    return resultado.trim() + ' GUARANÍES';
+}
+
 function imprimirFacturaVenta(idVenta) {
-    const v = cargarVenta(idVenta);
+    const v = cargarVenta(Number(idVenta));
     if (!v) return;
 
     const cli = cargarCliente(v.client_id);
     const detalles = cargarVentaDetalles(v.id);
     const fechaEmision = new Date(v.created_at);
+    const totalEnLetras = numeroALetras(v.amount);
 
     // Timbrado ficticio basado en el año
-    const timbrado = '798765432';
+    const timbrado = 'N° 798765432';
     const vigencia = 'VÁLIDO HASTA DICIEMBRE ' + (fechaEmision.getFullYear() + 1);
     const rucEmpresa = '80012345-6';
 
@@ -459,10 +486,11 @@ function imprimirFacturaVenta(idVenta) {
 
     // Fila de subtotales por columna IVA
     bodyDetalles.push([
-        {}, {}, {},
+        { text: 'Sub-Total:', bold: true, colSpan: 3, alignment: 'right' }, {}, {},
         { text: renderMoneda(totalExentas) || '', alignment: 'right', bold: true },
         { text: renderMoneda(total5) || '', alignment: 'right', bold: true },
         { text: renderMoneda(total10) || '', alignment: 'right', bold: true }
+        
     ]);
 
     // --- Liquidación del IVA ---
@@ -530,9 +558,9 @@ function imprimirFacturaVenta(idVenta) {
                                 text: [
                                     { text: 'CONDICIÓN DE VENTA:   ', bold: true, fontSize: 9 },
                                     { text: 'CONTADO ', fontSize: 9 },
-                                    { text: esContado ? '/X/' : '/  /', fontSize: 9, bold: true },
+                                    { text: esContado ? '[X]' : '[  ]', fontSize: 9, bold: true },
                                     { text: '   CRÉDITO ', fontSize: 9 },
-                                    { text: esCredito ? '/X/' : '/  /', fontSize: 9, bold: true }
+                                    { text: esCredito ? '[X]' : '[  ]', fontSize: 9, bold: true }
                                 ]
                             }
                         ]
@@ -602,7 +630,20 @@ function imprimirFacturaVenta(idVenta) {
                 },
                 margin: [0, 0, 0, 0]
             },
-
+            // TOTAL EN LETRAS
+            {
+                table: {
+                    widths: ['100%'],
+                    body: [[{
+                        text: [
+                            { text: 'TOTAL A PAGAR GUARANÍES: ', bold: true, fontSize: 9 },
+                            { text: totalEnLetras, fontSize: 9 }
+                        ]
+                    }]]
+                },
+                layout: { hLineWidth: () => 1, vLineWidth: () => 1, hLineColor: () => '#000', vLineColor: () => '#000' },
+                margin: [0, 0, 0, 0]
+            },
             // ========== TOTAL A PAGAR ==========
             {
                 table: {
@@ -655,8 +696,8 @@ function imprimirFacturaVenta(idVenta) {
             // ========== PIE DE FACTURA ==========
             {
                 columns: [
-                    { text: 'ORIGINAL: COMPRADOR', fontSize: 7, alignment: 'right', margin: [0, 8, 10, 0] },
-                    { text: 'COPIA: ARCHIVO TRIBUTARIO', fontSize: 7, alignment: 'right', margin: [0, 8, 0, 0] }
+                    { text: 'ORIGINAL: CLIENTE', fontSize: 7, alignment: 'right', margin: [0, 8, 10, 0] },
+                    { text: 'DUPLICADO: ARCHIVO TRIBUTARIO', fontSize: 7, alignment: 'right', margin: [0, 8, 0, 0] }
                 ]
             }
         ],
@@ -672,7 +713,7 @@ function imprimirFacturaVenta(idVenta) {
 }
 
 function abrirDetallesVenta(idVenta) {
-    const v = cargarVenta(idVenta);
+    const v = cargarVenta(Number(idVenta));
     if (!v) { mensajeError("Venta no encontrada."); return; }
 
     const cli = cargarCliente(v.client_id);
@@ -783,8 +824,8 @@ function cargarDatos() {
         if (cliente && !c.legal_name.includes(cliente) && !c.ruc.includes(cliente)) return false;
         if (!isNaN(totalMin) && totalMin > 0 && v.amount < totalMin) return false;
         if (!isNaN(totalMax) && totalMax > 0 && v.amount > totalMax) return false;
-        if (fechaDesde && new Date(fechaDesde) > new Date(v.created_at)) return false;
-        if (fechaHasta && new Date(fechaHasta) < new Date(v.created_at).setHours(23, 59, 59, 999)) return false;
+        if (fechaDesde && fechaDesde > v.created_at.substring(0, 10)) return false;
+        if (fechaHasta && fechaHasta < v.created_at.substring(0, 10)) return false;
         return true;
     }));
 }

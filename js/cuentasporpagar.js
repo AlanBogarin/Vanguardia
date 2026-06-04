@@ -7,28 +7,7 @@
 
 const modalDetalle = new bootstrap.Modal(document.getElementById('modalDetalleCuenta'));
 
-const tablaCuentas = crearDataTable("tabla_cuentas_pagar", [
-    { data: "id",           title: "Id Cuenta",            render: renderRaw },
-    { data: "purchase_id",  title: "Id Compra",            render: renderRaw },
-    { data: "provider_id",  title: "Proveedor",            render: data => renderString(cargarProveedor(data).legal_name) },
-    { data: "amount_total", title: "Total a Pagar",        render: renderMoneda },
-    { data: "amount_paid",  title: "Monto Pagado",         render: renderMoneda },
-    { data: "amount_due",   title: "Monto Pendiente",      render: renderMoneda },
-    { data: "status",       title: "Estado",               render: (data, type, row) => {
-        const hoy = new Date();
-        hoy.setHours(0, 0, 0, 0);
-        const vencida = data !== ESTADO_PAGADA && new Date(row.expire_at) < hoy;
-        if (vencida) return '<span class="badge bg-dark">VENCIDO</span>';
-        return `<span class="badge ${{
-            [ESTADO_PENDIENTE]: "bg-danger",
-            [ESTADO_PARCIAL]:   "bg-warning text-dark",
-            [ESTADO_PAGADA]:    "bg-success"
-        }[data] ?? "bg-secondary"}">${data}</span>`;
-    }},
-    { data: "expire_at",    title: "Fecha de Vencimiento", render: renderFecha },
-    { data: "created_at",   title: "Fecha de Creación",    render: renderFecha },
-    { data: "updated_at",   title: "Fecha de Modificación",render: renderFecha }
-], {
+const tablaCuentas = crearDataTable("tabla_cuentas_pagar", TABLAS.CUENTA_POR_PAGAR, {
     buttons: true,
     pageLength: 10,
     searching: true,
@@ -90,26 +69,14 @@ function obtenerCuentasFiltradas() {
 
     return cargarCuentasPorPagar().filter(c => {
         const vencida = c.status !== ESTADO_PAGADA && new Date(c.expire_at) < hoy;
-
-        // Filtro estado (incluye "VENCIDO" como estado visual)
         if (estado === 'VENCIDO' && !vencida) return false;
         if (estado && estado !== 'VENCIDO' && c.status !== estado) return false;
-
-        // Filtro rango de fechas de vencimiento
-        const expireAt = new Date(c.expire_at);
-        if (fechaDesde && expireAt < new Date(fechaDesde)) return false;
-        if (fechaHasta) {
-            const hasta = new Date(fechaHasta);
-            hasta.setHours(23, 59, 59, 999);
-            if (expireAt > hasta) return false;
-        }
-
-        // Filtro proveedor
+        if (fechaDesde && fechaDesde > c.expire_at.substring(0, 10)) return false;
+        if (fechaHasta && fechaHasta < c.expire_at.substring(0, 10)) return false;
         if (busquedaProv) {
             const prov = cargarProveedor(c.provider_id);
             if (!prov || !prov.legal_name.toLowerCase().includes(busquedaProv)) return false;
         }
-
         return true;
     });
 }
@@ -133,7 +100,6 @@ function cargarDatos() {
 document.addEventListener('DOMContentLoaded', () => {
     if (!validarPermiso(PERMISOS.CUENTAS_PAGAR_VER)) return;
     if (!tienePermisoSesion(PERMISOS.PAGOS_VER)) document.getElementById("verPagos").style.display = "none";
-    tablaCuentas.buttons().container().appendTo('#contenedor-botones-exportar');
     cargarDatalistProveedores();
     cargarDatos();
 });
