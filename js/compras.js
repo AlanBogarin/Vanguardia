@@ -137,33 +137,35 @@ function ventanaVerDetalles(id) {
 }
 
 function btnAgregarDetalle() {
-    const prodSelect = document.getElementById("producto_select");
     const cantidadInput = document.getElementById("cantidad_input");
     const precioInput = document.getElementById("precio_input");
+    const buscarInput = document.getElementById("buscar_producto");
+    const term = buscarInput.value.trim().toUpperCase();
 
-    const producto_id = parseInt(prodSelect.value);
-    const cantidad = parseFloat(cantidadInput.value);
-    const precio = parseFloat(precioInput.value);
+    const productos = cargarProductos().filter(p => p.active);
+    const productoData = productos.find(p => p.code && p.code.toString() === term)
+        || productos.find(p => p.name.toUpperCase() === term)
+        || productos.find(p => p.name.toUpperCase().includes(term));
 
-    if (isNaN(producto_id) || isNaN(cantidad) || cantidad <= 0 || isNaN(precio) || precio <= 0) {
-        mensajeError("Debe seleccionar un producto, ingresar una cantidad válida y un precio unitario.");
-        return;
+    if (!productoData) {
+        mensajeError("Debe seleccionar un producto válido.");
+        buscarInput.focus();
+        return false;
     }
 
-    const productoName = prodSelect.options[prodSelect.selectedIndex].text.split(" (")[0];
+    const cantidad = parseFloat(cantidadInput.value);
+    const precio = parseFloat(precioInput.value);
+    const tipoIva = parseInt(productoData.iva) || 0;
 
-    // Leemos directamente el tipo de IVA seleccionado por el usuario en el combo
-    const tipoIva = parseInt(document.getElementById("iva_select_manual").value) || 0;
-
-    const existente = detallesTemporales.find(d => d.product_id === producto_id);
+    const existente = detallesTemporales.find(d => d.product_id === productoData.id);
     if (existente) {
         existente.quantity += cantidad;
         existente.unit_price = precio; 
         existente.subtotal = existente.quantity * existente.unit_price;
     } else {
         detallesTemporales.push({
-            product_id: producto_id,
-            productoName: productoName,
+            product_id: productoData.id,
+            productoName: productoData.name,
             quantity: cantidad,
             unit_price: precio,
             subtotal: cantidad * precio,
@@ -171,12 +173,13 @@ function btnAgregarDetalle() {
         });
     }
 
-    prodSelect.value = "";
+    buscarInput.value = "";
     cantidadInput.value = "";
     precioInput.value = "";
-    document.getElementById("iva_select_manual").value = ""; // Vuelve a dejarlo vacío por defecto
+    document.getElementById("iva_select_manual").value = "";
     
     renderizarDetalles();
+    return true;
 }
 
 function eliminarDetalle(producto_id) {
@@ -275,6 +278,28 @@ function btnGuardarNuevaCompra() {
         mensajeError("Debe agregar al menos un producto a la compra.");
         return;
     }
+    // LA FECHA CARGA SOLO CARGA DE AYER Y HOY
+    const fechaInput = document.getElementById('fecha_compra');
+    let fechaValor = fechaInput ? fechaInput.value : '';
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+    // ESATBLECER EL VALOR PREDETERMINADO DE HOY SI ESTA VACIO
+    if (!fechaValor) {
+        fechaValor = today.toISOString().split('T')[0];
+    }
+    const selectedDate = new Date(fechaValor);
+    // REVISAR EL LIMITE DE FECHA SOLO AYER Y HOY
+    if (selectedDate > today) {
+        mensajeError('La fecha no puede ser futura.');
+        return;
+    }
+    if (selectedDate < yesterday) {
+        mensajeError('Solo se permiten fechas de ayer o hoy.');
+        return;
+    }
+    const formattedFecha = selectedDate.toISOString(); // store as ISO string
+    // ...
     const nuevaCompraId = obtenerSiguienteId(cargarCompras());
     let amount = detallesTemporales.reduce((acc, curr) => acc + curr.subtotal, 0);
     const currentUser = 1; // Asumimos usuario 1 por ahora hasta que haya sesión
@@ -286,8 +311,9 @@ function btnGuardarNuevaCompra() {
         amount: amount,
         invoice: factura,
         stamping: timbrado,
-        created_at: new Date()
+        created_at: formattedFecha
     });
+    //
     const detallesBD = cargarCompraDetalles();
     let detalleId = obtenerSiguienteId(detallesBD);
     const productos = cargarProductos();
@@ -346,11 +372,58 @@ function onChangeProducto() {
     const ivaElem = document.getElementById("iva_select_manual");
     const cantidadElem = document.getElementById("cantidad_input");
     const precioElem = document.getElementById("precio_input");
-    const producto = cargarProducto(parseInt(document.getElementById("producto_select").value));
+    const select = document.getElementById("producto_select");
+    const producto = cargarProducto(parseInt(select.value));
     if (!producto) return;
     ivaElem.value = producto.iva || "";
     cantidadElem.value = Math.max(producto.min_stock - producto.stock, 1);
     precioElem.value = producto.purchase_price;
+}
+
+// Buscar producto por nombre o código de barras (se asume que el campo del código de barras
+function onInputProducto(event) {
+    const term = event.target.value.trim().toUpperCase();
+    if (!term) return;
+    const productos = cargarProductos().filter(p => p.active);
+    const exacto = productos.find(p => p.code && p.code.toString() === term);
+    if (exacto) {
+        document.getElementById('cantidad_input').value = Math.max(exacto.min_stock - exacto.stock, 1);
+        document.getElementById('precio_input').value = exacto.purchase_price;
+        document.getElementById('iva_select_manual').value = exacto.iva || '';
+    }
+}
+
+function onKeydownProducto(event) {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+
+    const buscarInput = document.getElementById('buscar_producto');
+    const term = buscarInput.value.trim().toUpperCase();
+    if (!term) return;
+
+    const productos = cargarProductos().filter(p => p.active);
+    const resultado = productos.find(p => p.code && (p.code.toString() === term || parseInt(p.code) === parseInt(term)))
+        || productos.find(p => p.name.toUpperCase().includes(term));
+
+    if (!resultado) {
+        mensajeError("No se encontró ningún producto con: " + term);
+        return;
+    }
+
+    document.getElementById('cantidad_input').value = Math.max(resultado.min_stock - resultado.stock, 1);
+    document.getElementById('precio_input').value = resultado.purchase_price;
+    document.getElementById('iva_select_manual').value = resultado.iva || '';
+
+    const agregado = btnAgregarDetalle();
+    if (agregado) {
+        buscarInput.value = '';
+        buscarInput.focus();
+    }
+}
+
+// Filtrar solo números y guión en el campo de RUC
+function filtrarSoloNumerosRUC(input) {
+    input.value = input.value.replace(/[^0-9\-]/g, '');
 }
 
 // Filtrado Interactivo
@@ -358,22 +431,48 @@ function onInputProveedor() {
     const buscarElem = document.getElementById("buscar_proveedor");
     const datalistElem = document.getElementById('lista_proveedores');
     const proveedorElem = document.getElementById("provider_id");
+    const nombreProveedorInput = document.getElementById('nombre_proveedor');
     const term = buscarElem.value.trim().toUpperCase();
-    const proveedores = !term ? [] : cargarProveedores().filter(p => p.active).filter(
-        p => p.legal_name.toUpperCase().includes(term) || p.ruc.includes(term)).slice(0, 10);
+
+    // Si el campo está vacío, limpiar nombre del proveedor y select
+    if (!term) {
+        proveedorElem.innerHTML = '<option value="">Seleccione un proveedor...</option>';
+        datalistElem.innerHTML = '';
+        if (nombreProveedorInput) nombreProveedorInput.value = '';
+        return;
+    }
+
+    const proveedores = cargarProveedores().filter(p => p.active).filter(
+        p => p.ruc.includes(term)).slice(0, 10);
     // select
     proveedorElem.innerHTML = '<option value="">Seleccione un proveedor...</option>'
         + proveedores.map(p => `<option value="${p.id}">${p.legal_name} (${p.ruc})</option>`).join("");
     // datalist
-    datalistElem.innerHTML = proveedores.map(p => `<option value="${p.legal_name}">${p.ruc}</option>`).join("")
-    // datalistElem.showPicker();
-    // buscarElem.focus();
-    const match = proveedores.find(p => p.legal_name === term);
-    if (match) proveedorElem.value = match.id;
+    datalistElem.innerHTML = proveedores.map(p => `<option value="${p.ruc}">${p.legal_name}</option>`).join("");
+    //Si el usuario escribió un RUC exacto, selecciona automáticamente ese proveedor y completa el nombre.
+    const rucMatch = proveedores.find(p => p.ruc === term);
+    if (rucMatch) {
+        proveedorElem.value = rucMatch.id;
+        if (nombreProveedorInput) nombreProveedorInput.value = rucMatch.legal_name;
+    } else if (!term) {
+        if (nombreProveedorInput) nombreProveedorInput.value = '';
+    }
 }
 
 function onShowModalNuevaCompra() {
     document.getElementById("buscar_proveedor").value = "";
+    document.getElementById("nombre_proveedor").value = "";
+    // Establecer restricciones de fecha: solo ayer y hoy.
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+    const fechaInput = document.getElementById('fecha_compra');
+    if (fechaInput) {
+        fechaInput.min = yesterday.toISOString().split('T')[0];
+        fechaInput.max = today.toISOString().split('T')[0];
+        //Establecer por defecto en hoy.
+        fechaInput.value = today.toISOString().split('T')[0];
+    }
     habilitarBusquedaProveedor(true);
     cargarDatos();
 }
@@ -395,26 +494,32 @@ function cargarDatos() {
     const tipoCondicion = document.getElementById("filtro_condicion").value.trim().toUpperCase();
     const fechaDesde = document.getElementById("filtro_fecha_desde").value.trim();
     const fechaHasta = document.getElementById("filtro_fecha_hasta").value.trim();
-    cargarDataTable(tablaCompras, cargarCompras().filter(compra => {
+    // Restringir las fechas solo a ayer y hoy.
+    const today = new Date();
+    today.setHours(23,59,59,999);
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setHours(0,0,0,0);
+
+    // Anular cualquier filtro de fecha proporcionado por el usuario para aplicar la restricción.
+    const startLimit = yesterday;
+    const endLimit = today;
+
+    // Cargar y filtrar las compras dentro del rango de fechas permitido, luego ordenar por ID de forma descendente (las más recientes primero).
+     const filtered = cargarCompras().filter(compra => {
         if (!cargarProveedor(compra.provider_id).legal_name.includes(proveedor)) return false;
         if (tipoCondicion && compra.condition !== tipoCondicion) return false;
         const fechaCompra = new Date(compra.created_at);
         if (fechaDesde && fechaCompra < new Date(fechaDesde)) return false;
-        if (fechaHasta) {
-            const hasta = new Date(fechaHasta);
-            hasta.setHours(23,59,59,999);
-            if (fechaCompra > hasta) return false;
-        }
+        if (fechaHasta && fechaCompra > new Date(fechaHasta + 'T23:59:59')) return false;
         return true;
-    }));
-    const selectProductos = document.getElementById("producto_select");
+    }).sort((a, b) => b.id - a.id);
+
+    cargarDataTable(tablaCompras, filtered);
     const selectProveedores = document.getElementById("provider_id");
-    const productos = cargarProductos().filter(p => p.active);
     const proveedores = cargarProveedores().filter(p => p.active);
     selectProveedores.innerHTML = "<option value=\"\">Seleccione un proveedor...</option>"
         + proveedores.map(p => `<option value="${p.id}">${p.legal_name} (${p.ruc})</option>`).join("");
-    selectProductos.innerHTML = "<option value=\"\">Seleccione un producto...</option>"
-        + productos.map(p => `<option value="${p.id}">${p.name} (Stock: ${p.stock})</option>`).join("");
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -422,4 +527,134 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!tienePermisoSesion(PERMISOS.COMPRAS_CREAR)) document.getElementById("btnModalNuevo").style.display = "none";
     cargarDatos();
     document.getElementById('modalNuevaCompra').addEventListener('show.bs.modal', onShowModalNuevaCompra);
+    // Agregar un listener (oyente) para completar automáticamente el nombre del proveedor cuando se seleccione mediante RUC o nombre.
+    const providerSelect = document.getElementById('provider_id');
+    const buscarProveedorInput = document.getElementById('buscar_proveedor');
+    const nombreProveedorInput = document.getElementById('nombre_proveedor');
+    providerSelect.addEventListener('change', () => {
+        const prov = cargarProveedor(parseInt(providerSelect.value));
+        if (prov) {
+            buscarProveedorInput.value = prov.legal_name; // display provider name
+            if (nombreProveedorInput) nombreProveedorInput.value = prov.legal_name; // auto-fill name field
+        }
+    });
+    const buscarProdInput = document.getElementById('buscar_producto');
+    if (buscarProdInput) {
+        buscarProdInput.addEventListener('input', onInputProducto);
+    }
 });
+let _modalSeleccionProveedor = null;
+
+function abrirModalSeleccionProveedor() {
+    if (!_modalSeleccionProveedor) {
+        _modalSeleccionProveedor = new bootstrap.Modal(document.getElementById('modalSeleccionProveedor'));
+    }
+    document.getElementById('buscar_prov_modal').value = '';
+    renderizarProveedoresModal(cargarProveedores().filter(p => p.active));
+    _modalSeleccionProveedor.show();
+}
+
+function filtrarProveedoresModal() {
+    const term = document.getElementById('buscar_prov_modal').value.trim().toUpperCase();
+    const proveedores = cargarProveedores().filter(p => p.active).filter(p =>
+        p.legal_name.toUpperCase().includes(term) || p.ruc.includes(term)
+    );
+    renderizarProveedoresModal(proveedores);
+}
+
+function renderizarProveedoresModal(proveedores) {
+    const tbody = document.getElementById('tbody_modal_proveedores');
+    if (!proveedores.length) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">No se encontraron proveedores.</td></tr>';
+        return;
+    }
+    tbody.innerHTML = proveedores.map(p => `
+        <tr>
+            <td>${escapeHTML(p.legal_name)}</td>
+            <td>${escapeHTML(p.ruc)}</td>
+            <td class="text-center">
+                <button type="button" class="btn btn-sm btn-success" onclick="seleccionarProveedorDesdeModal(${p.id})">
+                    <i class="bi bi-check-lg"></i> Seleccionar
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function seleccionarProveedorDesdeModal(id) {
+    const proveedor = cargarProveedor(id);
+    if (!proveedor) {
+        mensajeError('No se encontró el proveedor.');
+        return;
+    }
+    document.getElementById('buscar_proveedor').value = proveedor.ruc;
+    document.getElementById('nombre_proveedor').value = proveedor.legal_name;
+
+    const providerSelect = document.getElementById('provider_id');
+    let opt = providerSelect.querySelector(`option[value="${proveedor.id}"]`);
+    if (!opt) {
+        opt = document.createElement('option');
+        opt.value = proveedor.id;
+        opt.textContent = `${proveedor.legal_name} (${proveedor.ruc})`;
+        providerSelect.appendChild(opt);
+    }
+    providerSelect.value = proveedor.id;
+
+    if (_modalSeleccionProveedor) _modalSeleccionProveedor.hide();
+}
+let _modalSeleccionProducto = null;
+
+function abrirModalSeleccionProducto() {
+    if (!_modalSeleccionProducto) {
+        _modalSeleccionProducto = new bootstrap.Modal(document.getElementById('modalSeleccionProducto'));
+    }
+    document.getElementById('buscar_prod_modal').value = '';
+    renderizarProductosModal(cargarProductos().filter(p => p.active));
+    _modalSeleccionProducto.show();
+}
+
+function filtrarProductosModal() {
+    const term = document.getElementById('buscar_prod_modal').value.trim().toUpperCase();
+    const productos = cargarProductos().filter(p => p.active).filter(p =>
+        p.name.toUpperCase().includes(term) ||
+        (p.code && p.code.toString().toUpperCase().includes(term))
+    );
+    renderizarProductosModal(productos);
+}
+
+function renderizarProductosModal(productos) {
+    const tbody = document.getElementById('tbody_modal_productos');
+    if (!productos.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No se encontraron productos.</td></tr>';
+        return;
+    }
+    tbody.innerHTML = productos.map(p => `
+        <tr>
+            <td>${escapeHTML(p.name)}</td>
+            <td>${p.code ? escapeHTML(p.code.toString()) : '-'}</td>
+            <td class="text-center fw-bold">${p.stock}</td>
+            <td class="text-center">${p.iva}%</td>
+            <td class="text-center">
+                <button type="button" class="btn btn-sm btn-success" onclick="seleccionarProductoDesdeModal(${p.id})">
+                    <i class="bi bi-check-lg"></i> Seleccionar
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function seleccionarProductoDesdeModal(id) {
+    const producto = cargarProducto(id);
+    if (!producto) {
+        mensajeError('No se encontró el producto.');
+        return;
+    }
+
+    // Llenar campos directamente
+    document.getElementById('buscar_producto').value = producto.name;
+    document.getElementById('cantidad_input').value = Math.max(producto.min_stock - producto.stock, 1);
+    document.getElementById('precio_input').value = producto.purchase_price;
+    document.getElementById('iva_select_manual').value = producto.iva || '';
+
+    if (_modalSeleccionProducto) _modalSeleccionProducto.hide();
+}

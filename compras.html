@@ -139,19 +139,35 @@
                     <h5 class="modal-title" id="modalNuevaCompraLabel"><i class="bi bi-cart-plus-fill"></i> Registrar Nueva Compra</h5>
                 </div>
                 <div class="modal-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Proveedor</label>
-                            <input class="form-control mb-2" id="buscar_proveedor" type="text" list="lista_proveedores" oninput="onInputProveedor()" placeholder="Buscar RUC o Razón Social...">
+                    <div class="row mb-3 align-items-end">
+                        <!-- PROVEEDOR (RUC y NOMBRE) -->
+                        <div class="col-md-5">
+                            <label class="form-label">Buscar RUC</label>
+                            <div class="input-group mb-2">
+                                <input class="form-control" id="buscar_proveedor" type="text" list="lista_proveedores" oninput="filtrarSoloNumerosRUC(this); onInputProveedor()" placeholder="Buscar por RUC..." inputmode="numeric">
+                                <button type="button" class="btn btn-outline-primary" onclick="abrirModalSeleccionProveedor()" title="Ver lista de proveedores"><i class="bi bi-list-ul"></i></button>
+                            </div>
                             <datalist id="lista_proveedores"></datalist>
-                            <select id="provider_id" class="form-select" required></select>
+                            <select id="provider_id" class="form-select d-none" required></select>
                         </div>
+                        <div class="col-md-7">
+                            <label class="form-label">Nombre del Proveedor</label>
+                            <input type="text" id="nombre_proveedor" class="form-control mb-2" placeholder="Se cargará automáticamente" readonly>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <!-- CONDICIÓN -->
                         <div class="col-md-6">
                             <label class="form-label">Condición</label>
                             <select id="condition" class="form-select" required>
                                 <option value="CONTADO">CONTADO</option>
                                 <option value="CREDITO">CRÉDITO</option>
                             </select>
+                        </div>
+                        <!-- FECHA COMPRA -->
+                        <div class="col-md-6">
+                            <label class="form-label">Fecha Compra</label>
+                            <input type="date" id="fecha_compra" class="form-control" required>
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -174,12 +190,13 @@
                 <hr>
                 <h6 class="fw-bold">Detalle de Productos</h6>
                     <div class="row mb-3 align-items-end">
-                    <div class="col-md-4">
-                        <label class="form-label small text-muted">Producto</label>
-                        <select class="form-select" id="producto_select" onchange="onChangeProducto()">
-                            <option value="">Seleccione un producto...</option>
-                        </select>
-                    </div>
+                        <div class="col-md-4">
+                            <label class="form-label small text-muted">Producto</label>
+                            <div class="input-group mb-2">
+                                <input type="text" id="buscar_producto" class="form-control" placeholder="Código o nombre..." oninput="onInputProducto(event)" onkeydown="onKeydownProducto(event)">
+                                <button type="button" class="btn btn-outline-primary" onclick="abrirModalSeleccionProducto()" title="Ver lista de productos"><i class="bi bi-list-ul"></i></button>
+                            </div> 
+                        </div>
                     <div class="col-md-2">
                         <label class="form-label small text-muted">Cantidad</label>
                         <input type="number" id="cantidad_input" class="form-control" placeholder="Cant." min="1">
@@ -191,7 +208,7 @@
                     <div class="col-md-2">
                         <label class="form-label small text-muted">IVA</label>
                         <select id="iva_select_manual" class="form-select fw-bold text-center" disabled>
-                            <option value="">EXENTA</option>
+                            <option value=""></option>
                             <option value="10">10%</option>
                             <option value="5">5%</option>
                         </select>
@@ -308,6 +325,70 @@
             </div>
         </div>
     </div>
+    <!-- Modal Selección de Proveedor -->
+<div class="modal fade" id="modalSeleccionProveedor" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-building me-1"></i> Seleccionar Proveedor</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <input type="text" id="buscar_prov_modal" class="form-control" placeholder="Buscar por nombre o RUC..." oninput="filtrarProveedoresModal()">
+                </div>
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-sm table-hover table-bordered align-middle">
+                        <thead class="table-primary sticky-top">
+                            <tr>
+                                <th>Nombre / Razón Social</th>
+                                <th>RUC</th>
+                                <th class="text-center">Seleccionar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody_modal_proveedores"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle me-1"></i> Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal Selección de Producto -->
+<div class="modal fade" id="modalSeleccionProducto" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="bi bi-box-seam me-1"></i> Seleccionar Producto</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <input type="text" id="buscar_prod_modal" class="form-control" placeholder="Buscar por nombre o código..." oninput="filtrarProductosModal()">
+                </div>
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-sm table-hover table-bordered align-middle">
+                        <thead class="table-success sticky-top">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Código</th>
+                                <th class="text-center">Stock</th>
+                                <th class="text-center">IVA</th>
+                                <th class="text-center">Seleccionar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody_modal_productos"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle me-1"></i> Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
 
     <script src="menu/scripts.js"></script>
     <script src="bt/bootstrap.bundle.min.js"></script>
@@ -329,6 +410,6 @@
     <script src="js/bd.js"></script>
     <script src="js/alertas.js"></script>
     <script src="js/tablas.js"></script>
-    <script src="js/compras.js"></script>
+    <script src="js/compras.js?v=2"></script>
 </body>
 </html>
