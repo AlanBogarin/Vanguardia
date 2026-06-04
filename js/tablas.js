@@ -698,6 +698,16 @@ const TABLAS = {
         { data: "created_at", title: "Fecha Creación", render: renderFecha },
         { data: "updated_at", title: "Fecha Modificación", render: renderFecha }
     ],
+        AJUSTE_STOCK: [
+        { data: "id", title: "Id Ajuste", render: renderRaw },
+        { data: "product_id", title: "Producto", render: data => cargarProducto(data).name },
+        { data: "type", title: "Tipo", render: renderString },
+        { data: "quantity", title: "Cantidad", render: renderNumber },
+        { data: "previous_stock", title: "Stock Anterior", render: renderNumber },
+        { data: "new_stock", title: "Stock Nuevo", render: renderNumber },
+        { data: "reason", title: "Motivo", render: renderString },
+        { data: "created_at", title: "Fecha", render: renderFecha }
+    ],
     COMPRA: [
         { data: "id", title: "Id Compra", render: renderRaw },
         { data: "provider_id", title: "Proveedor", render: data => cargarProveedor(data).legal_name },
