@@ -268,7 +268,7 @@ const PERMISOS = {
     USUARIOS_VER: 1n << 3n,
     USUARIOS_CREAR: 1n << 4n,
     USUARIOS_EDITAR: 1n << 5n,
-    // MODULO INVENTARIO (Bits 7-15)
+    // MODULO INVENTARIO (Bits 7-18)
     CATEGORIAS_VER: 1n << 6n,
     CATEGORIAS_CREAR: 1n << 7n,
     CATEGORIAS_EDITAR: 1n << 8n,
@@ -278,33 +278,36 @@ const PERMISOS = {
     PRODUCTOS_VER: 1n << 12n,
     PRODUCTOS_CREAR: 1n << 13n,
     PRODUCTOS_EDITAR: 1n << 14n,
-    // MODULO COMPRAS (Bits 16-21)
-    PROVEEDORES_VER: 1n << 15n,
-    PROVEEDORES_CREAR: 1n << 16n,
-    PROVEEDORES_EDITAR: 1n << 17n,
-    COMPRAS_VER: 1n << 18n,
-    COMPRAS_CREAR: 1n << 19n,
-    COMPRAS_EDITAR: 1n << 20n,
-    // MODULO VENTAS (Bits 22-27)
-    CLIENTES_VER: 1n << 21n,
-    CLIENTES_CREAR: 1n << 22n,
-    CLIENTES_EDITAR: 1n << 23n,
-    VENTAS_VER: 1n << 24n,
-    VENTAS_CREAR: 1n << 25n,
-    VENTAS_EDITAR: 1n << 26n,
-    // MODULO FINANZAS (Bits 28-27)
-    CUENTAS_PAGAR_VER: 1n << 27n,
-    CUENTAS_PAGAR_CREAR: 1n << 28n,
-    CUENTAS_PAGAR_EDITAR: 1n << 29n,
-    PAGOS_VER: 1n << 30n,
-    PAGOS_CREAR: 1n << 31n,
-    PAGOS_EDITAR: 1n << 32n,
-    CUENTAS_COBRAR_VER: 1n << 33n,
-    CUENTAS_COBRAR_CREAR: 1n << 34n,
-    CUENTAS_COBRAR_EDITAR: 1n << 35n,
-    COBROS_VER: 1n << 36n,
-    COBROS_CREAR: 1n << 37n,
-    COBROS_EDITAR: 1n << 38n
+    INVENTARIO_VER: 15n,
+    INVENTARIO_CREAR: 16n,
+    INVENTARIO_EDITAR: 17n,
+    // MODULO COMPRAS (Bits 19-24)
+    PROVEEDORES_VER: 1n << 18n,
+    PROVEEDORES_CREAR: 1n << 19n,
+    PROVEEDORES_EDITAR: 1n << 20n,
+    COMPRAS_VER: 1n << 21n,
+    COMPRAS_CREAR: 1n << 22n,
+    COMPRAS_EDITAR: 1n << 23n,
+    // MODULO VENTAS (Bits 25-30)
+    CLIENTES_VER: 1n << 24n,
+    CLIENTES_CREAR: 1n << 25n,
+    CLIENTES_EDITAR: 1n << 26n,
+    VENTAS_VER: 1n << 27n,
+    VENTAS_CREAR: 1n << 28n,
+    VENTAS_EDITAR: 1n << 29n,
+    // MODULO FINANZAS (Bits 31-42)
+    CUENTAS_PAGAR_VER: 1n << 30n,
+    CUENTAS_PAGAR_CREAR: 1n << 31n,
+    CUENTAS_PAGAR_EDITAR: 1n << 32n,
+    PAGOS_VER: 1n << 33n,
+    PAGOS_CREAR: 1n << 34n,
+    PAGOS_EDITAR: 1n << 35n,
+    CUENTAS_COBRAR_VER: 1n << 36n,
+    CUENTAS_COBRAR_CREAR: 1n << 37n,
+    CUENTAS_COBRAR_EDITAR: 1n << 38n,
+    COBROS_VER: 1n << 39n,
+    COBROS_CREAR: 1n << 40n,
+    COBROS_EDITAR: 1n << 41n
 };
 
 /**
