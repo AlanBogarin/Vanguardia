@@ -1,3 +1,4 @@
+/* global bootstrap */
 /**
  * @typedef {import('jquery')}
  * @typedef {import('./bd')}
@@ -5,9 +6,9 @@
  * @typedef {import('./tablas')}
  */
 
-const modalNuevo = new bootstrap.Modal(document.getElementById('modalNuevaCategoria'));
-const modalEditar = new bootstrap.Modal(document.getElementById('modalEditarCategoria'));
-const modalEliminar = new bootstrap.Modal(document.getElementById('modalEliminarCategoria'));
+var modalNuevo = new bootstrap.Modal(document.getElementById('modalNuevaCategoria'));
+var modalEditar = new bootstrap.Modal(document.getElementById('modalEditarCategoria'));
+var modalEliminar = new bootstrap.Modal(document.getElementById('modalEliminarCategoria'));
 
 const tablaCategorias = crearDataTable("tabla_categorias", TABLAS.CATEGORIA, {
     buttons: true,

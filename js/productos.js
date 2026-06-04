@@ -1,3 +1,4 @@
+/* global bootstrap */
 /**
  * @typedef {import('jquery')}
  * @typedef {import('./bd')}
@@ -5,9 +6,9 @@
  * @typedef {import('./tablas')}
  */
 
-const modalNuevo = new bootstrap.Modal(document.getElementById("modalNuevoProducto"));
-const modalEditar = new bootstrap.Modal(document.getElementById("modalEditarProducto"));
-const modalEliminar = new bootstrap.Modal(document.getElementById("modalEliminarProducto"));
+var modalNuevo = new bootstrap.Modal(document.getElementById("modalNuevoProducto"));
+var modalEditar = new bootstrap.Modal(document.getElementById("modalEditarProducto"));
+var modalEliminar = new bootstrap.Modal(document.getElementById("modalEliminarProducto"));
 
 const tablaProductos = crearDataTable("tabla_productos", [
     { data: "id", title: "Id Producto", render: renderRaw },

@@ -1,3 +1,4 @@
+/* global bootstrap */
 /**
  * @typedef {import('jquery')}
  * @typedef {import('./bd')}
@@ -5,9 +6,9 @@
  * @typedef {import('./tablas')}
  */
 
-const modalNuevo = new bootstrap.Modal(document.getElementById("modalNuevoProveedor"));
-const modalEditar = new bootstrap.Modal(document.getElementById("modalEditarProveedor"));
-const modalEliminar = new bootstrap.Modal(document.getElementById("modalEliminarProveedor"));
+var modalNuevo = new bootstrap.Modal(document.getElementById("modalNuevoProveedor"));
+var modalEditar = new bootstrap.Modal(document.getElementById("modalEditarProveedor"));
+var modalEliminar = new bootstrap.Modal(document.getElementById("modalEliminarProveedor"));
 
 let _guardandoProveedor = false;
 let _editandoProveedor = false;

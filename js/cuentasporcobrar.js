@@ -14,11 +14,11 @@ const tablaCuentas = crearDataTable("tabla_cuentas_cobrar", TABLAS.CUENTA_POR_CO
     exportTitle: "LISTADO DE CUENTAS POR COBRAR",
     actions: tienePermisoSesion(PERMISOS.COBROS_CREAR) ? (cuenta) => ({
         customs: [
-           ...(cuenta.spatus === ESTADO_COBRADA ? [] : [{
+           ...(cuenta.status === ESTADO_COBRADA ? [] : [{
                 color: "btn-success",
                 content: "<i class=\"bi bi-cash-stack\"></i> Cobrar",
                 title: "Cobrar",
-               href: `dcobros.html?cuenta_md=${cuenta.id}`
+               href: `cobros.html?cuenta_id=${cuenta.id}`
             }]),
             {
                 color: "btn-info",
@@ -41,7 +41,9 @@ function ventanaVerDetalle(id) {
     document.getElementById('det_ruc').textContent = cliente.ruc;
     document.getElementById('det_venta').textContent = cuenta.sale_id;
     document.getElementById('det_emision').textContent = renderFecha(cuenta.created_at);
-    document.getElementById('det_vencimiento').textContent = renderFecha(cuenta.expire_at);
+    const cuotas = cargarCuotasPorCobrar(cuenta.id);
+    const ultimaCuota = cuotas.length ? cuotas[cuotas.length - 1] : null;
+    document.getElementById('det_vencimiento').textContent = ultimaCuota ? renderFecha(ultimaCuota.due_date) : '—';
     modalDetalle.show();
 }
 
@@ -60,8 +62,8 @@ function cargarDatos() {
     }).join("");
     cargarDataTable(tablaCuentas, cargarCuentasPorCobrar().filter(c => {
         if (estado && c.status !== estado) return false;
-        // if (fechaDesde && fechaDesde > c.expire_at.substring(0, 10)) return false;
-        // if (fechaHasta && fechaHasta < c.expire_at.substring(0, 10)) return false;
+        if (fechaDesde && fechaDesde > c.expire_at.substring(0, 10)) return false;
+        if (fechaHasta && fechaHasta < c.expire_at.substring(0, 10)) return false;
         const legal_name = cargarCliente(c.client_id).legal_name;
         if (cliente && !legal_name.includes(cliente) && idMap[cliente] !== c.id) return false;
         return true;
@@ -76,4 +78,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById("filtro_fecha_hasta").addEventListener("change", cargarDatos);
     document.getElementById("filtro_cliente").addEventListener("input", cargarDatos);
     cargarDatos();
+    document.getElementById("filtro_estado").addEventListener("change", cargarDatos);
+    document.getElementById("filtro_fecha_desde").addEventListener("change", cargarDatos);
+    document.getElementById("filtro_fecha_hasta").addEventListener("change", cargarDatos);
+    document.getElementById("filtro_cliente").addEventListener("input", cargarDatos);
 });

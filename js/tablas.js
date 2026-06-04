@@ -290,26 +290,26 @@ function estilizarImpresion(win, title, subtables) {
     // ELIMINAR TITULO AUTOMÁTICO
     $(win.document.body).find('h1').remove();
     // MEMBRETE
-    $(win.document.body).prepend(`
-        <div style="border-bottom:3px solid #0d6efd;padding-bottom:15px;margin-bottom:20px;">
-            <table style="width:100%; border-collapse:collapse;">
-                <tr>
-                    <td style="width:90px;">
-                        <img src="img/logo_x128.jpg" style="width:75px; height:auto;">
-                    </td>
-                    <td>
-                        <div style="font-size:24px;font-weight:bold;color:#0d6efd;letter-spacing:1px;">
-                            VANGUARDIA
-                        </div>
-                        <div style="font-size:11px;margin-top:3px;">
-                            Comercialización de Productos Informáticos y Tecnológicos
-                        </div>
-                        <div style="font-size:10px;color:#555;margin-top:5px;">
-                            Dir.: Previstero Juan Carlos García / Madrinas de Guerra – Bo. Villa Armando – Concepción
-                        </div>
-                        <div style="font-size:10px;color:#555;">
-                            Tel.: 0985-495-253
-                        </div>
+    const emp = cargarEmpresa();
+                const empNombre = emp?.legal_name?.toUpperCase() || 'VANGUARDIA';
+                const empSlogan = emp?.slogan || '';
+                const empDir = emp?.address || '';
+                const empTel = emp?.tel || '';
+
+                $(win.document.body).prepend(`
+                    ...
+                    <div style="font-size:24px;font-weight:bold;color:#0d6efd;letter-spacing:1px;">
+                        ${empNombre}
+                    </div>
+                    <div style="font-size:11px;margin-top:3px;">
+                        ${empSlogan}
+                    </div>
+                    <div style="font-size:10px;color:#555;margin-top:5px;">
+                        Dir.: ${empDir}
+                    </div>
+                    <div style="font-size:10px;color:#555;">
+                        Tel.: ${empTel}
+                    </div>
                     </td>
                     <td style="text-align:right;vertical-align:top;font-size:10px;color:#666;">
                         ${fecha}
@@ -426,6 +426,11 @@ function estilizarExcel(xlsx, title, subtables) {
 async function estilizarPDF(doc, title, subtables) {
     const logo = await logoBase64;
     const fecha = renderFecha(new Date());
+    const empresa = cargarEmpresa();
+    const nombreEmpresa = empresa?.legal_name?.toUpperCase() || 'VANGUARDIA';
+    const sloganEmpresa = empresa?.slogan || 'Comercialización de Productos Informáticos y Tecnológicos';
+    const direccionEmpresa = empresa?.address || '';
+    const telEmpresa = empresa?.tel || '';
     // MARGENES
     doc.pageMargins = [30, 110, 30, 60];
     // ENCABEZADO
@@ -441,10 +446,10 @@ async function estilizarPDF(doc, title, subtables) {
                         width: '*',
                         margin: [15, 0, 0, 0],
                         stack: [
-                            { text: 'VANGUARDIA', fontSize: 22, bold: true, color: '#0d6efd' },
-                            { text: 'Comercialización de Productos Informáticos y Tecnológicos', fontSize: 10, margin: [0, 3, 0, 0] },
-                            { text: 'Dir.: Previstero Juan Carlos García / Madrinas de Guerra – Bo. Villa Armando – Concepción', fontSize: 8, color: '#666' },
-                            { text: 'Tel.: 0985-495-253', fontSize: 8, color: '#666' }
+                           { text: nombreEmpresa, fontSize: 22, bold: true, color: '#0d6efd' },
+                           { text: sloganEmpresa, fontSize: 10, margin: [0, 3, 0, 0] },
+                           { text: 'Dir.: ' + direccionEmpresa, fontSize: 8, color: '#666' },
+                           { text: 'Tel.: ' + telEmpresa, fontSize: 8, color: '#666' }
                         ]
                     },
                     { width: 120, alignment: 'right', text: fecha, fontSize: 8, color: '#666' }
