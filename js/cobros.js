@@ -1,3 +1,4 @@
+/* global bootstrap */
 /**
  * @typedef {import('jquery')}
  * @typedef {import('./bd')}
@@ -5,7 +6,7 @@
  * @typedef {import('./tablas')}
  */
 
-const modalNuevo = new bootstrap.Modal(document.getElementById('modalNuevoCobro'));
+var modalNuevo = new bootstrap.Modal(document.getElementById('modalNuevoCobro'));
 
 // Nro. Timbrado?
 const tablaCobros = crearDataTable("tabla_cobros", [

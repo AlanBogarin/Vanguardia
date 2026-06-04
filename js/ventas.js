@@ -1,3 +1,4 @@
+/* global bootstrap */
 /**
  * @typedef {import('jquery')}
  * @typedef {import('./bd')}
@@ -13,7 +14,11 @@
  * @property {number} subtotal 
  */
 
+const modalNuevaVenta = new bootstrap.Modal(document.getElementById("modalNuevaVenta"));
 const modalVerDetallesVenta = new bootstrap.Modal(document.getElementById("modalVerDetalles"));
+const modalNuevoCliente = new bootstrap.Modal(document.getElementById("modalNuevoCliente"));
+const modalCobroContado = new bootstrap.Modal(document.getElementById("modalCobroContado"));
+const modalImprimirFactura = new bootstrap.Modal(document.getElementById("modalImprimirFactura"));
 
 /** @type {DetalleTemp} */
 let detallesTemp = [];
@@ -234,7 +239,7 @@ function abrirModalCobroContado(total) {
     $("#cobro_total_pagar").text(renderMoneda(total) + " Gs.");
     $("#cobro_monto").val("");
     actualizarTablaCobrosTemp();
-    $("#modalCobroContado").modal("show");
+    modalCobroContado.show();
 }
 
 function actualizarTablaCobrosTemp() {
@@ -294,7 +299,7 @@ function btnConfirmarCobro() {
     if (vuelto > 0) {
         mensajeSuccess(`Vuelto: ${renderMoneda(vuelto)} Gs.`);
     }
-    $("#modalCobroContado").modal("hide");
+    modalCobroContado.hide();
     ejecutarGuardadoVenta("CONTADO", ventaTotalTemp, cobrosTemp);
 }
 
@@ -368,16 +373,16 @@ function ejecutarGuardadoVenta(condition, total, cobrosArray) {
 
     ultimaVentaIdParaFactura = idVenta;
 
-    $("#modalNuevaVenta").modal("hide");
+    modalNuevaVenta.hide();
     limpiarModalVenta();
     cargarDatos();
-    $("#modalImprimirFactura").modal("show");
+    modalImprimirFactura.show();
 }
 
 function simularImpresionPDF() {
     if (!ultimaVentaIdParaFactura) return;
     imprimirFacturaVenta(ultimaVentaIdParaFactura);
-    $("#modalImprimirFactura").modal("hide");
+    modalImprimirFactura.hide();
 }
 
 /**
@@ -744,13 +749,13 @@ function abrirDetallesVenta(idVenta) {
     });
 
     $("#ver_total_venta").text(renderMoneda(total));
-    $("#modalVerDetalles").modal("show");
+    modalVerDetallesVenta.show();
 }
 
 function abrirModalNuevoCliente() {
     document.getElementById("formNuevoCliente").reset();
     document.getElementById("formNuevoCliente").classList.remove("was-validated");
-    $("#modalNuevoCliente").modal("show");
+    modalNuevoCliente.show();
 }
 
 function btnGuardarNuevoCliente() {
@@ -783,7 +788,7 @@ function btnGuardarNuevoCliente() {
     };
     guardarCliente(nuevoCliente);
 
-    $("#modalNuevoCliente").modal("hide");
+    modalNuevoCliente.hide();
 
     cargarSelectClientes();
     $("#client_id").val(nuevoCliente.id);

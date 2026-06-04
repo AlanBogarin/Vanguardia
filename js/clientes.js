@@ -1,3 +1,4 @@
+/* global bootstrap */
 /**
  * @typedef {import('jquery')}
  * @typedef {import('./bd')}
@@ -5,9 +6,9 @@
  * @typedef {import('./tablas')}
  */
 
-const modalNuevo = new bootstrap.Modal(document.getElementById('modalNuevoCliente'));
-const modalEditar = new bootstrap.Modal(document.getElementById('modalEditarCliente'));
-const modalEliminar = new bootstrap.Modal(document.getElementById('modalEliminarCliente'));
+var modalNuevo = new bootstrap.Modal(document.getElementById('modalNuevoCliente'));
+var modalEditar = new bootstrap.Modal(document.getElementById('modalEditarCliente'));
+var modalEliminar = new bootstrap.Modal(document.getElementById('modalEliminarCliente'));
 
 const tablaClientes = crearDataTable("tabla_clientes", TABLAS.CLIENTE, {
     buttons: true,
@@ -323,19 +324,31 @@ function ventanaAnularCliente(id) {
         () => mensajeError("Anulación cancelada")
     );
 }
-
+function btnLimpiarFiltros() {
+    document.getElementById("filtro_estado").value = "";
+    document.getElementById("filtro_creacion_desde").value = "";
+    document.getElementById("filtro_creacion_hasta").value = "";
+    document.getElementById("filtro_modificacion_desde").value = "";
+    document.getElementById("filtro_modificacion_hasta").value = "";
+    cargarDatos();
+}
 function cargarDatos() {
     const estado = document.getElementById("filtro_estado").value;
-    const fechaDesde = document.getElementById("filtro_creacion_desde").value;
-    const fechaHasta = document.getElementById("filtro_creacion_hasta").value;
+    const creadoDesde = document.getElementById("filtro_creacion_desde").value;
+    const creadoHasta = document.getElementById("filtro_creacion_hasta").value;
+    const modificadoDesde = document.getElementById("filtro_modificacion_desde").value;
+    const modificadoHasta = document.getElementById("filtro_modificacion_hasta").value;
     cargarDataTable(tablaClientes, cargarClientes().filter(c => {
         if (estado === "ACTIVO" && !c.active) return false;
         if (estado === "INACTIVO" && c.active) return false;
-        if (fechaDesde && fechaDesde > c.created_at.substring(0, 10)) return false;
-        if (fechaHasta && fechaHasta < c.created_at.substring(0, 10)) return false;
+        if (creadoDesde && creadoDesde > c.created_at.substring(0, 10)) return false;
+        if (creadoHasta && creadoHasta < c.created_at.substring(0, 10)) return false;
+        if (modificadoDesde && (!c.updated_at || modificadoDesde > c.updated_at.substring(0, 10))) return false;
+        if (modificadoHasta && (!c.updated_at || modificadoHasta < c.updated_at.substring(0, 10))) return false;
         return true;
     }));
 }
+
 
 document.addEventListener('DOMContentLoaded', function () {
     if (!validarPermiso(PERMISOS.CLIENTES_VER)) return;
