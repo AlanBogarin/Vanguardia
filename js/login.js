@@ -18,6 +18,8 @@ const tablaVentas = crearDataTable("tabla_ventas", TABLAS.VENTA);
 const tablaVentaDetalles = crearDataTable("tabla_detallesventa", TABLAS.VENTA_DETALLE);
 const tablaCuentasPorPagar = crearDataTable("tabla_cuentasporpagar", TABLAS.CUENTA_POR_PAGAR);
 const tablaCuentasPorCobrar = crearDataTable("tabla_cuentasporcobrar", TABLAS.CUENTA_POR_COBRAR);
+const tablaCuotasPorPagar = crearDataTable("tabla_cuotasporpagar", TABLAS.CUOTA_POR_PAGAR)
+const tablaCuotasPorCobrar = crearDataTable("tabla_cuotasporcobrar", TABLAS.CUOTA_POR_COBRAR)
 const tablaPagos = crearDataTable("tabla_pagos", TABLAS.PAGO);
 const tablaCobros = crearDataTable("tabla_cobros", TABLAS.COBRO);
 
@@ -92,6 +94,8 @@ function verBD() {
     cargarDataTable(tablaVentaDetalles, cargarVentaDetalles());
     cargarDataTable(tablaCuentasPorPagar, cargarCuentasPorPagar());
     cargarDataTable(tablaCuentasPorCobrar, cargarCuentasPorCobrar());
+    cargarDataTable(tablaCuotasPorPagar, cargarCuotasPorPagar());
+    cargarDataTable(tablaCuotasPorCobrar, cargarCuotasPorCobrar());
     cargarDataTable(tablaPagos, cargarPagos());
     cargarDataTable(tablaCobros, cargarCobros());
 }
