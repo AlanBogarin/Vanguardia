@@ -7,28 +7,7 @@
 
 const modalDetalle = new bootstrap.Modal(document.getElementById('modalDetalleCuenta'));
 
-const tablaCuentas = crearDataTable("tabla_cuentas_pagar", [
-    { data: "id",           title: "Id Cuenta",            render: renderRaw },
-    { data: "purchase_id",  title: "Id Compra",            render: renderRaw },
-    { data: "provider_id",  title: "Proveedor",            render: data => renderString(cargarProveedor(data).legal_name) },
-    { data: "amount_total", title: "Total a Pagar",        render: renderMoneda },
-    { data: "amount_paid",  title: "Monto Pagado",         render: renderMoneda },
-    { data: "amount_due",   title: "Monto Pendiente",      render: renderMoneda },
-    { data: "status",       title: "Estado",               render: (data, type, row) => {
-        const hoy = new Date();
-        hoy.setHours(0, 0, 0, 0);
-        const vencida = data !== ESTADO_PAGADA && new Date(row.expire_at) < hoy;
-        if (vencida) return '<span class="badge bg-dark">VENCIDO</span>';
-        return `<span class="badge ${{
-            [ESTADO_PENDIENTE]: "bg-danger",
-            [ESTADO_PARCIAL]:   "bg-warning text-dark",
-            [ESTADO_PAGADA]:    "bg-success"
-        }[data] ?? "bg-secondary"}">${data}</span>`;
-    }},
-    { data: "expire_at",    title: "Fecha de Vencimiento", render: renderFecha },
-    { data: "created_at",   title: "Fecha de Creación",    render: renderFecha },
-    { data: "updated_at",   title: "Fecha de Modificación",render: renderFecha }
-], {
+const tablaCuentas = crearDataTable("tabla_cuentas_pagar", TABLAS.CUENTA_POR_PAGAR, {
     buttons: true,
     pageLength: 10,
     searching: true,
