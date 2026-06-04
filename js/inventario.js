@@ -9,13 +9,13 @@
 const modalAjusteStock = new bootstrap.Modal(document.getElementById("modalAjusteStock"));
 
 const tablaInventario = crearDataTable("tabla_inventario", [
-    { data: "code", title: "Código de Barra", render: renderString },
-    { data: "name", title: "Producto", render: renderString },
-    { data: "description", title: "Descripción", render: renderString },
-    { data: "stock", title: "Stock", render: (data, type, row) => data <= row.min_stock ? `<span class="badge bg-danger">${data}</span>` : data },
-    { data: "min_stock", title: "Stock Mínimo", render: renderNumber },
-    { data: "category_id", title: "Categoría", render: data => cargarCategoria(data).name },
-    { data: "brand_id", title: "Marca", render: data => cargarMarca(data).name }
+    { data: "code", title: "Código de Barra", align: "right", render: renderString },
+    { data: "name", title: "Producto", align: "left", render: renderString },
+    { data: "description", title: "Descripción", align: "left", render: renderString },
+    { data: "stock", title: "Stock", align: "right", render: (data, type, row) => data <= row.min_stock ? `<span class="badge bg-danger">${data}</span>` : data },
+    { data: "min_stock", title: "Stock Mínimo", align: "right", render: renderNumber },
+    { data: "category_id", title: "Categoría", align: "left", render: data => cargarCategoria(data).name },
+    { data: "brand_id", title: "Marca", align: "left", render: data => cargarMarca(data).name }
 ], {
     buttons: false, 
     pageLength: 5,
@@ -31,7 +31,7 @@ const tablaInventario = crearDataTable("tabla_inventario", [
 
 const tablaHistorial = crearDataTable("tabla_historial_ajustes", [
     ...TABLAS.AJUSTE_STOCK.slice(0, 1),
-    { data: "product_id", title: "Código Barra", render: data => cargarProducto(data).code },
+    { data: "product_id", title: "Código Barra", align: "left", render: data => cargarProducto(data).code },
     ...TABLAS.AJUSTE_STOCK.slice(1)
 ], {
     buttons: true,

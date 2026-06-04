@@ -14,6 +14,7 @@
  * @property {string?} data Propiedad de cada registro a procesar, null todo el objeto
  * @property {string} title Nombre de la columna
  * @property {(function(any): any)?} render Funcion para transformar el valor
+ * @property {"left" | "center" | "right"?} align Alineacion de los datos
  * @property {DataTableColumn[]?} subtable Subtabla para exportar
  * @property {any[][]} subtableData Generado automaticamente al cargar datos
  * 
@@ -181,6 +182,12 @@ function crearDataTable(elementId, columns, config) {
             + (dtconfig.searching ? 'f' : '')
             + `>${dtconfig.dom}`;
     }
+    // Alineacion
+    columns.forEach(col => {
+        const align = col.align || "left";
+        delete col["align"];
+        col.className = `dt-head-center dt-body-${align}`;
+    });
     // Acciones
     if (dtconfig.actions) {
         columns.push({
@@ -296,20 +303,20 @@ function estilizarImpresion(win, title, subtables) {
                 const empDir = emp?.address || '';
                 const empTel = emp?.tel || '';
 
-                $(win.document.body).prepend(`
+    $(win.document.body).prepend(`
                     ...
-                    <div style="font-size:24px;font-weight:bold;color:#0d6efd;letter-spacing:1px;">
+                        <div style="font-size:24px;font-weight:bold;color:#0d6efd;letter-spacing:1px;">
                         ${empNombre}
-                    </div>
-                    <div style="font-size:11px;margin-top:3px;">
+                        </div>
+                        <div style="font-size:11px;margin-top:3px;">
                         ${empSlogan}
-                    </div>
-                    <div style="font-size:10px;color:#555;margin-top:5px;">
+                        </div>
+                        <div style="font-size:10px;color:#555;margin-top:5px;">
                         Dir.: ${empDir}
-                    </div>
-                    <div style="font-size:10px;color:#555;">
+                        </div>
+                        <div style="font-size:10px;color:#555;">
                         Tel.: ${empTel}
-                    </div>
+                        </div>
                     </td>
                     <td style="text-align:right;vertical-align:top;font-size:10px;color:#666;">
                         ${fecha}
@@ -427,10 +434,14 @@ async function estilizarPDF(doc, title, subtables) {
     const logo = await logoBase64;
     const fecha = renderFecha(new Date());
     const empresa = cargarEmpresa();
-    const nombreEmpresa = empresa?.legal_name?.toUpperCase() || 'VANGUARDIA';
-    const sloganEmpresa = empresa?.slogan || 'Comercialización de Productos Informáticos y Tecnológicos';
-    const direccionEmpresa = empresa?.address || '';
-    const telEmpresa = empresa?.tel || '';
+    if (!empresa) {
+        mensajeError("No se pudo cargar los datos de la empresa");
+        return;
+    }
+    const nombreEmpresa = empresa.legal_name.toUpperCase();
+    const sloganEmpresa = empresa.slogan;
+    const direccionEmpresa = empresa.address;
+    const telEmpresa = empresa.tel;
     // MARGENES
     doc.pageMargins = [30, 110, 30, 60];
     // ENCABEZADO
