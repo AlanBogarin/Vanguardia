@@ -47,7 +47,9 @@ const logoBase64 = descargarImagen("img/logo_x128.jpg");
  * @returns {string}
  */
 function renderDate(data) {
-    return data ? new Date(data).toLocaleDateString(Intl.DateTimeFormat, { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
+    if (!data) return "";
+    const fecha = new Date(data);
+    return [fecha.getDate(), fecha.getMonth() + 1, fecha.getFullYear()].map(n => String(n).padStart(2, "0")).join("/");
 }
 
 /**
@@ -55,7 +57,9 @@ function renderDate(data) {
  * @returns {string}
  */
 function renderTime(data) {
-    return data ? new Date(data).toLocaleTimeString(Intl.DateTimeFormat, { hour: "2-digit", minute: "2-digit", second: "2-digit"}) : "";
+    if (!data) return "";
+    const tiempo = new Date(data);
+    return [tiempo.getHours(), tiempo.getMinutes(), tiempo.getSeconds()].map(n => String(n).padStart(2, "0")).join(":");
 }
 
 /**
@@ -66,6 +70,15 @@ function renderFecha(data) {
     return data ? `${renderDate(data)} ${renderTime(data)}` : "";
 }
 
+function toISOLocalDate(data) {
+    if (!data) return "";
+    const fecha = new Date(data);
+    return [fecha.getFullYear(), fecha.getMonth() + 1, fecha.getDate()].map(n => String(n).padStart(2, "0")).join("-");
+}
+
+function toISOLocalTime(date) {
+    return renderTime(data);
+}
 
 /**
  * Formatear fecha para inputs de tipo datetime-local
@@ -742,7 +755,7 @@ const TABLAS = {
         { data: "id", title: "Id Detalle", align: "right", render: renderRaw },
         { data: "purchase_id", title: "Id Compra", align: "right", render: renderRaw },
         { data: "product_id", title: "Producto", align: "left", render: data => cargarProducto(data).name },
-        { data: "amount", title: "Cantidad", align: "right", render: renderNumber },
+        { data: "quantity", title: "Cantidad", align: "right", render: renderNumber },
         { data: "unit_price", title: "Precio Unitario", align: "right", render: renderMoneda },
         { data: "subtotal", title: "Subtotal", align: "right", render: renderMoneda },
         { data: "iva", title: "Tipo IVA", align: "left", render: data => data ? `${data}%` : "EXENTA" },
@@ -761,7 +774,7 @@ const TABLAS = {
         { data: "id", title: "Id Detalle", align: "right", render: renderRaw },
         { data: "sale_id", title: "Id Venta", align: "right", render: renderRaw },
         { data: "product_id", title: "Producto", align: "left", render: data => cargarProducto(data).name },
-        { data: "amount", title: "Cantidad", align: "right", render: renderNumber },
+        { data: "quantity", title: "Cantidad", align: "right", render: renderNumber },
         { data: "unit_price", title: "Precio Unitario", align: "right", render: renderMoneda },
         { data: "subtotal", title: "Subtotal", align: "right", render: renderMoneda },
         { data: "iva", title: "Tipo IVA", align: "left", render: data => data ? `${data}%` : "EXENTA" },
@@ -813,8 +826,9 @@ const TABLAS = {
     ],
     PAGO: [
         { data: "id", title: "Id Pago", align: "right", render: renderRaw },
-        { data: "installment_payable_id", title: "Id Cuota", align: "right", render: renderRaw },
-        { data: "purchase_id", title: "Id Compra", align: "right", render: renderRaw },
+        { data: "installment_payable_id", title: "Fac. Compra Credito", align: "center", render: data =>
+            cargarCompra(cargarCuentaPorPagar(cargarCuotaPorPagar(data)?.account_payable_id)?.purchase_id)?.invoice ?? "" },
+        { data: "purchase_id", title: "Fac. Compra Contado", align: "center", render: data => cargarCompra(data)?.invoice ?? "" },
         { data: "amount", title: "Monto Pagado", align: "right", render: renderMoneda },
         { data: "payment_method", title: "Método Pago", align: "left", render: renderString },
         { data: "obs", title: "Observaciones / Ref.", align: "left", render: renderString },

@@ -329,7 +329,7 @@ function ejecutarGuardadoVenta(condition, total, cobrosArray) {
             id:         obtenerSiguienteId(cargarVentaDetalles()),
             sale_id:    idVenta,
             product_id: d.product_id,
-            amount:     d.amount,
+            quantity:     d.amount,
             unit_price: d.unit_price,
             subtotal:   d.subtotal,
             iva:        iva,
@@ -480,7 +480,7 @@ function imprimirFacturaVenta(idVenta) {
         }
 
         bodyDetalles.push([
-            { text: d.amount.toString(), alignment: 'center' },
+            { text: d.quantity.toString(), alignment: 'center' },
             { text: nombre, alignment: 'left' },
             { text: renderMoneda(d.unit_price), alignment: 'right' },
             { text: exenta, alignment: 'right' },
@@ -741,7 +741,7 @@ function abrirDetallesVenta(idVenta) {
         $tbody.append(`
             <tr>
                 <td>${prod ? prod.name : d.product_id}</td>
-                <td class="text-center">${d.amount}</td>
+                <td class="text-center">${d.quantity}</td>
                 <td class="text-end">${renderMoneda(d.unit_price)}</td>
                 <td class="text-end">${renderMoneda(d.subtotal)}</td>
             </tr>

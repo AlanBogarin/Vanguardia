@@ -9,6 +9,7 @@
 
 const modalNCompra = new bootstrap.Modal(document.getElementById('modalNuevaCompra'));
 const modalVerDetalle = new bootstrap.Modal(document.getElementById('modalVerDetalles'));
+
 let _modalCuotas = null;
 let _datosCompraTemp = null;
 let _modalPagosMultiples = null;
@@ -34,14 +35,14 @@ const tablaCompras = crearDataTable("tabla_compras", [
             {
                 color: "btn-info btn-ver-detalles",
                 content: "<i class=\"bi bi-eye\"></i>",
-                properties: `onclick="ventanaVerDetalles(${compra.id})"`,
+                properties: `onclick="onClickVerDetalles(${compra.id})"`,
                 title: "Ver Detalles",
             }
         ]
     })
 });
 
-function ventanaNuevaCompra() {
+function onClickNuevaCompra() {
     const facturaElem = document.getElementById("invoice");
     const id = obtenerSiguienteId(cargarCompras());
     facturaElem.value = `001-001-${String(id).padStart(7, "0")}`;
@@ -51,7 +52,7 @@ function ventanaNuevaCompra() {
 /**
  * @param {number} id 
  */
-function ventanaVerDetalles(id) {
+function onClickVerDetalles(id) {
     const compra = cargarCompra(id);
     if (!compra) {
         mensajeError(`La compra con ID ${id} no existe`);
@@ -74,7 +75,7 @@ function ventanaVerDetalles(id) {
     facturaElem.textContent = compra.invoice;
     timbradoElem.textContent = compra.stamping;
 
-    const detalles = cargarCompraDetalles().filter(d => d.purchase_id === compra.id);
+    const detalles = cargarCompraDetalles(compra.id);
     const productos = cargarProductos();
 
     const tbody = document.querySelector("#tabla_ver_detalles tbody");
@@ -87,17 +88,9 @@ function ventanaVerDetalles(id) {
 
     detalles.forEach(det => {
         const p = productos.find(prod => prod.id === det.product_id);
-        const pName = p ? p.name : 'Desconocido';
-        
-        // Garantizamos leer la cantidad real (corrige el error de que salga 0)
-        const cant = det.quantity !== undefined ? det.quantity : (det.amount || 1); 
-
-        // Si es una compra vieja sin IVA, lo busca del producto actual
+        const pName = p.name;
+        const cant = det.quantity;
         let ivaTipo = det.iva;
-        if (ivaTipo === undefined || ivaTipo === null) {
-            ivaTipo = p ? parseInt(p.iva) : 0;
-        }
-
         // Clasifica el subtotal según el tipo de IVA
         if (ivaTipo === 5) {
             verAcumIva5 += det.subtotal;
@@ -106,9 +99,7 @@ function ventanaVerDetalles(id) {
         } else {
             verAcumExenta += det.subtotal;
         }
-
         const montoIva = Math.round((det.subtotal * ivaTipo) / 100);
-
         tbody.innerHTML += `
             <tr>
                 <td>${pName}</td>
@@ -269,12 +260,16 @@ function renderizarDetalles() {
 
 function btnGuardarNuevaCompra() {
     const proveedorElem = document.getElementById("provider_id");
+    const proveedor = cargarProveedor(parseInt(proveedorElem.value));
     const condicionElem = document.getElementById("condition");
     const condicion = condicionElem.value;
     const facturaElem = document.getElementById("invoice");
     const factura = facturaElem.value.trim();
-    const timbrado = document.getElementById("timbrado").value.trim();
-    const proveedor = cargarProveedor(parseInt(proveedorElem.value));
+    const timbradoElem = document.getElementById("timbrado");
+    const timbrado = timbradoElem.value.trim();
+    const fechaElem = document.getElementById('fecha_compra');
+    const fecha = new Date(fechaElem.value || new Date());
+    const buscarProductoElem = document.getElementById("buscar_producto");
     if (!proveedor) {
         mensajeError("Debe seleccionar un proveedor.");
         proveedorElem.focus();
@@ -297,41 +292,31 @@ function btnGuardarNuevaCompra() {
         return;
     } else if (!timbrado.match(REGEX_TIMBRADO)) {
         mensajeError("El número de timbrado debe tener 8 dígitos.");
+        timbradoElem.focus();
         return;
     } else if (detallesTemporales.length === 0) {
         mensajeError("Debe agregar al menos un producto a la compra.");
+        buscarProductoElem.focus();
+        return;
+    } else if (fecha > new Date()) {
+        mensajeError('La fecha no puede ser futura.');
+        fechaElem.focus();
+        return;
+    } else if (fecha < new Date(new Date().setDate(new Date().getDate() - 1)).setHours(0, 0, 0, 0)) {
+        mensajeError('Solo se permiten fechas de ayer o hoy.');
+        fechaElem.focus();
         return;
     }
-    // LA FECHA CARGA SOLO CARGA DE AYER Y HOY
-    const fechaInput = document.getElementById('fecha_compra');
-    let fechaValor = fechaInput ? fechaInput.value : '';
-    const todayStr = toISOLocalString(new Date()).split('T')[0];
-
-    // ESTABLECER EL VALOR PREDETERMINADO DE HOY SI ESTA VACIO
-    if (!fechaValor) {
-        fechaValor = todayStr;
-    }
-
-    if (fechaValor > todayStr) {
-        mensajeError('La fecha no puede ser futura. Solo se permiten fechas de hoy o antes.');
-        return;
-    }
-
-    const selectedDate = new Date(fechaValor + 'T00:00:00'); // Forzar hora local
-    const formattedFecha = toISOLocalString(selectedDate); // store as ISO string
-    // const nuevaCompraId = obtenerSiguienteId(cargarCompras());
-    // ...
-    // Guardar datos temporales y decidir flujo
     const amount = detallesTemporales.reduce((acc, curr) => acc + curr.subtotal, 0);
     const mpElem = document.getElementById('metodo_pago');
     const metodo_pago = condicion === CONDICION_CONTADO && mpElem ? mpElem.value : null;
-    
+
     _datosCompraTemp = {
         provider_id: proveedor.id,
         condicion,
         factura,
         timbrado,
-        formattedFecha,
+        formattedFecha: fecha,
         amount,
         metodo_pago
     };
@@ -470,15 +455,12 @@ function onShowModalNuevaCompra() {
     document.getElementById("buscar_proveedor").value = "";
     document.getElementById("nombre_proveedor").value = "";
     // Establecer restricciones de fecha: solo ayer y hoy.
-    const today = new Date();
-    const yesterday = new Date();
-    yesterday.setDate(today.getDate() - 1);
     const fechaInput = document.getElementById('fecha_compra');
     if (fechaInput) {
-        fechaInput.min = toISOLocalString(yesterday).split('T')[0];
-        fechaInput.max = toISOLocalString(today).split('T')[0];
+        fechaInput.min = toISOLocalString(new Date(new Date().setDate(new Date().getDate() - 1)).setHours(0, 0, 0, 0));
+        fechaInput.max = toISOLocalString(new Date());
         //Establecer por defecto en hoy.
-        fechaInput.value = toISOLocalString(today).split('T')[0];
+        fechaInput.value = toISOLocalString(new Date());
     }
     document.getElementById("condition").value = "CONTADO";
     const _mpEl = document.getElementById("metodo_pago");
@@ -632,6 +614,9 @@ function filtrarProductosModal() {
     renderizarProductosModal(productos);
 }
 
+/**
+ * @param {Producto[]} productos 
+ */
 function renderizarProductosModal(productos) {
     const tbody = document.getElementById('tbody_modal_productos');
     if (!productos.length) {
@@ -642,8 +627,9 @@ function renderizarProductosModal(productos) {
         <tr>
             <td>${escapeHTML(p.name)}</td>
             <td>${p.code ? escapeHTML(p.code.toString()) : '-'}</td>
-            <td class="text-center fw-bold">${p.stock}</td>
-            <td class="text-center">${p.iva}%</td>
+            <td class="text-center fw-bold">${renderNumber(p.stock)}</td>
+            <td class="text-center fw-bold">${renderMoneda(p.selling_price)}</td>
+            <td class="text-center">${p.iva ? `${p.iva}%` : "EXENTA"}</td>
             <td class="text-center">
                 <button type="button" class="btn btn-sm btn-success" onclick="seleccionarProductoDesdeModal(${p.id})">
                     <i class="bi bi-check-lg"></i> Seleccionar
@@ -741,7 +727,7 @@ function guardarCompraFinal() {
         provider_id,
         user_id: currentUser,
         condition: condicion,
-        amount,
+        amount: amount,
         invoice: factura,
         stamping: timbrado,
         created_at: formattedFecha
@@ -795,8 +781,6 @@ function guardarCompraFinal() {
             purchase_id: nuevaCompraId,
             provider_id,
             amount_total: aFinanciar,
-            amount_paid: 0,
-            amount_due: aFinanciar,
             installments: cantidad,
             installment_type: tipo,
             status: ESTADO_PENDIENTE,
@@ -856,7 +840,7 @@ function guardarCompraFinal() {
                 id: obtenerSiguienteId(cargarPagos()),
                 installment_payable_id: null,
                 purchase_id: nuevaCompraId,
-                amount,
+                amount: amount,
                 payment_method: _datosCompraTemp.metodo_pago || METODO_EFECTIVO,
                 obs: `PAGO CONTADO COMPRA NRO ${nuevaCompraId}`,
                 created_at: new Date()
