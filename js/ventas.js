@@ -18,6 +18,7 @@ const modalNuevaVenta = new bootstrap.Modal(document.getElementById("modalNuevaV
 const modalVerDetallesVenta = new bootstrap.Modal(document.getElementById("modalVerDetalles"));
 const modalNuevoCliente = new bootstrap.Modal(document.getElementById("modalNuevoCliente"));
 const modalCobroContado = new bootstrap.Modal(document.getElementById("modalCobroContado"));
+const modalConfigurarCuotasVenta = new bootstrap.Modal(document.getElementById("modalConfigurarCuotasVenta"));
 const modalImprimirFactura = new bootstrap.Modal(document.getElementById("modalImprimirFactura"));
 
 /** @type {DetalleTemp} */
@@ -206,6 +207,101 @@ function renderTablaDetalle() {
     $("#total_venta").text(renderMoneda(total));
 }
 
+let _datosVentaTemp = null;
+
+function maxCuotasPorTipoVenta(tipo) {
+    switch (tipo) {
+        case 'QUINCENAL': return 48;  // 2 años × 24 quincenas
+        case 'SEMANAL':   return 104; // 2 años × 52 semanas
+        default:          return 24;  // 2 años × 12 meses
+    }
+}
+
+function previewCuotasVenta() {
+    const tipo = document.getElementById('cuotas_v_tipo').value;
+    const maxCuotas = maxCuotasPorTipoVenta(tipo);
+    const inputCantidad = document.getElementById('cuotas_v_cantidad');
+    const helpText = document.getElementById('cuotas_v_cantidad_help');
+    
+    inputCantidad.max = maxCuotas;
+    if (helpText) {
+        const labels = { MENSUAL: 'meses', QUINCENAL: 'quincenas', SEMANAL: 'semanas' };
+        helpText.textContent = `Máx. ${maxCuotas} cuotas (2 años = ${maxCuotas} ${labels[tipo] || 'cuotas'})`;
+    }
+    
+    let cantidad = parseInt(inputCantidad.value) || 1;
+    if (cantidad > maxCuotas) {
+        cantidad = maxCuotas;
+        inputCantidad.value = maxCuotas;
+    }
+    
+    let entrega = parseInt(document.getElementById('cuotas_v_entrega').value) || 0;
+    const total_venta = _datosVentaTemp ? _datosVentaTemp.amount : 0;
+    
+    if (entrega > total_venta) {
+        entrega = total_venta;
+        document.getElementById('cuotas_v_entrega').value = entrega;
+    }
+    
+    const aFinanciar = total_venta - entrega;
+    document.getElementById('cuotas_v_total').value = `Gs. ${renderMoneda(aFinanciar)}`;
+
+    const cuotas = generarCuotas(aFinanciar, cantidad);
+    const tbody = document.getElementById('tbody_v_preview_cuotas');
+    
+    const primerVencElem = document.getElementById('cuotas_v_primer_venc');
+    let fechaInicio = new Date();
+    if (primerVencElem && primerVencElem.value) {
+        fechaInicio = new Date(primerVencElem.value + 'T00:00:00');
+    }
+
+    tbody.innerHTML = cuotas.map((c, i) => {
+        let venc;
+        if (i === 0 && primerVencElem && primerVencElem.value) {
+            venc = fechaInicio;
+        } else if (primerVencElem && primerVencElem.value) {
+            venc = calcularVencimiento(fechaInicio, i, tipo);
+        } else {
+            venc = calcularVencimiento(fechaInicio, i + 1, tipo);
+        }
+        return `
+            <tr>
+                <td class="text-center fw-bold">${c.installment_number}</td>
+                <td>Gs. ${renderMoneda(c.amount)}</td>
+                <td>${renderDate(venc)}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function cancelarCuotasVenta() {
+    _datosVentaTemp = null;
+    modalConfigurarCuotasVenta.hide();
+}
+
+function confirmarCuotasVenta() {
+    const cantidad = parseInt(document.getElementById('cuotas_v_cantidad').value);
+    const tipo = document.getElementById('cuotas_v_tipo').value;
+    const maxCuotas = maxCuotasPorTipoVenta(tipo);
+    if (!cantidad || cantidad <= 0) {
+        mensajeError("Debes ingresar la cantidad de cuotas");
+        return;
+    }
+    if (cantidad > maxCuotas) {
+        mensajeError(`El máximo permitido es ${maxCuotas} cuotas (2 años) para la frecuencia seleccionada.`);
+        document.getElementById('cuotas_v_cantidad').focus();
+        return;
+    }
+    const primerVencElem = document.getElementById('cuotas_v_primer_venc');
+    if (primerVencElem && !primerVencElem.value) {
+        mensajeError("Debes definir la fecha de vencimiento de las cuota");
+        return;
+    }
+
+    modalConfigurarCuotasVenta.hide();
+    ejecutarGuardadoVenta(CONDICION_CREDITO, _datosVentaTemp.amount, []);
+}
+
 function btnGuardarNuevaVenta() {
     const clientId = parseInt($("#client_id").val());
     const condition = $("#condition").val();
@@ -215,17 +311,22 @@ function btnGuardarNuevaVenta() {
 
     const total = detallesTemp.reduce((s, d) => s + d.subtotal, 0);
 
+    _datosVentaTemp = {
+        client_id: clientId,
+        condition,
+        amount: total
+    };
+
     if (condition === "CONTADO") {
         abrirModalCobroContado(total);
     } else {
-        confirmar(
-            "Confirmar Venta a Crédito",
-            `Total: <strong>Gs. ${renderMoneda(total)}</strong><br>Condición de cobro: CRÉDITO`,
-            () => {
-                ejecutarGuardadoVenta(CONDICION_CREDITO, total, []);
-            },
-            () => {}
-        );
+        document.getElementById('cuotas_v_total').value = `Gs. ${renderMoneda(total)}`;
+        document.getElementById('cuotas_v_cantidad').value = 3;
+        document.getElementById('cuotas_v_tipo').value = 'MENSUAL';
+        document.getElementById('cuotas_v_entrega').value = 0;
+        document.getElementById('cuotas_v_primer_venc').value = '';
+        previewCuotasVenta();
+        modalConfigurarCuotasVenta.show();
     }
 }
 
@@ -344,19 +445,70 @@ function ejecutarGuardadoVenta(condition, total, cobrosArray) {
     });
 
     if (condition === CONDICION_CREDITO) {
-        const cuentas = cargarCuentasPorCobrar();
+        const cantidad = parseInt(document.getElementById('cuotas_v_cantidad').value) || 3;
+        const tipo = document.getElementById('cuotas_v_tipo').value;
+        const entrega = parseInt(document.getElementById('cuotas_v_entrega').value) || 0;
+        const aFinanciar = total - entrega;
+
+        if (entrega > 0) {
+            guardarCobro({
+                id: obtenerSiguienteId(cargarCobros()),
+                installment_receivable_id: null,
+                sale_id: idVenta,
+                amount: entrega,
+                payment_method: METODO_EFECTIVO,
+                obs: `ENTREGA INICIAL VENTA NRO ${idVenta}`,
+                created_at: ahora
+            });
+        }
+
+        const cuentaId = obtenerSiguienteId(cargarCuentasPorCobrar());
+
         guardarCuentaPorCobrar({
-            id: obtenerSiguienteId(cuentas),
+            id: cuentaId,
             sale_id: idVenta,
             client_id: clientId,
-            amount_total: total,
-            amount_paid: 0,
-            amount_due: total,
+            amount_total: aFinanciar,
+            installments: cantidad,
+            installment_type: tipo,
             status: ESTADO_PENDIENTE,
-            expire_at: new Date(ahora.getTime() + 86400000 * 30),
             created_at: ahora,
             updated_at: null
         });
+
+        // Generar cuotas
+        const cuotas = generarCuotas(aFinanciar, cantidad);
+        let cuotaId = obtenerSiguienteId(cargarCuotasPorCobrar());
+        
+        const primerVencElem = document.getElementById('cuotas_v_primer_venc');
+        let fechaInicio = ahora;
+        if (primerVencElem && primerVencElem.value) {
+            fechaInicio = new Date(primerVencElem.value + 'T00:00:00'); 
+        }
+
+        cuotas.forEach((c, i) => {
+            let venc;
+            if (i === 0 && primerVencElem && primerVencElem.value) {
+                venc = fechaInicio;
+            } else if (primerVencElem && primerVencElem.value) {
+                venc = calcularVencimiento(fechaInicio, i, tipo); 
+            } else {
+                venc = calcularVencimiento(fechaInicio, i + 1, tipo);
+            }
+            guardarCuotaPorCobrar({
+                id: cuotaId++,
+                account_receivable_id: cuentaId,
+                installment_number: c.installment_number,
+                amount: c.amount,
+                amount_paid: 0,
+                status: ESTADO_PENDIENTE,
+                due_date: venc,
+                created_at: ahora,
+                updated_at: null
+            });
+        });
+
+        mensajeSuccess(`Venta a crédito guardada. Se generaron ${cantidad} cuotas.`);
     } else if (condition === CONDICION_CONTADO) {
         cobrosArray.forEach(c => {
             guardarCobro({
@@ -373,6 +525,7 @@ function ejecutarGuardadoVenta(condition, total, cobrosArray) {
 
     ultimaVentaIdParaFactura = idVenta;
 
+    _datosVentaTemp = null;
     modalNuevaVenta.hide();
     limpiarModalVenta();
     cargarDatos();

@@ -347,6 +347,69 @@
         </div>
     </div>
 
+    <!-- Modal Configurar Cuotas Ventas -->
+    <div class="modal fade" id="modalConfigurarCuotasVenta" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title"><i class="bi bi-calendar-check me-1"></i> Configurar Cuotas</h5>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">Configurá las cuotas para esta venta a crédito antes de confirmar.</p>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Total a financiar</label>
+                            <input type="text" id="cuotas_v_total" class="form-control" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Entrega Inicial</label>
+                            <input type="number" id="cuotas_v_entrega" class="form-control" min="0" value="0"
+                                oninput="previewCuotasVenta()" placeholder="Opcional">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Cant. de cuotas</label>
+                            <input type="number" id="cuotas_v_cantidad" class="form-control" min="1" max="24" value="3"
+                                oninput="previewCuotasVenta()">
+                            <div id="cuotas_v_cantidad_help" class="form-text text-muted small">Máx. 24 cuotas (2 años)</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Frecuencia</label>
+                            <select id="cuotas_v_tipo" class="form-select" onchange="previewCuotasVenta()">
+                                <option value="MENSUAL">Mensual</option>
+                                <option value="QUINCENAL">Quincenal</option>
+                                <option value="SEMANAL">Semanal</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Primer Vencimiento</label>
+                            <input type="date" id="cuotas_v_primer_venc" class="form-control" onchange="previewCuotasVenta()">
+                        </div>
+                    </div>
+                    <div class="table-responsive" style="max-height:250px;overflow-y:auto;">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-warning sticky-top">
+                                <tr>
+                                    <th class="text-center">Cuota</th>
+                                    <th>Importe</th>
+                                    <th>Vencimiento</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody_v_preview_cuotas"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="cancelarCuotasVenta()"><i
+                            class="bi bi-x-circle me-1"></i> Cancelar</button>
+                    <button type="button" class="btn btn-warning text-dark" onclick="confirmarCuotasVenta()"><i
+                            class="bi bi-check-circle me-1"></i> Confirmar Venta</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL COBRO CONTADO -->
     <div class="modal fade" id="modalCobroContado" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog">

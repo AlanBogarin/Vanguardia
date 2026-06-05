@@ -1,26 +1,22 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>Vanguardia - Cobros</title>
     <link rel="icon" href="img/logo_x16.jpg">
-    <!-- ESTILOS DEL MENU -->
-    <link href="menu/styles.css" rel="stylesheet"/>
-    <!-- BOOTSTRAP -->
+    <link href="menu/styles.css" rel="stylesheet" />
     <link rel="stylesheet" href="bt/bootstrap.min.css">
-    <!-- BOOTSTRAP ICONS -->
     <link rel="stylesheet" href="bt-icons/bootstrap-icons.min.css">
-    <!-- ALERTIFY -->
     <link rel="stylesheet" href="alert/alertify.min.css">
     <link rel="stylesheet" href="alert/themes/default.min.css">
-    <!-- DATATABLES -->
     <link rel="stylesheet" href="dt/datatables.min.css">
     <link rel="stylesheet" href="dt/jquery.dataTables.min.css">
     <link rel="stylesheet" href="dt/buttons.dataTables.min.css">
-    <!-- TEMA VANGUARDIA -->
     <link rel="stylesheet" href="css/vanguardia.css">
 </head>
+
 <body class="sb-nav-fixed">
     <div id="contenedor-navbar"></div>
     <div id="layoutSidenav">
@@ -29,10 +25,9 @@
             <main>
                 <div class="container-fluid px-4">
                     <div class="d-flex justify-content-between align-items-center mt-2 mb-2">
-                        <div>
-                            <h1 class="mb-0 d-inline-block me-3">Cobros a Clientes</h1>
-                        </div>
-                        <button class="btn btn-sm btn-primary" id="btnModalNuevo" onclick="modalNuevo.show()">
+                        <h1 class="mb-0">Cobros a Clientes</h1>
+                        <button class="btn btn-sm btn-primary" id="btnModalNuevo" type="button"
+                            onclick="ventanaNuevoCobro()">
                             <i class="bi bi-cash-stack me-1"></i> Registrar Nuevo Cobro
                         </button>
                     </div>
@@ -40,75 +35,38 @@
                     <!-- PANEL DE FILTROS -->
                     <div class="row mb-3">
                         <div class="col-12">
-                            <div class="card"
-                                style="background:rgba(255,255,255,0.65);
-                                        border:1px solid rgba(100,160,255,0.3);
-                                        box-shadow:0 8px 32px rgba(30,80,180,0.12);
-                                        border-radius:12px;
-                                        backdrop-filter:blur(6px);">
-                                <!-- HEADER CLICKABLE -->
+                            <div class="card" style="background:rgba(255,255,255,0.65);
+                                         border:1px solid rgba(100,160,255,0.3);
+                                         box-shadow:0 8px 32px rgba(30,80,180,0.12);
+                                         border-radius:12px;
+                                         backdrop-filter:blur(6px);">
                                 <div class="card-header py-2 px-3 d-flex justify-content-between align-items-center"
-                                    style="background:rgba(30,80,180,0.9);
-                                            color:white;
-                                            border-radius:11px 11px 0 0;
-                                            cursor:pointer;"
-                                    data-bs-toggle="collapse"
-                                    data-bs-target="#panelFiltrosMetodosCobro"
-                                    aria-expanded="true">
-                                    <span>
-                                        <i class="bi bi-funnel-fill me-1"></i>
-                                        <strong>Filtros</strong>
-                                    </span>
+                                    style="background:rgba(30,80,180,0.9);color:white;border-radius:11px 11px 0 0;cursor:pointer;"
+                                    data-bs-toggle="collapse" data-bs-target="#panelFiltrosCobros" aria-expanded="true">
+                                    <span><i class="bi bi-funnel-fill me-1"></i><strong>Filtros</strong></span>
                                     <i class="bi bi-chevron-down"></i>
                                 </div>
-                                <!-- COLLAPSE BODY -->
-                                <div class="collapse show" id="panelFiltrosMetodosCobro">
+                                <div class="collapse show" id="panelFiltrosCobros">
                                     <div class="card-body py-3">
                                         <div class="row g-3 align-items-end">
                                             <div class="col-md-4 col-sm-6">
-                                                <label for="filtro_metodo" class="form-label fw-semibold small mb-1" style="color:#0d2149">
-                                                    Método de Cobro
-                                                </label>
-                                                <select id="filtro_metodo"
-                                                        class="form-select form-select-sm"
-                                                        onchange="cargarDatos()"
-                                                        style="background-color:rgba(255,255,255,0.9);
-                                                            border:1px solid rgba(30,80,180,0.3);
-                                                            color:#0d2149;
-                                                            border-radius:6px;">
+                                                <label for="filtro_metodo" class="form-label fw-semibold small mb-1" style="color:#0d2149">Método de Cobro</label>
+                                                <select id="filtro_metodo" class="form-select form-select-sm" onchange="cargarDatos()" style="background-color:rgba(255,255,255,0.9);border:1px solid rgba(30,80,180,0.3);color:#0d2149;border-radius:6px;">
                                                     <option value="">Todos</option>
-                                                    <option value="Efectivo">Efectivo</option>
-                                                    <option value="Transferencia Bancaria">Transferencia Bancaria</option>
-                                                    <option value="Tarjeta de Crédito">Tarjeta de Crédito</option>
-                                                    <option value="Tarjeta de Débito">Tarjeta de Débito</option>
-                                                    <option value="Cheque">Cheque</option>
+                                                    <option value="EFECTIVO">Efectivo</option>
+                                                    <option value="TRANSFERENCIA">Transferencia Bancaria</option>
+                                                    <option value="TARJETA_CREDITO">Tarjeta de Crédito</option>
+                                                    <option value="TARJETA_DEBITO">Tarjeta de Débito</option>
+                                                    <option value="CHEQUE">Cheque</option>
                                                 </select>
                                             </div>
-                                            <div class="col-md-4 col-sm-6">
-                                                <label for="filtro_fecha_desde" class="form-label fw-semibold small mb-1" style="color:#0d2149">
-                                                    Cobrado Desde
-                                                </label>
-                                                <input type="date"
-                                                    id="filtro_fecha_desde"
-                                                    class="form-control form-control-sm"
-                                                    onchange="cargarDatos()"
-                                                    style="background-color:rgba(255,255,255,0.9);
-                                                            border:1px solid rgba(30,80,180,0.3);
-                                                            color:#0d2149;
-                                                            border-radius:6px;">
+                                            <div class="col-md-3 col-sm-6">
+                                                <label for="filtro_fecha_desde" class="form-label fw-semibold small mb-1" style="color:#0d2149">Desde (Fecha de Creación)</label>
+                                                <input type="date" id="filtro_fecha_desde" class="form-control form-control-sm" onchange="cargarDatos()" style="background-color:rgba(255,255,255,0.9);border:1px solid rgba(30,80,180,0.3);color:#0d2149;border-radius:6px;">
                                             </div>
-                                            <div class="col-md-4 col-sm-6">
-                                                <label for="filtro_fecha_hasta" class="form-label fw-semibold small mb-1" style="color:#0d2149">
-                                                    Cobrado Hasta
-                                                </label>
-                                                <input type="date"
-                                                    id="filtro_fecha_hasta"
-                                                    class="form-control form-control-sm"
-                                                    onchange="cargarDatos()"
-                                                    style="background-color:rgba(255,255,255,0.9);
-                                                            border:1px solid rgba(30,80,180,0.3);
-                                                            color:#0d2149;
-                                                            border-radius:6px;">
+                                            <div class="col-md-3 col-sm-6">
+                                                <label for="filtro_fecha_hasta" class="form-label fw-semibold small mb-1" style="color:#0d2149">Hasta (Fecha de Creación)</label>
+                                                <input type="date" id="filtro_fecha_hasta" class="form-control form-control-sm" onchange="cargarDatos()" style="background-color:rgba(255,255,255,0.9);border:1px solid rgba(30,80,180,0.3);color:#0d2149;border-radius:6px;">
                                             </div>
                                         </div>
                                     </div>
@@ -117,10 +75,26 @@
                         </div>
                     </div>
 
+                    <!-- METRICAS -->
+                    <div class="row mb-3">
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card shadow-sm text-white" style="background:linear-gradient(135deg, #0d6efd 0%, #0a4ebd 100%);border-radius:12px;border:none;">
+                                <div class="card-body py-3 d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <h6 class="mb-1 text-uppercase fw-semibold small" style="opacity:.85;letter-spacing:.5px;">Total Cobrado (Filtrado)</h6>
+                                        <h3 class="mb-0 fw-bold" id="suma_cobros">0 Gs.</h3>
+                                    </div>
+                                    <div class="d-flex align-items-center justify-content-center" style="width:48px;height:48px;background:rgba(255,255,255,0.15);border-radius:50%;">
+                                        <i class="bi bi-cash-coin fs-3"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- TABLA -->
                     <div class="row">
-                        <table id="tabla_cobros" class="display compact" style="width:100%">
-                        </table>
+                        <table id="tabla_cobros" class="display compact" style="width:100%"></table>
                     </div>
                 </div>
             </main>
@@ -128,70 +102,230 @@
         </div>
     </div>
 
-    <!-- Modal Nuevo Cobro -->
-    <div class="modal fade" id="modalNuevoCobro" tabindex="-1" aria-labelledby="modalNuevoCobroLabel" aria-hidden="true" data-bs-backdrop="static">
-        <div class="modal-dialog">
-            <form id="formNuevoCobro" class="modal-content">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title" id="modalNuevoCobroLabel"><i class="bi bi-cash"></i> Registrar Cobro</h5>
+    <!-- MODAL SELECCIONAR CUENTA Y VER CUOTAS -->
+    <div class="modal fade" id="modalSeleccionarCuenta" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header text-white" style="background:rgba(30,80,180,0.9);">
+                    <h5 class="modal-title"><i class="bi bi-receipt me-2"></i> Seleccionar Cuenta — Ver Cuotas</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-2">
-                        <label class="form-label">Cuenta por Cobrar (Pendientes)</label>
-                        <select id="account_receivable_id" class="form-select" onchange="onchangeCuenta()" required></select>
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Saldo Pendiente</label>
-                        <input type="text" id="saldo_pendiente" class="form-control" readonly>
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Monto a Cobrar</label>
-                        <input type="number" id="monto" class="form-control" required min="1">
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Método de Pago</label>
-                        <select id="metodo" class="form-select" required>
-                            <option value="">Seleccione...</option>
-                            <option value="Efectivo">Efectivo</option>
-                            <option value="Transferencia Bancaria">Transferencia Bancaria</option>
-                            <option value="Tarjeta de Crédito">Tarjeta de Crédito</option>
-                            <option value="Tarjeta de Débito">Tarjeta de Débito</option>
-                            <option value="Cheque">Cheque</option>
+                    <!-- Selector de cuenta -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Cuenta por Cobrar (con saldo pendiente)</label>
+                        <select id="cuenta_id" class="form-select" onchange="onChangeCuenta()">
+                            <option value="">Seleccione una cuenta pendiente...</option>
                         </select>
                     </div>
-                    <div class="mb-2">
-                        <label class="form-label">Nro. Factura / Comprobante</label>
-                        <input type="text" id="factura" class="form-control" maxlength="50" required>
+                    <!-- Resumen de la cuenta -->
+                    <div id="div_resumen_cuenta" class="d-none mb-3">
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-4">
+                                <div class="card text-center py-2 border-0 bg-light">
+                                    <small class="text-muted">Total Cuenta</small>
+                                    <strong id="res_total" class="text-primary fs-6">—</strong>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card text-center py-2 border-0 bg-light">
+                                    <small class="text-muted">Total Cobrado</small>
+                                    <strong id="res_abonado" class="text-success fs-6">—</strong>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card text-center py-2 border-0 bg-light">
+                                    <small class="text-muted">Saldo Pendiente</small>
+                                    <strong id="res_saldo" class="text-danger fs-6">—</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Tabla de cuotas correlativas -->
+                        <h6 class="fw-bold mb-1"><i class="bi bi-list-ol me-1"></i> Cuotas (orden correlativo)</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered align-middle mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th class="text-center">#</th>
+                                        <th>Importe</th>
+                                        <th>Cobrado</th>
+                                        <th>Saldo</th>
+                                        <th>Vencimiento</th>
+                                        <th class="text-center">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody_cuotas_cuenta"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
-                    <button type="button" class="btn btn-success" onclick="btnGuardarCobro()"><i class="bi bi-floppy"></i> Guardar Cobro</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" id="btn_ir_cobrar" disabled onclick="ventanaCobrosMultiples()">
+                        <i class="bi bi-cash me-1"></i> Proceder al Cobro
+                    </button>
                 </div>
-            </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: COBROS MÚLTIPLES -->
+    <div class="modal fade" id="modalCobrosMultiples" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="bi bi-cash-coin me-2"></i> Registrar Cobro</h5>
+                    <button type="button" class="btn-close btn-close-white" onclick="cancelarCobroMultiple()"></button>
+                </div>
+                <div class="modal-body">
+
+                    <!-- Info de la cuenta / cuota actual -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-4">
+                            <div class="card text-center py-2 border-0" style="background:#e8f4fd;">
+                                <small class="text-muted">Saldo Total Pendiente</small>
+                                <strong class="text-primary fs-6" id="cobro_saldo_cuenta">—</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card text-center py-2 border-0" style="background:#fff3cd;">
+                                <small class="text-muted">Monto a Cobrar Ahora</small>
+                                <strong class="text-warning fs-6" id="cobro_monto_label">—</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card text-center py-2 border-0" style="background:#e8f5e9;">
+                                <small class="text-muted">Ya Ingresado</small>
+                                <strong class="text-success fs-6" id="cobro_ingresado">Gs. 0</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Monto a cobrar (editable, permite parcial) -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Monto a cobrar en esta operación
+                            <small class="text-muted fw-normal">(puede ser parcial)</small>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">Gs.</span>
+                            <input type="number" id="cobro_monto_total" class="form-control" min="1"
+                                placeholder="Ingrese el monto a cobrar..." onchange="renderizarCobrosMultiples()">
+                            <button class="btn btn-outline-primary fw-bold" type="button" onclick="onClickSumarSiguienteCuota()" title="Agregar el valor de la siguiente cuota al monto a cobrar">
+                                <i class="bi bi-plus-circle me-1"></i> Sumar Siguiente Cuota
+                            </button>
+                        </div>
+                        <div class="form-text text-muted">
+                            Puede modificar este valor libremente. El monto ingresado se distribuirá en orden correlativo cubriendo todas las cuotas que alcance.
+                        </div>
+                    </div>
+
+                    <hr class="my-2">
+
+                    <!-- Panel de agregar métodos de cobro -->
+                    <h6 class="fw-bold mb-2"><i class="bi bi-plus-circle me-1"></i> Agregar Método de Cobro</h6>
+                    <div class="row g-2 align-items-end mb-2">
+                        <div class="col-md-4">
+                            <label class="form-label small mb-1">Método</label>
+                            <select id="pm_metodo" class="form-select form-select-sm" onchange="onChangePMMetodo()">
+                                <option value="">Seleccione...</option>
+                                <option value="EFECTIVO">Efectivo</option>
+                                <option value="TRANSFERENCIA">Transferencia Bancaria</option>
+                                <option value="TARJETA_CREDITO">Tarjeta de Crédito</option>
+                                <option value="TARJETA_DEBITO">Tarjeta de Débito</option>
+                                <option value="CHEQUE">Cheque</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-none" id="div_pm_banco">
+                            <label class="form-label small mb-1">Banco</label>
+                            <select id="pm_banco" class="form-select form-select-sm">
+                                <option value="">Seleccione...</option>
+                                <option value="ITAU">Banco Itaú</option>
+                                <option value="CONTINENTAL">Banco Continental</option>
+                                <option value="ATLAS">Banco Atlas</option>
+                                <option value="GNB">Banco GNB</option>
+                                <option value="SUDAMERIS">Banco Sudameris</option>
+                                <option value="BASA">Banco Basa</option>
+                                <option value="BNF">Banco Nacional de Fomento (BNF)</option>
+                                <option value="UENO">Ueno Bank</option>
+                                <option value="FAMILIAR">Banco Familiar</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small mb-1">Monto (Gs.)</label>
+                            <input type="number" id="pm_monto" class="form-control form-control-sm" min="1" placeholder="0">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small mb-1">Referencia</label>
+                            <input type="text" id="pm_obs" class="form-control form-control-sm" maxlength="50" placeholder="Nro / Ref...">
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-sm btn-primary" onclick="onClickAgregarMetodoCobro()">
+                                <i class="bi bi-plus-lg"></i> Agregar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de métodos agregados -->
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered align-middle mb-0">
+                            <thead class="table-secondary">
+                                <tr>
+                                    <th>Método</th>
+                                    <th class="text-end">Monto</th>
+                                    <th>Referencia</th>
+                                    <th class="text-center">Quitar</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody_metodos_cobro">
+                                <tr><td colspan="4" class="text-center text-muted">Sin métodos de cobro agregados.</td></tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-light fw-bold">
+                                    <td>Total Ingresado</td>
+                                    <td class="text-end text-success" id="pm_total_ingresado">Gs. 0</td>
+                                    <td colspan="2"></td>
+                                </tr>
+                                <tr class="table-light fw-bold">
+                                    <td>Diferencia (Monto - Ingresado)</td>
+                                    <td class="text-end" id="pm_diferencia">Gs. 0</td>
+                                    <td colspan="2"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <div id="div_alerta_cobro" class="alert mt-2 d-none" role="alert"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="cancelarCobroMultiple()">
+                        <i class="bi bi-x-circle me-1"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-success" id="btn_confirmar_cobro" onclick="confirmarCobroMultiple()" disabled>
+                        <i class="bi bi-floppy me-1"></i> Confirmar Cobro
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script src="menu/scripts.js"></script>
     <script src="bt/bootstrap.bundle.min.js"></script>
     <script src="alert/alertify.min.js"></script>
-    <!-- DATATABLES -->
     <script src="dt/jquery-3.7.1.js"></script>
     <script src="dt/datatables.min.js"></script>
     <script src="dt/jquery.dataTables.min.js"></script>
     <script src="dt/es-ES.js"></script>
-    <!-- DATATABLES Buttons extension -->
     <script src="dt/dataTables.buttons.min.js"></script>
     <script src="dt/buttons.print.min.js"></script>
     <script src="dt/buttons.html5.min.js"></script>
-    <!-- DATATABLES JSZip y pdfmake para exportar -->
     <script src="dt/jszip.min.js"></script>
     <script src="dt/pdfmake.min.js"></script>
     <script src="dt/vfs_fonts.js"></script>
-    <!-- SCRIPTS -->
     <script src="js/bd.js"></script>
     <script src="js/alertas.js"></script>
     <script src="js/tablas.js"></script>
     <script src="js/cobros.js"></script>
 </body>
+
 </html>

@@ -1258,14 +1258,54 @@ function eliminarCuentaPorCobrar(id) {
 }
 
 /**
- * Calcula el monto cobrado y pendiente
+ * Base de cálculo para cobros y saldos de cuentas por cobrar.
  * @param {number} id Id Cuenta por cobrar
  */
 function calcularCuentaPorCobrar(id) {
     const cobros = cargarCuotasPorCobrar(id).flatMap(c => cargarCobros(c.id));
     const amount_paid = cobros.reduce((sum, c) => sum + c.amount, 0);
-    const amount_due = cargarCuentaPorCobrar(id).amount_total - amount_paid;
+    const total = cargarCuentaPorCobrar(id)?.amount_total ?? 0;
+    const amount_due = total - amount_paid;
     return { amount_paid, amount_due };
+}
+
+/**
+ * Repara estados inconsistentes en cuotas y cuentas por cobrar.
+ * Corrige saldos fantasma de 1 Gs. causados por errores de redondeo anteriores.
+ * También sincroniza el estado (PENDIENTE / PARCIAL / COBRADA) de cada cuenta.
+ */
+function repararCuentasPorCobrar() {
+    const cuentas = cargarCuentasPorCobrar();
+    for (const cuenta of cuentas) {
+        const cuotas = cargarCuotasPorCobrar(cuenta.id);
+        let cuentaModificada = false;
+
+        // 1. Reparar cuotas con saldo residual de <= 1 Gs. (bug de redondeo antiguo)
+        for (const cuota of cuotas) {
+            if (cuota.status === ESTADO_COBRADA) continue;
+            const saldoCuota = Math.round(cuota.amount - (cuota.amount_paid || 0));
+            if (saldoCuota <= 1 && saldoCuota >= 0 && (cuota.amount_paid || 0) > 0) {
+                // Absorber el residuo y marcar como cobrada
+                cuota.amount_paid = cuota.amount;
+                cuota.status = ESTADO_COBRADA;
+                cuota.updated_at = new Date();
+                guardarCuotaPorCobrar(cuota);
+                cuentaModificada = true;
+            }
+        }
+
+        // 2. Recalcular el estado de la cuenta según el estado real de sus cuotas
+        const cuotasActualizadas = cargarCuotasPorCobrar(cuenta.id);
+        const todasCobradas  = cuotasActualizadas.every(c => c.status === ESTADO_COBRADA);
+        const algunaCobrada  = cuotasActualizadas.some(c => c.status === ESTADO_COBRADA || c.status === ESTADO_PARCIAL);
+        const nuevoEstado   = todasCobradas ? ESTADO_COBRADA : (algunaCobrada ? ESTADO_PARCIAL : ESTADO_PENDIENTE);
+
+        if (cuenta.status !== nuevoEstado || cuentaModificada) {
+            cuenta.status     = nuevoEstado;
+            cuenta.updated_at = new Date();
+            guardarCuentaPorCobrar(cuenta);
+        }
+    }
 }
 
 /**
