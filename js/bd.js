@@ -1160,6 +1160,45 @@ function calcularCuentaPorPagar(id) {
 }
 
 /**
+ * Repara estados inconsistentes en cuotas y cuentas por pagar.
+ * Corrige saldos fantasma de 1 Gs. causados por errores de redondeo anteriores.
+ * También sincroniza el estado (PENDIENTE / PARCIAL / PAGADA) de cada cuenta.
+ */
+function repararCuentasPorPagar() {
+    const cuentas = cargarCuentasPorPagar();
+    for (const cuenta of cuentas) {
+        const cuotas = cargarCuotasPorPagar(cuenta.id);
+        let cuentaModificada = false;
+
+        // 1. Reparar cuotas con saldo residual de <= 1 Gs. (bug de redondeo antiguo)
+        for (const cuota of cuotas) {
+            if (cuota.status === ESTADO_PAGADA) continue;
+            const saldoCuota = Math.round(cuota.amount - (cuota.amount_paid || 0));
+            if (saldoCuota <= 1 && saldoCuota >= 0 && (cuota.amount_paid || 0) > 0) {
+                // Absorber el residuo y marcar como pagada
+                cuota.amount_paid = cuota.amount;
+                cuota.status = ESTADO_PAGADA;
+                cuota.updated_at = new Date();
+                guardarCuotaPorPagar(cuota);
+                cuentaModificada = true;
+            }
+        }
+
+        // 2. Recalcular el estado de la cuenta según el estado real de sus cuotas
+        const cuotasActualizadas = cargarCuotasPorPagar(cuenta.id);
+        const todasPagadas  = cuotasActualizadas.every(c => c.status === ESTADO_PAGADA);
+        const algunaPagada  = cuotasActualizadas.some(c => c.status === ESTADO_PAGADA || c.status === ESTADO_PARCIAL);
+        const nuevoEstado   = todasPagadas ? ESTADO_PAGADA : (algunaPagada ? ESTADO_PARCIAL : ESTADO_PENDIENTE);
+
+        if (cuenta.status !== nuevoEstado || cuentaModificada) {
+            cuenta.status     = nuevoEstado;
+            cuenta.updated_at = new Date();
+            guardarCuentaPorPagar(cuenta);
+        }
+    }
+}
+
+/**
  * Recupera una cuenta a cobrar mediante el ID
  * @param {number} id Identificador de la cuenta
  * @param {number} venta_id Identificador de la venta
@@ -1346,18 +1385,23 @@ function eliminarCuotaPorCobrar(id) {
 }
 
 /**
- * Genera un listado de cuotas
- * @param {number} total Monto total de pago/cobro
- * @param {*} cantidad Cantidad de cuotas a crear
+ * Genera un listado de cuotas distribuyendo el residuo en la última cuota.
+ * Usa división entera para evitar saldos fantasma de 1 Gs. al pagar.
+ * @param {number} total Monto total de pago/cobro (entero, en guaraníes)
+ * @param {number} cantidad Cantidad de cuotas a crear
  * @returns {{ installment_number: number, amount: number }[]}
  */
 function generarCuotas(total, cantidad) {
-    const valor = +(total / cantidad).toFixed(2);
+    const totalEntero = Math.round(total);
+    const valorBase = Math.floor(totalEntero / cantidad);
+    const residuo = totalEntero - (valorBase * cantidad);
     const cuotas = [];
     for (let i = 1; i <= cantidad; i++) {
+        // El residuo se suma a la última cuota para que la suma total sea exacta
+        const amount = (i === cantidad) ? valorBase + residuo : valorBase;
         cuotas.push({
             installment_number: i,
-            amount: valor
+            amount
         });
     }
     return cuotas;

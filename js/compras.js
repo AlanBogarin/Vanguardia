@@ -654,9 +654,36 @@ function seleccionarProductoDesdeModal(id) {
 
     if (_modalSeleccionProducto) _modalSeleccionProducto.hide();
 }
+/**
+ * Retorna la cantidad máxima de cuotas permitidas según la frecuencia (límite: 2 años).
+ * @param {string} tipo - 'MENSUAL' | 'QUINCENAL' | 'SEMANAL'
+ * @returns {number}
+ */
+function maxCuotasPorTipo(tipo) {
+    switch (tipo) {
+        case 'QUINCENAL': return 48;  // 2 años × 24 quincenas
+        case 'SEMANAL':   return 104; // 2 años × 52 semanas
+        default:          return 24;  // 2 años × 12 meses
+    }
+}
+
 function previewCuotas() {
-    const cantidad = parseInt(document.getElementById('cuotas_cantidad').value) || 1;
     const tipo = document.getElementById('cuotas_tipo').value;
+    const maxCuotas = maxCuotasPorTipo(tipo);
+    const inputCantidad = document.getElementById('cuotas_cantidad');
+    const helpText = document.getElementById('cuotas_cantidad_help');
+    // Actualizar atributo max e info de ayuda según la frecuencia
+    inputCantidad.max = maxCuotas;
+    if (helpText) {
+        const labels = { MENSUAL: 'meses', QUINCENAL: 'quincenas', SEMANAL: 'semanas' };
+        helpText.textContent = `Máx. ${maxCuotas} cuotas (2 años = ${maxCuotas} ${labels[tipo] || 'cuotas'})`;
+    }
+    // Corregir valor si supera el nuevo máximo
+    let cantidad = parseInt(inputCantidad.value) || 1;
+    if (cantidad > maxCuotas) {
+        cantidad = maxCuotas;
+        inputCantidad.value = maxCuotas;
+    }
     let entrega = parseInt(document.getElementById('cuotas_entrega').value) || 0;
     const total_compra = _datosCompraTemp ? _datosCompraTemp.amount : 0;
     
@@ -703,8 +730,15 @@ function cancelarCuotas() {
 
 function confirmarCuotas() {
     const cantidad = parseInt(document.getElementById('cuotas_cantidad').value);
+    const tipo = document.getElementById('cuotas_tipo').value;
+    const maxCuotas = maxCuotasPorTipo(tipo);
     if (!cantidad || cantidad <= 0) {
         mensajeError("Debes ingresar la cantidad de cuotas");
+        return;
+    }
+    if (cantidad > maxCuotas) {
+        mensajeError(`El máximo permitido es ${maxCuotas} cuotas (2 años) para la frecuencia seleccionada.`);
+        document.getElementById('cuotas_cantidad').focus();
         return;
     }
     const primerVencElem = document.getElementById('cuotas_primer_venc');

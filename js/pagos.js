@@ -346,11 +346,25 @@ function confirmarPagoMultiple() {
     for (const cuota of cuotas) {
         if (montoRestante <= 0) break;
         if (cuota.status === ESTADO_PAGADA) continue;
-        const saldoCuota = cuota.amount - (cuota.amount_paid || 0);
-        if (saldoCuota <= 0) continue;
+        const saldoCuota = Math.round(cuota.amount - (cuota.amount_paid || 0));
+        if (saldoCuota <= 0) {
+            // Cuota sin saldo real: marcar como pagada si no lo está
+            if (cuota.status !== ESTADO_PAGADA) {
+                cuota.status = ESTADO_PAGADA;
+                cuota.updated_at = new Date();
+                guardarCuotaPorPagar(cuota);
+            }
+            continue;
+        }
         const abono = Math.min(montoRestante, saldoCuota);
-        cuota.amount_paid = (cuota.amount_paid || 0) + abono;
-        cuota.status = cuota.amount_paid >= cuota.amount ? ESTADO_PAGADA : ESTADO_PARCIAL;
+        cuota.amount_paid = Math.round((cuota.amount_paid || 0) + abono);
+        // Tolerancia de 1 Gs: si el saldo restante es <= 1, marcar como pagada
+        const saldoTrasAbono = Math.round(cuota.amount - cuota.amount_paid);
+        cuota.status = saldoTrasAbono <= 1 ? ESTADO_PAGADA : ESTADO_PARCIAL;
+        if (saldoTrasAbono <= 1 && saldoTrasAbono > 0) {
+            // Absorber la diferencia de 1 Gs. en amount_paid para que el saldo quede en 0
+            cuota.amount_paid = cuota.amount;
+        }
         cuota.updated_at = new Date();
         guardarCuotaPorPagar(cuota);
         installmentIds.push(cuota.id);
