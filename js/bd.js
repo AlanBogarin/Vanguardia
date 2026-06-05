@@ -1302,7 +1302,7 @@ function cargarCuotaPorCobrar(id) {
  * @returns {CuotaPorCobrar[]}
  */
 function cargarCuotasPorCobrar(account_receivable_id = null) {
-    return Array.from(cargarBD(KEY_CUOTASCOBRAR) || []).filter(ca => {
+    return Array.from(cargarBD(KEY_CUOTASCOBRAR) || []).filter(c => {
         if (account_receivable_id && c.account_receivable_id !== account_receivable_id) return false;
         return true;
     });
