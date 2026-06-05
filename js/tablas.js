@@ -782,7 +782,7 @@ const TABLAS = {
     ],
     CUENTA_POR_PAGAR: [
         { data: "id", title: "Id Cuenta", align: "right", render: renderRaw },
-        { data: "purchase_id", title: "Id Compra", align: "right", render: renderRaw },
+        { data: "purchase_id", title: "Fac. Compra Crédito", align: "right", render: data => cargarCompra(data).invoice },
         { data: "provider_id", title: "Proveedor", align: "left", render: data => cargarProveedor(data).legal_name },
         { data: "amount_total", title: "Total a Pagar", align: "right", render: renderMoneda },
         { data: "installments", title: "Cantidad Cuotas", align: "right", render: renderNumber },

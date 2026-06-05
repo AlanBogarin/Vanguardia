@@ -7,22 +7,22 @@
 
 const modalDetalle = new bootstrap.Modal(document.getElementById('modalDetalleCuenta'));
 
-/**
- * Columnas para la tabla de cuotas individuales
- */
-const COLUMNAS_CUENTAS_PAGAR = [
-    { data: "id",               title: "Id Cuenta",    render: renderRaw, align: "center" },
-    { data: "compra_id",        title: "Id Compra",    render: renderRaw, align: "center" },
-    { data: "proveedor",        title: "Proveedor",    render: renderString },
-    { data: "cuotas_pendientes",title: "Cuotas Pend.", render: renderRaw, align: "center" },
-    { data: "amount_total",     title: "Total Compra", render: renderMoneda, align: "right" },
-    { data: "amount_paid",      title: "Abonado",      render: renderMoneda, align: "right" },
-    { data: "saldo",            title: "Saldo",        render: renderMoneda, align: "right" },
-    { data: "created_at",       title: "Emisión",      render: renderDate },
-    { data: "status_display",   title: "Estado",       render: renderRaw,   align: "center" },
-];
-
-const tablaCuentas = crearDataTable("tabla_cuentas_pagar", COLUMNAS_CUENTAS_PAGAR, {
+const tablaCuentas = crearDataTable("tabla_cuentas_pagar", [
+    ...TABLAS.CUENTA_POR_PAGAR.slice(0, 4),
+    { data: "id", title: "Abonado", align: "right", render: data => renderMoneda(calcularCuentaPorPagar(data).amount_paid) },
+    { data: "id", title: "Saldo", align: "right", render: data => renderMoneda(calcularCuentaPorPagar(data).amount_due) },
+    ...TABLAS.CUENTA_POR_PAGAR.slice(4, 5),
+    { data: "id", title: "Cuotas Pend.", align: "right", render: data => {
+        const cuotas = cargarCuotasPorPagar(data);
+        const pendientes = cargarCuotasPorPagar(data).filter(c => c.status !== ESTADO_PAGADA);
+        console.log(data, cuotas.length, pendientes.length);
+        const vencida = pendientes.some(c => new Date(c.due_date) < new Date(new Date().setHours(0, 0, 0, 0)));
+        const color = !pendientes ? "bg-success" : vencida ? "bg-danger" : "bg-primary";
+        const mensaje = !pendientes ? "Completado" : `${pendientes.length} cuotas`;
+        return `<span class="badge ${color}">${mensaje}</span>`; } },
+    { data: "status", title: "Estado", align: "center", render: badgeEstadoCuenta },
+    ...TABLAS.CUENTA_POR_PAGAR.slice(8)
+], {
     buttons: true,
     pageLength: 15,
     searching: true,
@@ -82,65 +82,32 @@ function badgeEstadoCuenta(status) {
 function obtenerCuotasFiltradas() {
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
-
-    const filtroEstado   = document.getElementById('filtro_estado').value;
-    const fechaDesde     = document.getElementById('filtro_fecha_desde').value;
-    const fechaHasta     = document.getElementById('filtro_fecha_hasta').value;
-    const busquedaProv   = document.getElementById('filtro_proveedor').value.trim().toLowerCase();
-
+    const filtroEstado = document.getElementById('filtro_estado').value;
+    const fechaDesde = document.getElementById('filtro_fecha_desde').value;
+    const fechaHasta = document.getElementById('filtro_fecha_hasta').value;
+    const busquedaProv = document.getElementById('filtro_proveedor').value.trim().toUpperCase();
     const cuentas = cargarCuentasPorPagar();
     const rows = [];
-
-    for (const cuenta of cuentas) {
-        const proveedor = cargarProveedor(cuenta.provider_id);
-        if (!proveedor) continue;
-
-        // Filtro de proveedor
-        if (busquedaProv && !proveedor.legal_name.toLowerCase().includes(busquedaProv)) continue;
-
-        const cuotas = cargarCuotasPorPagar(cuenta.id);
-        const cuotasPendientes = cuotas.filter(c => c.status !== ESTADO_PAGADA).length;
-        
+    return cuentas.filter(c => {
+        const proveedor = cargarProveedor(c.provider_id);
+        if (busquedaProv && !proveedor.legal_name.toUpperCase().includes(busquedaProv)) return false;
+        const cuotas = cargarCuotasPorPagar(c.id);
+        const cuotasPendientes = cuotas.filter(c => c.status !== ESTADO_PAGADA);
         let tieneVencida = false;
         let fechaVencimientoProx = null;
-
-        for (const cuota of cuotas) {
-            if (cuota.status !== ESTADO_PAGADA) {
-                if (new Date(cuota.due_date) < hoy) tieneVencida = true;
-                if (!fechaVencimientoProx || cuota.due_date < fechaVencimientoProx) {
-                    fechaVencimientoProx = cuota.due_date;
-                }
-            }
-        }
-
-        // Filtro de estado
-        if (filtroEstado === 'VENCIDO' && !tieneVencida) continue;
-        if (filtroEstado && filtroEstado !== 'VENCIDO' && cuenta.status !== filtroEstado) continue;
-
-        // Filtro de fecha (lo aplicamos sobre la fecha de creación de la cuenta o el próximo vencimiento)
-        const fechaComparar = fechaVencimientoProx ? fechaVencimientoProx.substring(0, 10) : cuenta.created_at.substring(0, 10);
-        if (fechaDesde && fechaComparar < fechaDesde) continue;
-        if (fechaHasta && fechaComparar > fechaHasta) continue;
-
-        const badgePendientes = cuotasPendientes > 0 
-            ? `<span class="badge ${tieneVencida ? 'bg-danger' : 'bg-primary'}">${cuotasPendientes} cuotas</span>`
-            : '<span class="badge bg-success">Completado</span>';
-
-        rows.push({
-            id:             cuenta.id,
-            compra_id:      cuenta.purchase_id,
-            proveedor:      proveedor.legal_name,
-            cuotas_pendientes: badgePendientes,
-            amount_total:   cuenta.amount_total,
-            amount_paid:    cuenta.amount_paid || 0,
-            saldo:          cuenta.amount_due,
-            created_at:     cuenta.created_at,
-            status:         cuenta.status,
-            status_display: badgeEstadoCuenta(cuenta.status)
+        cuotasPendientes.forEach(cuota => {
+            if (new Date(cuota.due_date) < new Date(new Date().setHours(0, 0, 0, 0))) tieneVencida = true;
+            if (!fechaVencimientoProx || cuota.due_date < fechaVencimientoProx) fechaVencimientoProx = cuota.due_date;
         });
-    }
-
-    return rows;
+        // Filtro de estado
+        if (filtroEstado === 'VENCIDO' && !tieneVencida) return false;
+        if (filtroEstado && filtroEstado !== 'VENCIDO' && c.status !== filtroEstado) return false;
+        // Filtro de fecha (lo aplicamos sobre la fecha de creación de la cuenta o el próximo vencimiento)
+        const fechaComparar = fechaVencimientoProx ? toISOLocalDate(fechaVencimientoProx) : toISOLocalDate(c.created_at);
+        if (fechaDesde && fechaComparar < fechaDesde) return false;
+        if (fechaHasta && fechaComparar > fechaHasta) return false;
+        return true;
+    });
 }
 
 /**
