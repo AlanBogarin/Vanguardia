@@ -12,7 +12,7 @@ var modalNuevo = new bootstrap.Modal(document.getElementById('modalNuevoCobro'))
 const tablaCobros = crearDataTable("tabla_cobros", [
     ...TABLAS.COBRO.slice(0, 3),
     { data: null, title: "Cliente", render: data => cargarCliente((data.sale_id ? cargarVenta(data.sale_id)
-        : cargarCuentaPorCobrar(data.account_receivable_id)).client_id).legal_name },
+        : cargarCuentaPorCobrar(cargarCuotaPorCobrar(data.installment_receivable_id).account_receivable_id)).client_id).legal_name },
     ...TABLAS.COBRO.slice(3)
 ], {
     buttons: true,
@@ -100,9 +100,9 @@ function btnGuardarCobro() {
 }
 
 function cargarDatos() {
-    const metodo = document.getElementById("filtro_metodo")?.value;
-    const fechaDesde = document.getElementById("filtro_fecha_desde")?.value;
-    const fechaHasta = document.getElementById("filtro_fecha_hasta")?.value;
+    const metodo = document.getElementById("filtro_metodo").value;
+    const fechaDesde = document.getElementById("filtro_fecha_desde").value;
+    const fechaHasta = document.getElementById("filtro_fecha_hasta").value;
     cargarDataTable(tablaCobros, cargarCobros().filter(c => {
         if (metodo && c.payment_method !== metodo) return false;
         if (fechaDesde && fechaDesde > c.created_at.substring(0, 10)) return false;
