@@ -826,8 +826,14 @@ const TABLAS = {
     ],
     PAGO: [
         { data: "id", title: "Id Pago", align: "right", render: renderRaw },
-        { data: "installment_payable_id", title: "Fac. Compra Credito", align: "center", render: data =>
-            cargarCompra(cargarCuentaPorPagar(cargarCuotaPorPagar(data)?.account_payable_id)?.purchase_id)?.invoice ?? "" },
+        { data: "installment_payable_id", title: "Fac. Compra Credito", align: "center", render: data => {
+            if (!data) return "";
+            const cuota = cargarCuotaPorPagar(data);
+            if (!cuota) return "";
+            const cuenta = cargarCuentaPorPagar(cuota.account_payable_id);
+            if (!cuenta) return "";
+            return cargarCompra(cuenta.purchase_id)?.invoice ?? "";
+        }},
         { data: "purchase_id", title: "Fac. Compra Contado", align: "center", render: data => cargarCompra(data)?.invoice ?? "" },
         { data: "amount", title: "Monto Pagado", align: "right", render: renderMoneda },
         { data: "payment_method", title: "Método Pago", align: "left", render: renderString },

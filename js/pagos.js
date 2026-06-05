@@ -382,12 +382,13 @@ function confirmarPagoMultiple() {
 }
 
 function cargarDatos() {
+    try { repararCuentasPorPagar(); } catch(e) { console.error('repararCuentasPorPagar:', e); }
     const metodo = document.getElementById('filtro_metodo').value;
     const fechaDesde = document.getElementById('filtro_fecha_desde').value;
     const fechaHasta = document.getElementById('filtro_fecha_hasta').value;
     const pagosFiltrados = cargarPagos().filter(p => {
-        // Excluir pagos de entrega inicial (compras al contado / entrega de crédito sin cuota)
-        if (!p.installment_payable_id && !p.purchase_id) return false;
+        // Excluir pagos de entrega inicial (compras al contado sin cuenta ni cuota)
+        if (p.purchase_id && !p.installment_payable_id && !p.account_payable_id) return false;
         if (metodo && p.payment_method !== metodo) return false;
         if (fechaDesde && fechaDesde > toISOLocalDate(p.created_at)) return false;
         if (fechaHasta && fechaHasta < toISOLocalDate(p.created_at)) return false;

@@ -82,32 +82,49 @@ function badgeEstadoCuenta(status) {
 function obtenerCuotasFiltradas() {
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
-    const filtroEstado = document.getElementById('filtro_estado').value;
-    const fechaDesde = document.getElementById('filtro_fecha_desde').value;
-    const fechaHasta = document.getElementById('filtro_fecha_hasta').value;
-    const busquedaProv = document.getElementById('filtro_proveedor').value.trim().toUpperCase();
+    const filtroEstado   = document.getElementById('filtro_estado').value;
+    const fechaDesde     = document.getElementById('filtro_fecha_desde').value;
+    const fechaHasta     = document.getElementById('filtro_fecha_hasta').value;
+    const busquedaProv   = document.getElementById('filtro_proveedor').value.trim().toLowerCase();
+
     const cuentas = cargarCuentasPorPagar();
-    const rows = [];
-    return cuentas.filter(c => {
-        const proveedor = cargarProveedor(c.provider_id);
-        if (busquedaProv && !proveedor.legal_name.toUpperCase().includes(busquedaProv)) return false;
-        const cuotas = cargarCuotasPorPagar(c.id);
-        const cuotasPendientes = cuotas.filter(c => c.status !== ESTADO_PAGADA);
+    const resultado = [];
+
+    for (const cuenta of cuentas) {
+        const proveedor = cargarProveedor(cuenta.provider_id);
+        if (!proveedor) continue;
+
+        // Filtro de proveedor
+        if (busquedaProv && !proveedor.legal_name.toLowerCase().includes(busquedaProv)) continue;
+
+        const cuotas = cargarCuotasPorPagar(cuenta.id);
+
         let tieneVencida = false;
         let fechaVencimientoProx = null;
-        cuotasPendientes.forEach(cuota => {
-            if (new Date(cuota.due_date) < new Date(new Date().setHours(0, 0, 0, 0))) tieneVencida = true;
-            if (!fechaVencimientoProx || cuota.due_date < fechaVencimientoProx) fechaVencimientoProx = cuota.due_date;
-        });
+        for (const cuota of cuotas) {
+            if (cuota.status !== ESTADO_PAGADA) {
+                if (new Date(cuota.due_date) < hoy) tieneVencida = true;
+                if (!fechaVencimientoProx || cuota.due_date < fechaVencimientoProx) {
+                    fechaVencimientoProx = cuota.due_date;
+                }
+            }
+        }
+
         // Filtro de estado
-        if (filtroEstado === 'VENCIDO' && !tieneVencida) return false;
-        if (filtroEstado && filtroEstado !== 'VENCIDO' && c.status !== filtroEstado) return false;
-        // Filtro de fecha (lo aplicamos sobre la fecha de creación de la cuenta o el próximo vencimiento)
-        const fechaComparar = fechaVencimientoProx ? toISOLocalDate(fechaVencimientoProx) : toISOLocalDate(c.created_at);
-        if (fechaDesde && fechaComparar < fechaDesde) return false;
-        if (fechaHasta && fechaComparar > fechaHasta) return false;
-        return true;
-    });
+        if (filtroEstado === 'VENCIDO' && !tieneVencida) continue;
+        if (filtroEstado && filtroEstado !== 'VENCIDO' && cuenta.status !== filtroEstado) continue;
+
+        // Filtro de fecha
+        const fechaComparar = fechaVencimientoProx
+            ? toISOLocalDate(fechaVencimientoProx)
+            : toISOLocalDate(cuenta.created_at);
+        if (fechaDesde && fechaComparar < fechaDesde) continue;
+        if (fechaHasta && fechaComparar > fechaHasta) continue;
+
+        resultado.push(cuenta);
+    }
+
+    return resultado;
 }
 
 /**
@@ -200,6 +217,7 @@ function cargarDatalistProveedores() {
 }
 
 function cargarDatos() {
+    try { repararCuentasPorPagar(); } catch(e) { console.error('repararCuentasPorPagar:', e); }
     cargarDataTable(tablaCuentas, obtenerCuotasFiltradas());
 }
 
