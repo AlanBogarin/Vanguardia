@@ -628,7 +628,7 @@ function renderizarProductosModal(productos) {
             <td>${escapeHTML(p.name)}</td>
             <td>${p.code ? escapeHTML(p.code.toString()) : '-'}</td>
             <td class="text-center fw-bold">${renderNumber(p.stock)}</td>
-            <td class="text-center fw-bold">${renderMoneda(p.selling_price)}</td>
+            <td class="text-center fw-bold">${renderMoneda(p.purchase_price)}</td>
             <td class="text-center">${p.iva ? `${p.iva}%` : "EXENTA"}</td>
             <td class="text-center">
                 <button type="button" class="btn btn-sm btn-success" onclick="seleccionarProductoDesdeModal(${p.id})">
