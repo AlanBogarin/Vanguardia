@@ -51,7 +51,7 @@
                                         <div class="row g-3 align-items-end">
                                             <div class="col-md-4 col-sm-6">
                                                 <label for="filtro_metodo" class="form-label fw-semibold small mb-1" style="color:#0d2149">Método de Pago</label>
-                                                <select id="filtro_metodo" class="form-select form-select-sm" style="background-color:rgba(255,255,255,0.9);border:1px solid rgba(30,80,180,0.3);color:#0d2149;border-radius:6px;">
+                                                <select id="filtro_metodo" class="form-select form-select-sm" onchange="cargarDatos()" style="background-color:rgba(255,255,255,0.9);border:1px solid rgba(30,80,180,0.3);color:#0d2149;border-radius:6px;">
                                                     <option value="">Todos</option>
                                                     <option value="EFECTIVO">Efectivo</option>
                                                     <option value="TRANSFERENCIA">Transferencia Bancaria</option>
@@ -62,18 +62,18 @@
                                             </div>
                                             <div class="col-md-3 col-sm-6">
                                                 <label for="filtro_fecha_desde" class="form-label fw-semibold small mb-1" style="color:#0d2149">Desde (Fecha de Creación)</label>
-                                                <input type="date" id="filtro_fecha_desde" class="form-control form-control-sm" style="background-color:rgba(255,255,255,0.9);border:1px solid rgba(30,80,180,0.3);color:#0d2149;border-radius:6px;">
+                                                <input type="date" id="filtro_fecha_desde" class="form-control form-control-sm" onchange="cargarDatos()" style="background-color:rgba(255,255,255,0.9);border:1px solid rgba(30,80,180,0.3);color:#0d2149;border-radius:6px;">
                                             </div>
                                             <div class="col-md-3 col-sm-6">
                                                 <label for="filtro_fecha_hasta" class="form-label fw-semibold small mb-1" style="color:#0d2149">Hasta (Fecha de Creación)</label>
-                                                <input type="date" id="filtro_fecha_hasta" class="form-control form-control-sm" style="background-color:rgba(255,255,255,0.9);border:1px solid rgba(30,80,180,0.3);color:#0d2149;border-radius:6px;">
+                                                <input type="date" id="filtro_fecha_hasta" class="form-control form-control-sm" onchange="cargarDatos()" style="background-color:rgba(255,255,255,0.9);border:1px solid rgba(30,80,180,0.3);color:#0d2149;border-radius:6px;">
                                             </div>
-                                            <div class="col-md-2 col-sm-6 d-flex flex-column justify-content-end">
+                                            <!-- <div class="col-md-2 col-sm-6 d-flex flex-column justify-content-end">
                                                 <div class="d-flex gap-1">
                                                     <button class="btn btn-sm btn-primary flex-fill" onclick="aplicarFiltros()"><i class="bi bi-funnel"></i> Filtrar</button>
                                                     <button class="btn btn-sm btn-outline-secondary flex-fill" onclick="limpiarFiltros()"><i class="bi bi-x-circle"></i> Limpiar</button>
                                                 </div>
-                                            </div>
+                                            </div> -->
                                         </div>
                                     </div>
                                 </div>
@@ -108,9 +108,7 @@
         </div>
     </div>
 
-    <!-- =====================================================================
-         MODAL: SELECCIONAR CUENTA Y VER CUOTAS
-    ====================================================================== -->
+    <!-- MODAL SELECCIONAR CUENTA Y VER CUOTAS -->
     <div class="modal fade" id="modalSeleccionarCuenta" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -122,11 +120,10 @@
                     <!-- Selector de cuenta -->
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Cuenta por Pagar (con saldo pendiente)</label>
-                        <select id="cuenta_id" class="form-select" onchange="onchangeCuenta()">
+                        <select id="cuenta_id" class="form-select" onchange="onChangeCuenta()">
                             <option value="">Seleccione una cuenta pendiente...</option>
                         </select>
                     </div>
-
                     <!-- Resumen de la cuenta -->
                     <div id="div_resumen_cuenta" class="d-none mb-3">
                         <div class="row g-2 mb-2">
@@ -170,7 +167,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-success" id="btn_ir_pagar" disabled onclick="abrirModalPagosMultiples()">
+                    <button type="button" class="btn btn-success" id="btn_ir_pagar" disabled onclick="ventanaPagosMultiples()">
                         <i class="bi bi-cash me-1"></i> Proceder al Pago
                     </button>
                 </div>
@@ -178,9 +175,7 @@
         </div>
     </div>
 
-    <!-- =====================================================================
-         MODAL: PAGOS MÚLTIPLES (igual diseño que compras)
-    ====================================================================== -->
+    <!-- MODAL: PAGOS MÚLTIPLES -->
     <div class="modal fade" id="modalPagosMultiples" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -222,7 +217,7 @@
                             <span class="input-group-text">Gs.</span>
                             <input type="number" id="pago_monto_total" class="form-control" min="1"
                                 placeholder="Ingrese el monto a pagar..." onchange="renderizarPagosMultiples()">
-                            <button class="btn btn-outline-primary fw-bold" type="button" onclick="sumarSiguienteCuota()" title="Agregar el valor de la siguiente cuota al monto a pagar">
+                            <button class="btn btn-outline-primary fw-bold" type="button" onclick="onClickSumarSiguienteCuota()" title="Agregar el valor de la siguiente cuota al monto a pagar">
                                 <i class="bi bi-plus-circle me-1"></i> Sumar Siguiente Cuota
                             </button>
                         </div>
@@ -271,7 +266,7 @@
                             <input type="text" id="pm_obs" class="form-control form-control-sm" maxlength="50" placeholder="Nro / Ref...">
                         </div>
                         <div class="col-auto">
-                            <button type="button" class="btn btn-sm btn-primary" onclick="agregarPagoMultiplePago()">
+                            <button type="button" class="btn btn-sm btn-primary" onclick="onClickAgregarMetodoPago()">
                                 <i class="bi bi-plus-lg"></i> Agregar
                             </button>
                         </div>

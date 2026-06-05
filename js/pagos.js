@@ -1,4 +1,3 @@
-/* global bootstrap */
 /**
  * @typedef {import('jquery')}
  * @typedef {import('./bd')}
@@ -6,18 +5,34 @@
  * @typedef {import('./tablas')}
  */
 
-// ─── MODALES ────────────────────────────────────────────────────────────────
-let _modalSeleccionarCuenta = null;
-let _modalPagosMultiples    = null;
+// MODALES
+const modalSeleccionarCuenta = new bootstrap.Modal(document.getElementById("modalSeleccionarCuenta"));
+const modalPagosMultiples = new bootstrap.Modal(document.getElementById("modalPagosMultiples"));
 
-// ─── ESTADO TEMPORAL ────────────────────────────────────────────────────────
-/** @type {CuentaPorPagar|null} */
+// ELEMENTOS HTML
+const elemSelectCuenta = document.getElementById("cuenta_id");
+const elemDivResumenCuenta = document.getElementById("div_resumen_cuenta");
+const elemInputResumenTotal = document.getElementById("res_total");
+const elemInputResumenAbonado = document.getElementById("res_abonado");
+const elemInputResumenSaldo = document.getElementById("res_saldo");
+const elemTablaResumenCuotas = document.getElementById("tbody_cuotas_cuenta");
+const elemBtnPagarCuenta = document.getElementById("btn_ir_pagar");
+const elemPagoStrongMontoPendiente = document.getElementById("pago_saldo_cuenta");
+const elemPagoInputMontoTotal = document.getElementById("pago_monto_total");
+const elemPagoSelectMetodo = document.getElementById("pm_metodo");
+const elemPagoInputPMMonto = document.getElementById("pm_monto");
+const elemPagoInputReferencia = document.getElementById("pm_obs");
+const elemPagoDivBanco = document.getElementById("div_pm_banco");
+const elemPagoSelectBanco = document.getElementById("pm_banco");
+
+// ESTADO TEMPORAL
+/** @type {CuentaPorPagar?} */
 let _cuentaTemp = null;
 
 /** @type {{ method: string, banco: string, obs: string, amount: number }[]} */
 const _metodosTemp = [];
 
-// ─── TABLA DE PAGOS ─────────────────────────────────────────────────────────
+// TABLA DE PAGOS
 const tablaPagos = crearDataTable("tabla_pagos", TABLAS.PAGO, {
     buttons: true,
     pageLength: 10,
@@ -26,91 +41,61 @@ const tablaPagos = crearDataTable("tabla_pagos", TABLAS.PAGO, {
     actions: null
 });
 
-// ─── LABELS MÉTODOS ─────────────────────────────────────────────────────────
+// LABELS MÉTODOS
 const METODO_LABELS = {
-    EFECTIVO:       'Efectivo',
-    TRANSFERENCIA:  'Transferencia Bancaria',
-    TARJETA_CREDITO:'Tarjeta de Crédito',
-    TARJETA_DEBITO: 'Tarjeta de Débito',
-    CHEQUE:         'Cheque'
+    EFECTIVO: "Efectivo",
+    TRANSFERENCIA: "Transferencia Bancaria",
+    TARJETA_CREDITO: "Tarjeta de Crédito",
+    TARJETA_DEBITO: "Tarjeta de Débito",
+    CHEQUE: "Cheque"
 };
 
-// ────────────────────────────────────────────────────────────────────────────
 // PASO 1: Abrir modal de selección de cuenta
-// ────────────────────────────────────────────────────────────────────────────
 function ventanaNuevoPago() {
     if (!tienePermisoSesion(PERMISOS.PAGOS_CREAR)) {
         mensajeError("No tienes permiso para crear pagos");
         return;
     }
-    if (!_modalSeleccionarCuenta) {
-        _modalSeleccionarCuenta = new bootstrap.Modal(document.getElementById('modalSeleccionarCuenta'));
-    }
-
     // Limpiar estado previo
-    document.getElementById('cuenta_id').value = '';
-    document.getElementById('div_resumen_cuenta').classList.add('d-none');
-    document.getElementById('btn_ir_pagar').disabled = true;
     _cuentaTemp = null;
-
+    elemSelectCuenta.value = '';
+    elemDivResumenCuenta.classList.add('d-none');
+    elemBtnPagarCuenta.disabled = true;
     // Cargar cuentas pendientes en el select
-    const selectCuenta = document.getElementById('cuenta_id');
     const cuentasPendientes = cargarCuentasPorPagar().filter(c => c.status !== ESTADO_PAGADA);
-    selectCuenta.innerHTML = '<option value="">Seleccione una cuenta pendiente...</option>'
-        + cuentasPendientes.map(c => {
-            const prov = cargarProveedor(c.provider_id);
-            return `<option value="${c.id}">
-                ID ${c.id} — ${prov ? prov.legal_name : '?'} | Saldo: Gs. ${renderMoneda(c.amount_due)}
-            </option>`;
-        }).join('');
-
-    _modalSeleccionarCuenta.show();
+    elemSelectCuenta.innerHTML = '<option value="">Seleccione una cuenta pendiente...</option>' + cuentasPendientes.map(c => `
+        <option value="${c.id}">
+            ID ${c.id} — ${cargarProveedor(c.provider_id).legal_name} | Saldo: Gs. ${renderMoneda(calcularCuentaPorPagar(c.id).amount_due)}
+        </option>`).join('');
+    modalSeleccionarCuenta.show();
 }
 
-// ────────────────────────────────────────────────────────────────────────────
 // Al cambiar la cuenta seleccionada: mostrar cuotas
-// ────────────────────────────────────────────────────────────────────────────
-function onchangeCuenta() {
-    const cuentaId = parseInt(document.getElementById('cuenta_id').value);
-    const divResumen = document.getElementById('div_resumen_cuenta');
-    const btnPagar   = document.getElementById('btn_ir_pagar');
-
-    divResumen.classList.add('d-none');
-    btnPagar.disabled = true;
+function onChangeCuenta() {
     _cuentaTemp = null;
-
+    const cuentaId = parseInt(elemSelectCuenta.value);
+    elemDivResumenCuenta.classList.add('d-none');
+    elemBtnPagarCuenta.disabled = true;
     if (!cuentaId) return;
-
     const cuenta = cargarCuentaPorPagar(cuentaId);
     if (!cuenta || cuenta.status === ESTADO_PAGADA) return;
-
     _cuentaTemp = cuenta;
-
-    const cuotas = cargarCuotasPorPagar(cuentaId)
-        .sort((a, b) => a.installment_number - b.installment_number);
-
+    const cuotas = cargarCuotasPorPagar(cuentaId).sort((a, b) => a.installment_number - b.installment_number);
     const abonado = cuotas.reduce((s, c) => s + (c.amount_paid || 0), 0);
-    const saldo   = cuenta.amount_total - abonado;
-
-    document.getElementById('res_total').textContent   = `Gs. ${renderMoneda(cuenta.amount_total)}`;
-    document.getElementById('res_abonado').textContent = `Gs. ${renderMoneda(abonado)}`;
-    document.getElementById('res_saldo').textContent   = `Gs. ${renderMoneda(saldo)}`;
-
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
-
+    const saldo = cuenta.amount_total - abonado;
+    elemInputResumenTotal.textContent = `Gs. ${renderMoneda(cuenta.amount_total)}`;
+    elemInputResumenAbonado.textContent = `Gs. ${renderMoneda(abonado)}`;
+    elemInputResumenSaldo.textContent = `Gs. ${renderMoneda(saldo)}`;
+    const hoy = new Date().setHours(0, 0, 0, 0);
     let foundFirstPending = false;
-    const tbody = document.getElementById('tbody_cuotas_cuenta');
-    tbody.innerHTML = cuotas.map(c => {
+    elemTablaResumenCuotas.innerHTML = cuotas.map(c => {
         const vencida = c.status !== ESTADO_PAGADA && new Date(c.due_date) < hoy;
         const saldoCuota = c.amount - (c.amount_paid || 0);
-        
         let isFirstPending = false;
         if (c.status !== ESTADO_PAGADA && !foundFirstPending) {
             isFirstPending = true;
             foundFirstPending = true;
         }
-
         let rowClass = '';
         if (c.status === ESTADO_PAGADA) {
             rowClass = 'table-success';
@@ -121,7 +106,6 @@ function onchangeCuenta() {
         } else if (c.status === ESTADO_PARCIAL) {
             rowClass = 'table-warning';
         }
-
         const badge = c.status === ESTADO_PAGADA
             ? '<span class="badge bg-success">PAGADA</span>'
             : (vencida ? '<span class="badge bg-danger">VENCIDA</span>'
@@ -138,140 +122,113 @@ function onchangeCuenta() {
             <td class="text-center">${badge}</td>
         </tr>`;
     }).join('');
-
-    divResumen.classList.remove('d-none');
-    btnPagar.disabled = false;
+    elemDivResumenCuenta.classList.remove('d-none');
+    elemBtnPagarCuenta.disabled = false;
 }
 
-// ────────────────────────────────────────────────────────────────────────────
 // PASO 2: Abrir modal de pagos múltiples
-// ────────────────────────────────────────────────────────────────────────────
-function abrirModalPagosMultiples() {
+function ventanaPagosMultiples() {
     if (!_cuentaTemp) return;
-    if (!_modalPagosMultiples) {
-        _modalPagosMultiples = new bootstrap.Modal(document.getElementById('modalPagosMultiples'));
-    }
-
-    // Cerrar modal anterior sin destruirlo
-    if (_modalSeleccionarCuenta) _modalSeleccionarCuenta.hide();
-
+    modalSeleccionarCuenta.hide();
     // Limpiar estado
     _metodosTemp.splice(0);
-
-    const saldoTotal = _cuentaTemp.amount_due;
-    document.getElementById('pago_saldo_cuenta').textContent = `Gs. ${renderMoneda(saldoTotal)}`;
-    
+    const { amount_paid, amount_due } = calcularCuentaPorPagar(_cuentaTemp.id);
+    const saldoTotal = amount_due;
+    elemPagoStrongMontoPendiente.textContent = `Gs. ${renderMoneda(saldoTotal)}`;
     // Buscar la primera cuota pendiente para sugerir su saldo como monto a pagar
-    const cuotas = cargarCuotasPorPagar(_cuentaTemp.id)
-        .sort((a, b) => a.installment_number - b.installment_number);
+    const cuotas = cargarCuotasPorPagar(_cuentaTemp.id).sort((a, b) => a.installment_number - b.installment_number);
     let montoSugerido = saldoTotal;
     for (const c of cuotas) {
-        if (c.status !== ESTADO_PAGADA) {
-            montoSugerido = c.amount - (c.amount_paid || 0);
-            break;
-        }
+        if (c.status === ESTADO_PAGADA) continue;
+        montoSugerido = c.amount - (c.amount_paid || 0);
+        break;
     }
-
-    document.getElementById('pago_monto_total').value = montoSugerido;
-    document.getElementById('pago_monto_total').max   = saldoTotal;
-
+    elemPagoInputMontoTotal.value = montoSugerido;
+    elemPagoInputMontoTotal.max = saldoTotal;
     // Reset campos de método
-    document.getElementById('pm_metodo').value = '';
-    document.getElementById('pm_monto').value  = '';
-    document.getElementById('pm_obs').value    = '';
-    document.getElementById('div_pm_banco').classList.add('d-none');
-    document.getElementById('pm_banco').value  = '';
-
+    elemPagoSelectMetodo.value = '';
+    elemPagoInputPMMonto.value  = '';
+    elemPagoInputReferencia.value    = '';
+    elemPagoDivBanco.classList.add('d-none');
+    elemPagoSelectBanco.value  = '';
     renderizarPagosMultiples();
-    _modalPagosMultiples.show();
+    modalPagosMultiples.show();
 }
 
-// ────────────────────────────────────────────────────────────────────────────
 // Mostrar/ocultar selector de banco según método elegido
-// ────────────────────────────────────────────────────────────────────────────
 function onChangePMMetodo() {
-    const metodo = document.getElementById('pm_metodo').value;
-    const divBanco = document.getElementById('div_pm_banco');
+    const metodo = elemPagoSelectMetodo.value;
     if (metodo === METODO_TRANSFERENCIA || metodo === METODO_CHEQUE) {
-        divBanco.classList.remove('d-none');
+        elemPagoDivBanco.classList.remove('d-none');
     } else {
-        divBanco.classList.add('d-none');
-        document.getElementById('pm_banco').value = '';
+        elemPagoDivBanco.classList.add('d-none');
+        elemPagoSelectBanco.value = '';
     }
     // Pre-llenar monto restante
-    const montoTotal = parseInt(document.getElementById('pago_monto_total').value) || 0;
-    const ingresado  = _metodosTemp.reduce((s, m) => s + m.amount, 0);
-    const restante   = montoTotal - ingresado;
-    if (restante > 0) document.getElementById('pm_monto').value = restante;
+    const montoTotal = parseInt(elemPagoInputMontoTotal.value) || 0;
+    const ingresado = _metodosTemp.reduce((s, m) => s + m.amount, 0);
+    const restante = montoTotal - ingresado;
+    if (restante > 0) elemPagoInputPMMonto.value = restante;
 }
 
-// ────────────────────────────────────────────────────────────────────────────
 // Agregar un método de pago a la lista temporal
-// ────────────────────────────────────────────────────────────────────────────
-function agregarPagoMultiplePago() {
-    const metodo = document.getElementById('pm_metodo').value;
-    const banco  = document.getElementById('pm_banco').value.trim().toUpperCase();
-    const monto  = parseInt(document.getElementById('pm_monto').value) || 0;
-    const obs    = document.getElementById('pm_obs').value.trim().toUpperCase();
-
-    const montoTotal = parseInt(document.getElementById('pago_monto_total').value) || 0;
-
+function onClickAgregarMetodoPago() {
+    const metodo = elemPagoSelectMetodo.value;
+    const banco = elemPagoSelectBanco.value.trim().toUpperCase();
+    const monto = parseInt(elemPagoInputPMMonto.value) || 0;
+    const obs = elemPagoInputReferencia.value.trim().toUpperCase();
+    const montoTotal = parseInt(elemPagoInputMontoTotal.value) || 0;
     if (!metodo) {
         mensajeError('Seleccione el método de pago.');
+        elemPagoSelectMetodo.focus();
         return;
-    }
-    if ((metodo === METODO_TRANSFERENCIA || metodo === METODO_CHEQUE) && !banco) {
+    } else if ((metodo === METODO_TRANSFERENCIA || metodo === METODO_CHEQUE) && !banco) {
         mensajeError('Debe seleccionar un banco para Transferencia o Cheque.');
+        elemPagoSelectMetodo.focus();
         return;
-    }
-    if (monto <= 0) {
+    } else if (monto <= 0) {
         mensajeError('El monto debe ser mayor a 0.');
+        elemPagoInputPMMonto.focus();
         return;
-    }
-    if (montoTotal <= 0) {
+    } else if (montoTotal <= 0) {
         mensajeError('Primero defina el monto total a pagar en esta operación.');
+        elemPagoInputMontoTotal.focus();
         return;
     }
-
     const ingresado = _metodosTemp.reduce((s, m) => s + m.amount, 0);
     const restante  = montoTotal - ingresado;
-
     if (monto > restante) {
         mensajeError(`El monto excede el saldo restante de Gs. ${renderMoneda(restante)}.`);
+        elemPagoInputPMMonto.focus();
         return;
     }
-
     _metodosTemp.push({ method: metodo, banco, obs, amount: monto });
-
     // Reset campos
-    document.getElementById('pm_metodo').value = '';
-    document.getElementById('pm_monto').value  = '';
-    document.getElementById('pm_obs').value    = '';
-    document.getElementById('pm_banco').value  = '';
-    document.getElementById('div_pm_banco').classList.add('d-none');
-
+    elemPagoSelectMetodo.value = '';
+    elemPagoInputPMMonto.value = '';
+    elemPagoInputReferencia.value = '';
+    elemPagoSelectBanco.value  = '';
+    elemPagoDivBanco.classList.add('d-none');
     renderizarPagosMultiples();
 }
 
-// ────────────────────────────────────────────────────────────────────────────
+// Quitar un método de la lista
+function onClickEliminarMetodoPago(index) {
+    _metodosTemp.splice(index, 1);
+    renderizarPagosMultiples();
+}
+
 // Sumar el saldo de la siguiente cuota al monto actual
-// ────────────────────────────────────────────────────────────────────────────
-function sumarSiguienteCuota() {
+function onClickSumarSiguienteCuota() {
     if (!_cuentaTemp) return;
-    const inputTotal = document.getElementById('pago_monto_total');
-    const montoActual = parseFloat(inputTotal.value) || 0;
-    
-    const cuotas = cargarCuotasPorPagar(_cuentaTemp.id)
-        .sort((a, b) => a.installment_number - b.installment_number);
-        
+    const montoActual = parseFloat(elemPagoInputMontoTotal.value) || 0;
+    const cuotas = cargarCuotasPorPagar(_cuentaTemp.id).sort((a, b) => a.installment_number - b.installment_number);
     let acumulado = 0;
     let montoASumar = 0;
-    
     for (const c of cuotas) {
         if (c.status === ESTADO_PAGADA) continue;
         const saldoCuota = c.amount - (c.amount_paid || 0);
         acumulado += saldoCuota;
-        
         // Si el acumulado es estrictamente mayor al monto actual ingresado
         // significa que esta cuota no está cubierta (o está cubierta parcialmente).
         // Lo que falta para cubrirla por completo es (acumulado - montoActual).
@@ -281,36 +238,23 @@ function sumarSiguienteCuota() {
             break;
         }
     }
-    
     if (montoASumar > 0) {
-        inputTotal.value = montoActual + montoASumar;
+        elemPagoInputMontoTotal.value = montoActual + montoASumar;
         renderizarPagosMultiples();
     } else {
         mensajeError("Ya has alcanzado el total de la deuda.");
     }
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// Quitar un método de la lista
-// ────────────────────────────────────────────────────────────────────────────
-function eliminarMetodoPago(index) {
-    _metodosTemp.splice(index, 1);
-    renderizarPagosMultiples();
-}
-
-// ────────────────────────────────────────────────────────────────────────────
 // Renderizar tabla de métodos y actualizar totales
-// ────────────────────────────────────────────────────────────────────────────
 function renderizarPagosMultiples() {
-    const montoTotal = parseInt(document.getElementById('pago_monto_total').value) || 0;
+    const montoTotal = parseInt(elemPagoInputMontoTotal.value) || 0;
     const ingresado  = _metodosTemp.reduce((s, m) => s + m.amount, 0);
     const diferencia = montoTotal - ingresado;
-
     document.getElementById('pago_monto_label').textContent  = `Gs. ${renderMoneda(montoTotal)}`;
     document.getElementById('pago_ingresado').textContent    = `Gs. ${renderMoneda(ingresado)}`;
     document.getElementById('pm_total_ingresado').textContent = `Gs. ${renderMoneda(ingresado)}`;
     document.getElementById('pm_diferencia').textContent     = `Gs. ${renderMoneda(diferencia)}`;
-
     const tbody = document.getElementById('tbody_metodos_pago');
     if (_metodosTemp.length === 0) {
         tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Sin métodos de pago agregados.</td></tr>';
@@ -323,18 +267,16 @@ function renderizarPagosMultiples() {
                 <td class="text-end fw-bold">Gs. ${renderMoneda(m.amount)}</td>
                 <td>${m.obs || '—'}</td>
                 <td class="text-center">
-                    <button class="btn btn-sm btn-danger" onclick="eliminarMetodoPago(${i})">
+                    <button class="btn btn-sm btn-danger" onclick="onClickEliminarMetodoPago(${i})">
                         <i class="bi bi-trash"></i>
                     </button>
                 </td>
             </tr>`;
         }).join('');
     }
-
     // Alerta y botón confirmar
     const alerta    = document.getElementById('div_alerta_pago');
     const btnConf   = document.getElementById('btn_confirmar_pago');
-
     if (montoTotal <= 0) {
         alerta.className = 'alert alert-warning mt-2';
         alerta.textContent = 'Defina el monto total a pagar en esta operación.';
@@ -363,29 +305,30 @@ function renderizarPagosMultiples() {
 // ────────────────────────────────────────────────────────────────────────────
 function cancelarPagoMultiple() {
     _metodosTemp.splice(0);
-    if (_modalPagosMultiples) _modalPagosMultiples.hide();
+    modalPagosMultiples.hide();
     // Reabrir selección de cuenta si hay una cuenta cargada
-    if (_cuentaTemp && _modalSeleccionarCuenta) {
-        _modalSeleccionarCuenta.show();
-    }
+    if (_cuentaTemp) modalSeleccionarCuenta.show();
 }
 
-// ────────────────────────────────────────────────────────────────────────────
 // PASO 3: Confirmar el pago
-// ────────────────────────────────────────────────────────────────────────────
 function confirmarPagoMultiple() {
-    const montoTotal = parseInt(document.getElementById('pago_monto_total').value) || 0;
+    const montoTotal = parseInt(elemPagoInputMontoTotal.value) || 0;
     const ingresado  = _metodosTemp.reduce((s, m) => s + m.amount, 0);
-
+    let { amount_paid, amount_due } = calcularCuentaPorPagar(_cuentaTemp.id);
     if (!_cuentaTemp) {
         mensajeError('No hay cuenta seleccionada.');
+        return;
+    }
+    const cuenta = cargarCuentaPorPagar(_cuentaTemp.id);
+    if (!cuenta) {
+        mensajeError('No se pudo cargar la cuenta.');
         return;
     }
     if (montoTotal <= 0) {
         mensajeError('El monto a pagar debe ser mayor a 0.');
         return;
     }
-    if (montoTotal > _cuentaTemp.amount_due) {
+    if (montoTotal > amount_due) {
         mensajeError(`El monto (Gs. ${renderMoneda(montoTotal)}) excede el saldo pendiente (Gs. ${renderMoneda(_cuentaTemp.amount_due)}).`);
         return;
     }
@@ -393,106 +336,69 @@ function confirmarPagoMultiple() {
         mensajeError('El total de los métodos de pago no coincide con el monto a pagar.');
         return;
     }
-
-    const cuenta = cargarCuentaPorPagar(_cuentaTemp.id);
-    if (!cuenta) {
-        mensajeError('No se pudo cargar la cuenta.');
-        return;
-    }
-
     // Actualizar totales de la cuenta
-    cuenta.amount_paid = (cuenta.amount_paid || 0) + montoTotal;
-    cuenta.amount_due  = cuenta.amount_total - cuenta.amount_paid;
-    cuenta.status      = cuenta.amount_due <= 0 ? ESTADO_PAGADA : ESTADO_PARCIAL;
-    cuenta.updated_at  = new Date();
-
+    amount_paid += montoTotal;
+    amount_due = cuenta.amount_total - amount_paid;
+    cuenta.status = amount_due <= 0 ? ESTADO_PAGADA : ESTADO_PARCIAL;
+    cuenta.updated_at = new Date();
     // Distribuir el monto entre cuotas pendientes de forma correlativa
-    const cuotas = cargarCuotasPorPagar(cuenta.id)
-        .sort((a, b) => a.installment_number - b.installment_number);
-
+    const cuotas = cargarCuotasPorPagar(cuenta.id).sort((a, b) => a.installment_number - b.installment_number);
     let montoRestante = montoTotal;
     const installmentIds = []; // cuotas afectadas (para referencia en pagos)
-
     for (const cuota of cuotas) {
         if (montoRestante <= 0) break;
         if (cuota.status === ESTADO_PAGADA) continue;
-
         const saldoCuota = cuota.amount - (cuota.amount_paid || 0);
         if (saldoCuota <= 0) continue;
-
         const abono = Math.min(montoRestante, saldoCuota);
-        cuota.amount_paid  = (cuota.amount_paid || 0) + abono;
-        cuota.status       = cuota.amount_paid >= cuota.amount ? ESTADO_PAGADA : ESTADO_PARCIAL;
-        cuota.updated_at   = new Date();
+        cuota.amount_paid = (cuota.amount_paid || 0) + abono;
+        cuota.status = cuota.amount_paid >= cuota.amount ? ESTADO_PAGADA : ESTADO_PARCIAL;
+        cuota.updated_at = new Date();
         guardarCuotaPorPagar(cuota);
-
         installmentIds.push(cuota.id);
         montoRestante -= abono;
     }
-
     // Guardar un registro de pago por cada método utilizado
     const primeraInstallmentId = installmentIds[0] || null;
     for (const metodo of _metodosTemp) {
         const obsTexto = (metodo.method === METODO_TRANSFERENCIA || metodo.method === METODO_CHEQUE) && metodo.banco
             ? `BANCO: ${metodo.banco}${metodo.obs ? ' | ' + metodo.obs : ''}`
             : (metodo.obs || `PAGO CUENTA ID ${cuenta.id}`);
-
         guardarPago({
-            id:                     obtenerSiguienteId(cargarPagos()),
+            id: obtenerSiguienteId(cargarPagos()),
             installment_payable_id: primeraInstallmentId,
-            account_payable_id:     cuenta.id,
-            purchase_id:            null,
-            amount:                 metodo.amount,
-            payment_method:         metodo.method,
-            obs:                    obsTexto,
-            created_at:             new Date()
+            account_payable_id: cuenta.id,
+            purchase_id: null,
+            amount: metodo.amount,
+            payment_method: metodo.method,
+            obs: obsTexto,
+            created_at: new Date()
         });
     }
-
     guardarCuentaPorPagar(cuenta);
-
     // Limpiar y cerrar
     _metodosTemp.splice(0);
     _cuentaTemp = null;
-    if (_modalPagosMultiples) _modalPagosMultiples.hide();
-
+    modalPagosMultiples.hide();
     cargarDatos();
     mensajeSuccess(`Pago de Gs. ${renderMoneda(montoTotal)} registrado correctamente. Cuotas actualizadas en orden correlativo.`);
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// FILTROS Y CARGA DE TABLA
-// ────────────────────────────────────────────────────────────────────────────
-function aplicarFiltros() {
-    cargarDatos();
-}
-
-function limpiarFiltros() {
-    document.getElementById('filtro_metodo').value     = '';
-    document.getElementById('filtro_fecha_desde').value = '';
-    document.getElementById('filtro_fecha_hasta').value = '';
-    cargarDatos();
-}
-
 function cargarDatos() {
-    const metodo     = document.getElementById('filtro_metodo').value;
+    const metodo = document.getElementById('filtro_metodo').value;
     const fechaDesde = document.getElementById('filtro_fecha_desde').value;
     const fechaHasta = document.getElementById('filtro_fecha_hasta').value;
-
     const pagosFiltrados = cargarPagos().filter(p => {
         // Excluir pagos de entrega inicial (compras al contado / entrega de crédito sin cuota)
         if (p.account_payable_id === null && p.installment_payable_id === null && p.purchase_id !== null) return false;
         if (metodo && p.payment_method !== metodo) return false;
-        if (fechaDesde && fechaDesde > (p.created_at || '').substring(0, 10)) return false;
-        if (fechaHasta && fechaHasta < (p.created_at || '').substring(0, 10)) return false;
+        if (fechaDesde && fechaDesde > toISOLocalDate(p.created_at)) return false;
+        if (fechaHasta && fechaHasta < toISOLocalDate(p.created_at)) return false;
         return true;
     });
-
     cargarDataTable(tablaPagos, pagosFiltrados);
-
     const sumatoria = pagosFiltrados.reduce((sum, p) => sum + (p.amount || 0), 0);
     document.getElementById('suma_pagos').textContent = renderMoneda(sumatoria) + ' Gs.';
-
     // Si viene con ?cuenta_id= en la URL, abrir directamente el pago de esa cuenta
     const cuenta_id = parseInt(new URLSearchParams(window.location.search).get('cuenta_id'));
     if (cuenta_id) {
@@ -500,43 +406,34 @@ function cargarDatos() {
         const cuenta = cargarCuentaPorPagar(cuenta_id);
         if (cuenta && cuenta.status !== ESTADO_PAGADA) {
             _cuentaTemp = cuenta;
+            const { amount_paid, amount_due } = calcularCuentaPorPagar(cuenta.id);
             // Abrir directamente el modal de pagos múltiples
-            if (!_modalPagosMultiples) {
-                _modalPagosMultiples = new bootstrap.Modal(document.getElementById('modalPagosMultiples'));
-            }
             _metodosTemp.splice(0);
-            document.getElementById('pago_saldo_cuenta').textContent = `Gs. ${renderMoneda(cuenta.amount_due)}`;
-            
+            elemPagoStrongMontoPendiente.textContent = `Gs. ${renderMoneda(amount_due)}`;
             // Buscar la primera cuota pendiente para sugerir su saldo
             const cuotas = cargarCuotasPorPagar(cuenta.id)
                 .sort((a, b) => a.installment_number - b.installment_number);
-            let montoSugerido = cuenta.amount_due;
+            let montoSugerido = amount_due;
             for (const c of cuotas) {
                 if (c.status !== ESTADO_PAGADA) {
                     montoSugerido = c.amount - (c.amount_paid || 0);
                     break;
                 }
             }
-
-            document.getElementById('pago_monto_total').value = montoSugerido;
-            document.getElementById('pago_monto_total').max   = cuenta.amount_due;
-            document.getElementById('pm_metodo').value = '';
-            document.getElementById('pm_monto').value  = '';
-            document.getElementById('pm_obs').value    = '';
-            document.getElementById('div_pm_banco').classList.add('d-none');
+            elemPagoInputMontoTotal.value = montoSugerido;
+            elemPagoInputMontoTotal.max = amount_due;
+            elemPagoSelectMetodo.value = '';
+            elemPagoInputPMMonto.value  = '';
+            elemPagoInputReferencia.value = '';
+            elemPagoDivBanco.classList.add('d-none');
             renderizarPagosMultiples();
-            _modalPagosMultiples.show();
+            modalPagosMultiples.show();
         }
     }
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// INIT
-// ────────────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     if (!validarPermiso(PERMISOS.PAGOS_VER)) return;
-    if (!tienePermisoSesion(PERMISOS.PAGOS_CREAR)) {
-        document.getElementById('btnModalNuevo').style.display = 'none';
-    }
+    if (!tienePermisoSesion(PERMISOS.PAGOS_CREAR)) document.getElementById('btnModalNuevo').style.display = 'none';
     cargarDatos();
 });
