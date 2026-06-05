@@ -822,8 +822,9 @@ const TABLAS = {
     ],
     COBRO: [
         { data: "id", title: "Id Cobro", align: "right", render: renderRaw },
-        { data: "installment_receivable_id", title: "Id Cuota", align: "right", render: renderRaw },
-        { data: "sale_id", title: "Número Factura Venta", align: "right", render: data => cargarVenta(data).invoice },
+        { data: "installment_receivable_id", title: "Fac. Venta Credito", align: "center", render: data =>
+            cargarVenta(cargarCuentaPorCobrar(cargarCuotaPorCobrar(data)?.account_receivable_id)?.sale_id)?.invoice ?? "" },
+        { data: "sale_id", title: "Fac. Venta Contado", align: "center", render: data => cargarVenta(data)?.invoice ?? "" },
         { data: "amount", title: "Monto Cobrado", align: "right", render: renderMoneda },
         { data: "payment_method", title: "Método Cobro", align: "left", render: renderString },
         { data: "obs", title: "Factura / Comprobante", align: "left", render: renderString },
