@@ -387,7 +387,7 @@ function cargarDatos() {
     const fechaHasta = document.getElementById('filtro_fecha_hasta').value;
     const pagosFiltrados = cargarPagos().filter(p => {
         // Excluir pagos de entrega inicial (compras al contado / entrega de crédito sin cuota)
-        if (p.installment_payable_id === null && p.purchase_id !== null) return false;
+        if (!p.installment_payable_id && !p.purchase_id) return false;
         if (metodo && p.payment_method !== metodo) return false;
         if (fechaDesde && fechaDesde > toISOLocalDate(p.created_at)) return false;
         if (fechaHasta && fechaHasta < toISOLocalDate(p.created_at)) return false;
