@@ -461,7 +461,7 @@ function eliminarRol(id) {
  * @param {string?} username Nombre de usuario a mostrar
  * @returns {Usuario?}
  */
-function cargarUsuario(id=null, username=null) {
+function cargarUsuario(id = null, username = null) {
     if (id === null && username === null) return null;
     const usuarios = cargarUsuarios();
     const usuario = id !== null
@@ -552,7 +552,7 @@ function guardarCliente(cliente) {
         tel: cliente.tel,
         email: cliente.email ? cliente.email.toLowerCase() : null,
         address: cliente.address.toUpperCase(),
-        active: cliente.active,        
+        active: cliente.active,
         created_at: cliente.created_at,
         updated_at: cliente.updated_at
     }
@@ -930,7 +930,7 @@ function cargarCompraDetalle(id) {
  * @param {number?} compra_id Identificador de compra
  * @returns {CompraDetalle[]}
  */
-function cargarCompraDetalles(compra_id=null) {
+function cargarCompraDetalles(compra_id = null) {
     /** @type {CompraDetalle[]} */
     const detalles = Array.from(cargarBD(KEY_COMPRADETALLES) || []);
     if (!compra_id) return detalles;
@@ -1045,7 +1045,7 @@ function cargarVentaDetalle(id) {
  * @param {number?} venta_id Identificador de venta
  * @returns {VentaDetalle[]}
  */
-function cargarVentaDetalles(venta_id=null) {
+function cargarVentaDetalles(venta_id = null) {
     /** @type {VentaDetalle[]} */
     const detalles = Array.from(cargarBD(KEY_VENTADETALLES) || []);
     if (!venta_id) return detalles;
@@ -1095,7 +1095,7 @@ function eliminarVentaDetalle(id) {
  * @param {number} compra_id Identificador de la compra
  * @returns {CuentaPorPagar?}
  */
-function cargarCuentaPorPagar(id=null, compra_id=null) {
+function cargarCuentaPorPagar(id = null, compra_id = null) {
     if (!id && !compra_id) return null;
     for (const cuenta of cargarCuentasPorPagar()) {
         if (id && cuenta.id === id) return cuenta;
@@ -1104,11 +1104,24 @@ function cargarCuentaPorPagar(id=null, compra_id=null) {
 }
 
 /**
- * Recupera todas las cuentas por pagar
+ * Recupera todas las cuentas por pagar, con compatibilidad retroactiva para
+ * campos amount_paid y amount_due que podrían no existir en registros antiguos.
  * @returns {CuentaPorPagar[]}
  */
 function cargarCuentasPorPagar() {
-    return Array.from(cargarBD(KEY_CUENTASPORPAGAR) || []);
+    const cuentas = Array.from(cargarBD(KEY_CUENTASPORPAGAR) || []);
+    // Compatibilidad retroactiva: calcular amount_paid y amount_due si no existen
+    const pagos = cargarBD(KEY_PAGOS) || [];
+    return cuentas.map(c => {
+        if (c.amount_paid === undefined || c.amount_due === undefined) {
+            const pagado = pagos
+                .filter(p => p.account_payable_id === c.id)
+                .reduce((sum, p) => sum + (p.amount || 0), 0);
+            c.amount_paid = pagado;
+            c.amount_due = c.amount_total - pagado;
+        }
+        return c;
+    });
 }
 
 /**
@@ -1123,6 +1136,8 @@ function guardarCuentaPorPagar(cuenta) {
         purchase_id: cuenta.purchase_id,
         provider_id: cuenta.provider_id,
         amount_total: cuenta.amount_total,
+        amount_paid: cuenta.amount_paid || 0,
+        amount_due: cuenta.amount_due !== undefined ? cuenta.amount_due : cuenta.amount_total,
         installments: cuenta.installments,
         installment_type: cuenta.installment_type,
         status: cuenta.status,
@@ -1154,7 +1169,7 @@ function eliminarCuentaPorPagar(id) {
  * @param {number} venta_id Identificador de la venta
  * @returns {CuentaPorCobrar?}
  */
-function cargarCuentaPorCobrar(id=null, venta_id=null) {
+function cargarCuentaPorCobrar(id = null, venta_id = null) {
     if (!id && !venta_id) return null;
     for (const cuenta of cargarCuentasPorCobrar()) {
         if (id && cuenta.id === id) return cuenta;
@@ -1221,7 +1236,7 @@ function cargarCuotaPorPagar(id) {
  * @param {number} account_payable_id 
  * @returns {CuotaPorPagar[]}
  */
-function cargarCuotasPorPagar(account_payable_id=null) {
+function cargarCuotasPorPagar(account_payable_id = null) {
     const cuotas = Array.from(cargarBD(KEY_CUOTASPAGAR) || []);
     if (!account_payable_id) return cuotas;
     return cuotas.filter(c => c.account_payable_id === account_payable_id);
@@ -1278,7 +1293,7 @@ function cargarCuotaPorCobrar(id) {
  * @param {number} account_receivable_id Identificador de la cuenta por cobrar
  * @returns {CuotaPorCobrar[]}
  */
-function cargarCuotasPorCobrar(account_receivable_id=null) {
+function cargarCuotasPorCobrar(account_receivable_id = null) {
     const cuotas = Array.from(cargarBD(KEY_CUOTASCOBRAR) || []);
     if (!account_receivable_id) return cuotas;
     return cuotas.filter(c => c.account_receivable_id === account_receivable_id);
@@ -1389,7 +1404,9 @@ function guardarPago(pago) {
     const index = pagos.findIndex(p => p.id === pago.id);
     const data = {
         id: pago.id,
-        installment_payable_id: pago.installment_payable_id,
+        installment_payable_id: pago.installment_payable_id ?? null,
+        account_payable_id: pago.account_payable_id ?? null,
+        purchase_id: pago.purchase_id ?? null,
         amount: pago.amount,
         payment_method: pago.payment_method,
         obs: pago.obs.toUpperCase(),
@@ -1536,7 +1553,7 @@ function guardarEmpresa(empresa) {
         address: empresa.address,
         tel: empresa.tel,
         stamping: empresa.stamping,
-        ruc: empresa.ruc 
+        ruc: empresa.ruc
     }
     guardarBD(KEY_EMPRESA, data);
 }
@@ -1550,8 +1567,8 @@ function eliminarEmpresa() {
 
 function initDB() {
     for (const key of [KEY_ROLES, KEY_USUARIOS, KEY_CLIENTES, KEY_PROVEEDORES, KEY_CATEGORIAS,
-            KEY_MARCAS, KEY_PRODUCTOS, KEY_COMPRAS, KEY_COMPRADETALLES, KEY_VENTAS,
-            KEY_VENTADETALLES, KEY_CUENTASPORPAGAR, KEY_CUENTASPORCOBRAR, KEY_PAGOS, KEY_COBROS]) {
+        KEY_MARCAS, KEY_PRODUCTOS, KEY_COMPRAS, KEY_COMPRADETALLES, KEY_VENTAS,
+        KEY_VENTADETALLES, KEY_CUENTASPORPAGAR, KEY_CUENTASPORCOBRAR, KEY_PAGOS, KEY_COBROS]) {
         guardarBD(key, []);
     }
     eliminarSesion();
@@ -1568,7 +1585,7 @@ function initDB() {
         id: 1,
         username: "admin",
         // hash para "admin@123" 
-        password_hash: "7676aaafb027c825bd9abab78b234070e702752f625b752e55e55b48e607e358", 
+        password_hash: "7676aaafb027c825bd9abab78b234070e702752f625b752e55e55b48e607e358",
         name: "Administrador",
         ruc: "0000000",
         tel: "0971234567",

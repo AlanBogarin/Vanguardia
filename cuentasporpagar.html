@@ -59,7 +59,7 @@
                                         <div class="row g-3 align-items-end">
                                             <div class="col-md-3 col-sm-6">
                                                 <label for="filtro_estado" class="form-label fw-semibold small mb-1" style="color:#0d2149">
-                                                    Estado
+                                                    Estado de Cuota
                                                 </label>
                                                 <select id="filtro_estado"
                                                         class="form-select form-select-sm"
@@ -71,7 +71,7 @@
                                                     <option value="PENDIENTE">Pendiente</option>
                                                     <option value="PARCIAL">Parcial</option>
                                                     <option value="PAGADA">Pagada</option>
-                                                    <option value="VENCIDO">Vencido</option>
+                                                    <option value="VENCIDO">Vencida (Sin pagar)</option>
                                                 </select>
                                             </div>
                                             <div class="col-md-2 col-sm-6">
@@ -121,7 +121,7 @@
                         </div>
                     </div>
 
-                    <!-- TABLA -->
+                    <!-- TABLA DE CUOTAS -->
                     <div class="row">
                         <table id="tabla_cuentas_pagar" class="display compact" style="width:100%">
                         </table>
@@ -132,24 +132,79 @@
         </div>
     </div>
 
-    <!-- Modal Detalle Cuenta -->
+    <!-- Modal Detalle Cuota -->
     <div class="modal fade" id="modalDetalleCuenta" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header bg-info text-dark">
-                    <h5 class="modal-title"><i class="bi bi-info-circle"></i> Detalle de la Cuenta</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-header" style="background:rgba(30,80,180,0.9); color:white;">
+                    <h5 class="modal-title"><i class="bi bi-receipt me-2"></i> Detalle de Cuotas de la Cuenta</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <ul class="list-group mb-3">
-                        <li class="list-group-item"><strong>Proveedor:</strong> <span id="detalle_proveedor"></span></li>
-                        <li class="list-group-item"><strong>ID Compra:</strong> <span id="detalle_compra"></span></li>
-                        <li class="list-group-item"><strong>Fecha Emisión:</strong> <span id="detalle_emision"></span></li>
-                        <li class="list-group-item"><strong>Vencimiento:</strong> <span id="detalle_vencimiento"></span></li>
-                    </ul>
+                    <!-- Info de la cuenta -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <ul class="list-group list-group-flush small">
+                                <li class="list-group-item d-flex justify-content-between px-0">
+                                    <span class="text-muted">Proveedor</span>
+                                    <strong id="detalle_proveedor">—</strong>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between px-0">
+                                    <span class="text-muted">ID Compra</span>
+                                    <strong id="detalle_compra">—</strong>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between px-0">
+                                    <span class="text-muted">Fecha Creación</span>
+                                    <strong id="detalle_emision">—</strong>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-group list-group-flush small">
+                                <li class="list-group-item d-flex justify-content-between px-0">
+                                    <span class="text-muted">Total a Pagar</span>
+                                    <strong id="detalle_total" class="text-primary">—</strong>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between px-0">
+                                    <span class="text-muted">Total Abonado</span>
+                                    <strong id="detalle_abonado" class="text-success">—</strong>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between px-0">
+                                    <span class="text-muted">Saldo Pendiente</span>
+                                    <strong id="detalle_saldo" class="text-danger">—</strong>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between px-0">
+                                    <span class="text-muted">Estado Cuenta</span>
+                                    <span id="detalle_estado_cuenta">—</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- Tabla de cuotas -->
+                    <h6 class="fw-bold mb-2"><i class="bi bi-list-ol me-1"></i> Cuotas</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered align-middle mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th class="text-center">#</th>
+                                    <th>Importe</th>
+                                    <th>Abonado</th>
+                                    <th>Saldo</th>
+                                    <th>Vencimiento</th>
+                                    <th class="text-center">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody_detalle_cuotas">
+                                <tr><td colspan="6" class="text-center text-muted">Sin cuotas</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <a id="btn_pagar_cuenta" href="#" class="btn btn-success">
+                        <i class="bi bi-cash me-1"></i> Ir a Pagar
+                    </a>
                 </div>
             </div>
         </div>

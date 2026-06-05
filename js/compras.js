@@ -305,23 +305,19 @@ function btnGuardarNuevaCompra() {
     // LA FECHA CARGA SOLO CARGA DE AYER Y HOY
     const fechaInput = document.getElementById('fecha_compra');
     let fechaValor = fechaInput ? fechaInput.value : '';
-    const today = new Date();
-    const yesterday = new Date();
-    yesterday.setDate(today.getDate() - 1);
-    // ESATBLECER EL VALOR PREDETERMINADO DE HOY SI ESTA VACIO
+    const todayStr = toISOLocalString(new Date()).split('T')[0];
+
+    // ESTABLECER EL VALOR PREDETERMINADO DE HOY SI ESTA VACIO
     if (!fechaValor) {
-        fechaValor = toISOLocalString(today).split('T')[0];
+        fechaValor = todayStr;
     }
-    const selectedDate = new Date(fechaValor);
-    // REVISAR EL LIMITE DE FECHA SOLO AYER Y HOY
-    if (selectedDate > today) {
-        mensajeError('La fecha no puede ser futura.');
+
+    if (fechaValor > todayStr) {
+        mensajeError('La fecha no puede ser futura. Solo se permiten fechas de hoy o antes.');
         return;
     }
-    if (selectedDate < yesterday) {
-        mensajeError('Solo se permiten fechas de ayer o hoy.');
-        return;
-    }
+
+    const selectedDate = new Date(fechaValor + 'T00:00:00'); // Forzar hora local
     const formattedFecha = toISOLocalString(selectedDate); // store as ISO string
     // const nuevaCompraId = obtenerSiguienteId(cargarCompras());
     // ...
@@ -799,6 +795,8 @@ function guardarCompraFinal() {
             purchase_id: nuevaCompraId,
             provider_id,
             amount_total: aFinanciar,
+            amount_paid: 0,
+            amount_due: aFinanciar,
             installments: cantidad,
             installment_type: tipo,
             status: ESTADO_PENDIENTE,
