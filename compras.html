@@ -63,7 +63,7 @@
                 <div class="container-fluid px-4">
                     <div class="d-flex justify-content-between align-items-center mt-2 mb-2">
                         <h1 class="mb-0">Compras</h1>
-                        <button class="btn btn-sm btn-primary" onclick="ventanaNuevaCompra()">
+                        <button class="btn btn-sm btn-primary" onclick="onClickNuevaCompra()">
                             <i class="bi bi-cart-plus-fill me-1"></i> Nueva Compra
                         </button>
                     </div>
@@ -193,7 +193,7 @@
                         <!-- FECHA COMPRA -->
                         <div class="col-md-6">
                             <label class="form-label">Fecha Compra</label>
-                            <input type="date" id="fecha_compra" class="form-control" required>
+                            <input type="datetime-local" id="fecha_compra" class="form-control" required>
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -420,6 +420,7 @@
                                     <th>Nombre</th>
                                     <th>Código</th>
                                     <th class="text-center">Stock</th>
+                                    <th class="text-center">Precio Unitario</th>
                                     <th class="text-center">IVA</th>
                                     <th class="text-center">Seleccionar</th>
                                 </tr>
