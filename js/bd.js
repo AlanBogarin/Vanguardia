@@ -1653,7 +1653,9 @@ function guardarEmpresa(empresa) {
         address: empresa.address,
         tel: empresa.tel,
         stamping: empresa.stamping,
-        ruc: empresa.ruc 
+        ruc: empresa.ruc,
+        purchase_code: empresa.purchase_code,
+        sale_code: empresa.sale_code
     }
     guardarBD(KEY_EMPRESA, data);
 }
