@@ -171,13 +171,19 @@ function btnAgregarDetalle() {
 
 function quitarDetalle(uid) {
     // Requiere autorización del supervisor/admin
-    confirmar(
-        "Autorización requerida",
-        "¿Confirma que está autorizado para quitar este artículo?",
-        () => {
-            detallesTemp = detallesTemp.filter(d => d._uid !== uid);
-            renderTablaDetalle();
-            mensajeSuccess("Artículo quitado de la venta.");
+    pedir(
+        "Código de Seguridad",
+        "Ingrese el código de seguridad para eliminar este producto del detalle:",
+        null,
+        (evt, value) => {
+            const empresa = cargarEmpresa();
+            if (value === empresa.sale_code) {
+                detallesTemp = detallesTemp.filter(d => d._uid !== uid);
+                renderTablaDetalle();
+                mensajeSuccess("Artículo quitado de la venta.");
+            } else {
+                mensajeError("Código de seguridad incorrecto.");
+            }
         },
         () => {}
     );
