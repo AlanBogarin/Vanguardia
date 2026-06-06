@@ -219,7 +219,7 @@ async function btnEditarUsuario() {
         mensajeError("El usuario debe tener entre 5 a 20 dígitos con letras, números o ' _.-'");
         usernameElem.focus();
         return;
-    } else if (cargarUsuarios().some(u => u.username === username) && u.id !== id) {
+    } else if (cargarUsuarios().some(u => u.username === username && u.id !== id)) {
         mensajeError("Ya existe otro usuario con el mismo usuario");
         usernameElem.focus();
         return;
