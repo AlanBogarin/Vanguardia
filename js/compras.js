@@ -189,8 +189,7 @@ function eliminarDetalle(producto_id) {
         (evt, value) => {
             const empresa = cargarEmpresa();
             if (value === empresa.purchase_code) {
-                const index = detallesTemporales.findIndex(d => d.product_id === producto_id);
-                if (index !== -1) detallesTemporales.splice(index, 1);
+                detallesTemporales = detallesTemporales.filter(d => d.product_id !== producto_id);
                 renderizarDetalles();
                 mensajeSuccess("Producto eliminado del detalle.");
             } else {
